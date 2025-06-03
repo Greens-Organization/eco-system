@@ -1,0 +1,24 @@
+{
+  "name": "@pack/i18n",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "translate": "bun x -y languine@latest translate",
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  },
+  "dependencies": {
+    "@formatjs/intl-localematcher": "0.6.1",
+    "negotiator": "1.0.0",
+    "next-international": "1.3.1",
+    "server-only": "catalog:"
+  },
+  "devDependencies": {
+    "@pack/typescript-config": "workspace:*",
+    "@types/negotiator": "0.6.3",
+    "@types/node": "catalog:dev",
+    "@types/react": "catalog:dev",
+    "@types/react-dom": "catalog:dev",
+    "next": "catalog:"
+  }
+}

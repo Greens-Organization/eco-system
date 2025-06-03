@@ -1,0 +1,20 @@
+{
+  "name": "@pack/next-config",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  },
+  "dependencies": {
+    "@next/bundle-analyzer": "15.4.0-canary.51",
+    "@prisma/nextjs-monorepo-workaround-plugin": "6.8.2",
+    "@t3-oss/env-core": "catalog:",
+    "@t3-oss/env-nextjs": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@pack/typescript-config": "workspace:*",
+    "next": "catalog:"
+  }
+}

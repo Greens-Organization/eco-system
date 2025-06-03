@@ -1,0 +1,47 @@
+{
+  "name": "@app/storybook",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "storybook dev -p 6006",
+    "build": "storybook build",
+    "chromatic": "chromatic --exit-zero-on-changes",
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  },
+  "dependencies": {
+    "@pack/design-system": "workspace:*",
+    "cmdk": "catalog:",
+    "date-fns": "catalog:",
+    "input-otp": "catalog:",
+    "lucide-react": "catalog:",
+    "next": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "react-hook-form": "catalog:",
+    "recharts": "catalog:",
+    "sonner": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@chromatic-com/storybook": "3.2.6",
+    "@pack/typescript-config": "workspace:*",
+    "@storybook/addon-actions": "8.6.14",
+    "@storybook/addon-essentials": "8.6.14",
+    "@storybook/addon-interactions": "8.6.14",
+    "@storybook/addon-onboarding": "8.6.14",
+    "@storybook/addon-themes": "8.6.14",
+    "@storybook/blocks": "8.6.14",
+    "@storybook/nextjs": "8.6.14",
+    "@storybook/react": "8.6.14",
+    "@storybook/test": "8.6.14",
+    "@types/node": "catalog:dev",
+    "@types/react": "catalog:dev",
+    "@types/react-dom": "catalog:dev",
+    "chromatic": "12.0.0",
+    "postcss": "catalog:",
+    "storybook": "8.6.14",
+    "tailwindcss": "catalog:",
+    "typescript": "5.8.3"
+  }
+}

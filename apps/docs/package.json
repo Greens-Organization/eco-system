@@ -1,0 +1,8 @@
+{
+  "name": "@app/docs",
+  "private": true,
+  "scripts": {
+    "dev": "bun x mintlify dev --port 3004",
+    "lint": "bun x mintlify broken-links"
+  }
+}

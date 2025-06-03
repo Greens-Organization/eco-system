@@ -1,0 +1,25 @@
+{
+  "name": "@pack/db",
+  "version": "0.0.0",
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "scripts": {
+    "analyze": "prisma generate --no-hints --schema=./prisma/schema.prisma",
+    "build": "prisma generate --no-hints --schema=./prisma/schema.prisma",
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  },
+  "dependencies": {
+    "@prisma/adapter-neon": "6.8.2",
+    "@prisma/client": "6.8.2",
+    "@t3-oss/env-nextjs": "catalog:",
+    "server-only": "catalog:",
+    "ws": "8.18.2",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@pack/typescript-config": "workspace:*",
+    "@types/node": "catalog:dev",
+    "prisma": "catalog:dev"
+  }
+}

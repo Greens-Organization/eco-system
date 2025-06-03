@@ -1,0 +1,50 @@
+{
+  "name": "app",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3000 --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "analyze": "ANALYZE=true npm run build",
+    "test": "NODE_ENV=test vitest run",
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  },
+  "dependencies": {
+    "@pack/analytics": "workspace:*",
+    "@pack/auth": "workspace:*",
+    "@pack/collaboration": "workspace:*",
+    "@pack/db": "workspace:*",
+    "@pack/design-system": "workspace:*",
+    "@pack/feature-flags": "workspace:*",
+    "@pack/next-config": "workspace:*",
+    "@pack/notifications": "workspace:*",
+    "@pack/observability": "workspace:*",
+    "@pack/security": "workspace:*",
+    "@pack/seo": "workspace:*",
+    "@pack/webhooks": "workspace:*",
+    "@sentry/nextjs": "catalog:",
+    "@t3-oss/env-nextjs": "catalog:",
+    "fuse.js": "7.1.0",
+    "import-in-the-middle": "1.14.0",
+    "lucide-react": "catalog:",
+    "next": "catalog:",
+    "next-themes": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "require-in-the-middle": "7.5.2",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@pack/testing": "workspace:*",
+    "@pack/typescript-config": "workspace:*",
+    "@testing-library/dom": "10.4.0",
+    "@testing-library/react": "16.3.0",
+    "@types/node": "catalog:dev",
+    "@types/react": "catalog:dev",
+    "@types/react-dom": "catalog:dev",
+    "jsdom": "26.1.0",
+    "tailwindcss": "catalog:",
+    "vitest": "catalog:testing"
+  }
+}

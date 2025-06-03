@@ -1,0 +1,25 @@
+{
+  "name": "@pack/cms",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "basehub dev",
+    "build": "basehub build",
+    "analyze": "basehub",
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  },
+  "dependencies": {
+    "@t3-oss/env-nextjs": "catalog:",
+    "basehub": "8.2.7",
+    "react": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@pack/typescript-config": "workspace:*",
+    "@types/node": "catalog:dev",
+    "@types/react": "catalog:dev",
+    "@types/react-dom": "catalog:dev",
+    "next": "catalog:"
+  }
+}

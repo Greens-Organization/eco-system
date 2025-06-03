@@ -1,0 +1,25 @@
+{
+  "name": "@pack/analytics",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  },
+  "dependencies": {
+    "@next/third-parties": "15.4.0-canary.51",
+    "@t3-oss/env-nextjs": "catalog:",
+    "@vercel/analytics": "1.5.0",
+    "posthog-js": "1.246.0",
+    "posthog-node": "4.17.2",
+    "react": "catalog:",
+    "server-only": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@pack/typescript-config": "workspace:*",
+    "@types/node": "catalog:dev",
+    "@types/react": "catalog:dev",
+    "@types/react-dom": "catalog:dev"
+  }
+}
