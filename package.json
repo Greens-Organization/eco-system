@@ -1,8 +1,8 @@
 {
-  "name": "grn-ecosystem-next",
-  "version": "0.1.0",
+  "name": "eco-system",
+  "version": "1.0.0",
   "module": "index.ts",
-  "license": "UNDEFINED",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "workspaces:link": "bun ./scripts/install/bun-workspace-linker.ts",
@@ -25,7 +25,7 @@
   "engines": {
     "node": ">=20"
   },
-  "packageManager": "bun@1.2.14",
+  "packageManager": "bun@1.2.16",
   "workspaces": {
     "packages": ["packages/*", "apps/*"],
     "catalog": {

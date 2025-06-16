@@ -1,0 +1,29 @@
+{
+  "title": "Packages",
+  "description": "Core packages and utilities",
+  "root": true,
+  "icon": "Package",
+  "pages": [
+    "ai",
+    "analytics",
+    "authentication",
+    "cms",
+    "collaboration",
+    "cron",
+    "database",
+    "design-system",
+    "email",
+    "flags",
+    "i18n",
+    "observability",
+    "next-config",
+    "notifications",
+    "payments",
+    "security",
+    "seo",
+    "storage",
+    "testing",
+    "toolbar",
+    "webhooks"
+  ]
+}

@@ -7,7 +7,7 @@ type MetadataGenerator = Omit<Metadata, 'description' | 'title'> & {
   image?: string;
 };
 
-const applicationName = 'grn-ecosystem';
+const applicationName = 'eco-system';
 const author: Metadata['authors'] = {
   name: 'GRN Group',
   url: 'https://g.grngroup.net/',

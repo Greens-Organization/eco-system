@@ -1,0 +1,30 @@
+{
+  "title": "Migrations",
+  "description": "Migration guides and tutorials",
+  "root": true,
+  "icon": "ArrowRight",
+  "pages": [
+    "---Authentication---",
+    "authentication/better-auth",
+    "---CMS---",
+    "cms/content-collections",
+    "---Database---",
+    "database/drizzle",
+    "database/edgedb",
+    "database/planetscale",
+    "database/prisma-postgres",
+    "database/supabase",
+    "database/turso",
+    "---Documentation---",
+    "documentation/fumadocs",
+    "---Flags---",
+    "flags/hypertune",
+    "---Formatting---",
+    "formatting/eslint",
+    "---Payments---",
+    "payments/lemon-squeezy",
+    "payments/paddle-billing",
+    "---Storage---",
+    "storage/upload-thing"
+  ]
+}

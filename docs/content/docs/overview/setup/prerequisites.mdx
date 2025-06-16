@@ -1,0 +1,74 @@
+---
+title: Prerequisites
+description: How to configure your development environment for eco-system.
+---
+
+## Operating System
+
+eco-system is designed to work on macOS, Linux and Windows. While eco-system itself is platform-agnostic, the tooling and dependencies we use have different requirements.
+
+We've tested and confirmed that eco-system works on the following combinations of operating systems, Bun versions and eco-system versions:
+
+| Operating system | eco-system version | Bun version | Notes |
+| ---------------- | ------------------------- | ----------- | ----- |
+| macOS Sequoia 15.0.1 (24A348) | 1.0.0 | 1.2.x | Recommended for development |
+| Ubuntu 24.04 Arm64 | 1.0.0 | 1.2.x | Full compatibility |
+| Fedora, Release 41 | 1.0.0 | 1.2.x | Well tested |
+| Windows 11 Pro 24H2 (26100.2033) | 1.0.0 | 1.2.x | Turborepo + Bun fully supported |
+
+Bun has excellent cross-platform support and eliminates many of the compatibility issues traditionally seen with Node.js package managers.
+
+## Package Manager
+
+eco-system uses [Bun](https://bun.sh/) as the primary package manager, providing significantly faster installation times and better development experience compared to traditional package managers.
+
+### Bun Installation Quick Reference
+
+**macOS and Linux:**
+```bash
+curl -fsSL https://bun.sh/install | bash
+```
+
+**Windows:**
+```bash
+powershell -c "irm bun.sh/install.ps1 | iex"
+```
+
+**Verify Installation:**
+```bash
+bun --version
+```
+
+## Development Tools
+
+### Mintlify CLI
+
+We use the Mintlify CLI to preview the [docs](/apps/docs) locally with `bun x`.
+
+## Required Accounts
+
+eco-system relies on various SaaS products for production-ready features. You will need to create accounts with the following services and set the API keys in your [environment variables](/setup/env):
+
+### Authentication & Security
+- [Clerk](https://clerk.com) - User authentication and management
+- [Arcjet](https://arcjet.com) - Application security and protection
+
+### Analytics & Monitoring
+- [Google Analytics](https://developers.google.com/analytics) - Web analytics
+- [PostHog](https://posthog.com) - Product analytics and feature flags
+- [Sentry](https://sentry.io) - Error tracking and performance monitoring
+
+### Infrastructure & Communication
+- [BetterStack](https://betterstack.com) - Logging and uptime monitoring
+- [Resend](https://resend.com) - Transactional email delivery
+
+### Development Recommendations
+
+For the best development experience with eco-system:
+
+1. **Use the latest Bun version** - Regular updates include performance improvements
+2. **Enable Bun shell** - Set `shell: "bun"` in your terminal for faster script execution
+3. **Configure your IDE** - Ensure TypeScript support is enabled for the best experience
+4. **Set up workspace aliases** - Use Bun workspaces for easier package management
+
+Most services offer generous free tiers that are sufficient for development and testing purposes.

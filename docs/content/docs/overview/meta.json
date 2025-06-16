@@ -1,0 +1,20 @@
+{
+  "title": "Getting Started",
+  "description": "Getting started and introduction",
+  "icon": "Eye",
+  "root": true,
+  "pages": [
+    "---Introduction---",
+    "index",
+    "philosophy",
+    "structure",
+    "faq",
+    "---Setup---",
+    "setup/prerequisites",
+    "setup/installation",
+    "setup/env",
+    "---Deployment---",
+    "deployment/vercel",
+    "deployment/netlify"
+  ]
+}
