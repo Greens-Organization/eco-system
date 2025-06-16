@@ -11,6 +11,7 @@ const config = {
     },
   },
 
+  // biome-ignore lint/suspicious/useAwait: "redirects is async"
   redirects: async () => {
     return [
       {
