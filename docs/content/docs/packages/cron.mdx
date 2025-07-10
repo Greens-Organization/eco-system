@@ -16,7 +16,7 @@ Additionally, while you can add cron jobs to any app, we use the `api` app to ke
 You can add new functions by creating the relevant `route.ts` files in the `apps/api/app/cron` folder. While you can put them anywhere, we use the aptly named `cron` folder to hold our endpoints designed to run as cron jobs. For example:
 
 ```ts apps/api/app/cron/[your-function]/route.ts
-import { database } from '@pack/database';
+import { database } from '@pack/db';
 
 // Must use GET for Vercel cron jobs
 export const GET = async () => {
