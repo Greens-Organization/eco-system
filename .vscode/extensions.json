@@ -5,6 +5,6 @@
     "Prisma.prisma",
     "unifiedjs.vscode-mdx",
     "oven.bun-vscode",
-    "tamasfe.even-better-toml",
+    "tamasfe.even-better-toml"
   ]
 }
