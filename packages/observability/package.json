@@ -7,7 +7,7 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@logtail/next": "0.2.0",
+    "@logtail/next": "0.2.1",
     "@sentry/nextjs": "catalog:",
     "@t3-oss/env-nextjs": "catalog:",
     "react": "catalog:",

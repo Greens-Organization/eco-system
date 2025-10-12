@@ -10,11 +10,11 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@prisma/adapter-neon": "6.8.2",
-    "@prisma/client": "6.8.2",
+    "@prisma/adapter-neon": "6.17.1",
+    "@prisma/client": "6.17.1",
     "@t3-oss/env-nextjs": "catalog:",
     "server-only": "catalog:",
-    "ws": "8.18.2",
+    "ws": "8.18.3",
     "zod": "catalog:"
   },
   "devDependencies": {

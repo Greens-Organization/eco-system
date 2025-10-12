@@ -10,7 +10,7 @@
     "@pack/auth": "workspace:*",
     "@t3-oss/env-nextjs": "catalog:",
     "server-only": "catalog:",
-    "svix": "1.66.0",
+    "svix": "1.77.0",
     "zod": "catalog:"
   },
   "devDependencies": {

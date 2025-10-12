@@ -7,9 +7,9 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@ai-sdk/openai": "1.3.22",
+    "@ai-sdk/openai": "2.0.49",
     "@t3-oss/env-nextjs": "catalog:",
-    "ai": "4.3.16",
+    "ai": "5.0.68",
     "react": "catalog:",
     "react-markdown": "10.1.0",
     "tailwind-merge": "catalog:",

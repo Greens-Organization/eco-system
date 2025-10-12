@@ -7,17 +7,17 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@react-email/components": "0.0.41",
+    "@react-email/components": "0.5.6",
     "@t3-oss/env-nextjs": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "resend": "4.5.1",
+    "resend": "6.1.2",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@pack/typescript-config": "workspace:*",
-    "@types/node": "22.15.21",
-    "@types/react": "19.1.5",
-    "@types/react-dom": "19.1.5"
+    "@types/node": "catalog:dev",
+    "@types/react": "catalog:dev",
+    "@types/react-dom": "catalog:dev"
   }
 }

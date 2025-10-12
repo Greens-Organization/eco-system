@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@arcjet/next": "1.0.0-beta.7",
+    "@arcjet/next": "1.0.0-beta.13",
     "@pack/cms": "workspace:*",
     "@pack/design-system": "workspace:*",
     "@pack/email": "workspace:*",
@@ -25,17 +25,17 @@
     "@sentry/nextjs": "catalog:",
     "@t3-oss/env-nextjs": "catalog:",
     "date-fns": "catalog:",
-    "fumadocs-core": "15.4.2",
-    "import-in-the-middle": "1.14.0",
-    "lucide-react": "0.511.0",
+    "fumadocs-core": "15.8.5",
+    "import-in-the-middle": "1.15.0",
+    "lucide-react": "0.545.0",
     "mdx-bundler": "10.1.1",
     "next": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-wrap-balancer": "1.1.1",
-    "require-in-the-middle": "7.5.2",
-    "sharp": "0.34.2",
-    "shiki": "3.4.2",
+    "require-in-the-middle": "8.0.0",
+    "sharp": "0.34.4",
+    "shiki": "3.13.0",
     "zod": "catalog:"
   },
   "devDependencies": {

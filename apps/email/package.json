@@ -11,9 +11,9 @@
   },
   "dependencies": {
     "@pack/email": "workspace:*",
-    "@react-email/components": "0.0.41",
+    "@react-email/components": "0.5.6",
     "react": "catalog:",
-    "react-email": "4.0.15"
+    "react-email": "4.3.0"
   },
   "devDependencies": {
     "@pack/typescript-config": "workspace:*",

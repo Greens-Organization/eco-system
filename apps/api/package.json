@@ -26,7 +26,7 @@
     "next": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "svix": "1.66.0",
+    "svix": "1.77.0",
     "vitest": "catalog:testing",
     "zod": "catalog:"
   },
@@ -35,6 +35,6 @@
     "@types/node": "catalog:dev",
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",
-    "concurrently": "^9.1.2"
+    "concurrently": "9.2.1"
   }
 }
