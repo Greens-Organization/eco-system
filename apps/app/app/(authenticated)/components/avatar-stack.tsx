@@ -1,23 +1,14 @@
 'use client';
 
-import { useOthers, useSelf } from '@pack/collaboration/hooks';
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from '@pack/design-system/components/ui/avatar';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@pack/design-system/components/ui/tooltip';
+import { Tooltip, TooltipTrigger,TooltipContent,TooltipPositioner } from '@pack/design-system/components/ui/base-tooltip';
+import { Avatar,AvatarFallback,AvatarImage } from '@pack/design-system/components/ui/base-avatar';
 
 type PresenceAvatarProps = {
   info?: Liveblocks['UserMeta']['info'];
 };
 
 const PresenceAvatar = ({ info }: PresenceAvatarProps) => (
-  <Tooltip delayDuration={0}>
+  <Tooltip >
     <TooltipTrigger>
       <Avatar className="h-7 w-7 bg-secondary ring-1 ring-background">
         <AvatarImage src={info?.avatar} alt={info?.name} />
@@ -26,14 +17,15 @@ const PresenceAvatar = ({ info }: PresenceAvatarProps) => (
         </AvatarFallback>
       </Avatar>
     </TooltipTrigger>
-    <TooltipContent collisionPadding={4}>
+    <TooltipPositioner collisionPadding={4}>
+    <TooltipContent >
       <p>{info?.name ?? 'Unknown'}</p>
     </TooltipContent>
+    </TooltipPositioner>
   </Tooltip>
 );
 
 export const AvatarStack = () => {
-  const others = useOthers();
   const self = useSelf();
   const hasMoreUsers = others.length > 3;
 

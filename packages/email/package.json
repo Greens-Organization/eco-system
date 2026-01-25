@@ -7,11 +7,11 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@react-email/components": "0.5.6",
+    "@react-email/components": "1.0.6",
     "@t3-oss/env-nextjs": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "resend": "6.1.2",
+    "resend": "6.8.0",
     "zod": "catalog:"
   },
   "devDependencies": {

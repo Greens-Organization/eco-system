@@ -1,8 +1,7 @@
 import { AnalyticsProvider } from '@pack/analytics';
 import { AuthProvider } from '@pack/auth/provider';
 import type { ThemeProviderProps } from 'next-themes';
-import { Toaster } from './components/ui/sonner';
-import { TooltipProvider } from './components/ui/tooltip';
+import { TooltipProvider } from './components/ui/base-tooltip';
 import { ThemeProvider } from './providers/theme';
 
 type DesignSystemProviderProperties = ThemeProviderProps & {
@@ -22,7 +21,6 @@ export const DesignSystemProvider = ({
     <AuthProvider privacyUrl={privacyUrl} termsUrl={termsUrl} helpUrl={helpUrl}>
       <AnalyticsProvider>
         <TooltipProvider>{children}</TooltipProvider>
-        <Toaster />
       </AnalyticsProvider>
     </AuthProvider>
   </ThemeProvider>

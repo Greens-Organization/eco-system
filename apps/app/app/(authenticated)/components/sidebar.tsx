@@ -34,7 +34,6 @@ import {
   useSidebar,
 } from '@pack/design-system/components/ui/sidebar';
 import { cn } from '@pack/design-system/lib/utils';
-import { NotificationsTrigger } from '@pack/notifications/components/trigger';
 import {
   AnchorIcon,
   BookOpenIcon,

@@ -1,12 +1,6 @@
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@pack/design-system/components/ui/breadcrumb';
-import { Separator } from '@pack/design-system/components/ui/separator';
+
+import { Separator } from '@pack/design-system/components/ui/base-separator';
+import {Breadcrumb, BreadcrumbList,BreadcrumbSeparator,BreadcrumbItem,BreadcrumbLink,BreadcrumbPage } from '@pack/design-system/components/ui/base-breadcrumb';
 import { SidebarTrigger } from '@pack/design-system/components/ui/sidebar';
 import { Fragment, type ReactNode } from 'react';
 

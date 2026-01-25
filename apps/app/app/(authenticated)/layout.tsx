@@ -1,8 +1,5 @@
 import { env } from '@/env';
-import { auth, currentUser } from '@pack/auth/server';
-import { SidebarProvider } from '@pack/design-system/components/ui/sidebar';
-import { showBetaFeature } from '@pack/feature-flags';
-import { NotificationsProvider } from '@pack/notifications/components/provider';
+import { auth } from '@pack/auth/server';
 import { secure } from '@pack/security';
 import type { ReactNode } from 'react';
 import { PostHogIdentifier } from './components/posthog-identifier';
@@ -26,7 +23,6 @@ const AppLayout = async ({ children }: AppLayoutProperties) => {
   }
 
   return (
-    <NotificationsProvider userId={user.id}>
       <SidebarProvider>
         <GlobalSidebar>
           {betaFeature && (
@@ -38,7 +34,6 @@ const AppLayout = async ({ children }: AppLayoutProperties) => {
         </GlobalSidebar>
         <PostHogIdentifier />
       </SidebarProvider>
-    </NotificationsProvider>
   );
 };
 
