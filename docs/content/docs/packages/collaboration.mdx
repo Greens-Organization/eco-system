@@ -1,6 +1,6 @@
 ---
 title: Collaboration
-description: next-forge is multiplayer out of the box.
+description: eco-system is multiplayer out of the box.
 ---
 
 <Authors data={[{
@@ -70,12 +70,12 @@ import { useStorage, useMutation } from "@liveblocks/react/suspense";
 function CollaborativeInput() {
   // Get the input's value
   const inputValue = useStorage((root) => root.inputValue);
-  
+
   // Set the input's value
   const setValue = useMutation(({ storage }), newValue) => {
     storage.set("inputValue", newValue);
   }, []);
-  
+
   return <input value={inputValue} onChange={(e) => setValue(e.target.value)} />;
 }
 ```

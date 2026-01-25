@@ -7,13 +7,12 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "lodash.merge": "4.6.2",
+    "es-toolkit": "catalog:",
     "react": "catalog:",
     "schema-dts": "1.1.5"
   },
   "devDependencies": {
     "@pack/typescript-config": "workspace:*",
-    "@types/lodash.merge": "4.6.9",
     "@types/node": "catalog:dev",
     "@types/react": "catalog:dev",
     "next": "catalog:"

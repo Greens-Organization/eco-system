@@ -3,7 +3,7 @@ title: Storage
 description: How to store files in your application.
 ---
 
-next-forge has a `storage` package that provides a simple wrapper around [Vercel Blob](https://vercel.com/docs/storage/vercel-blob) for file storage.
+eco-system has a `storage` package that provides a simple wrapper around [Vercel Blob](https://vercel.com/docs/storage/vercel-blob) for file storage.
 
 ## Usage
 
@@ -14,7 +14,7 @@ To use the `storage` package using Server Actions, follow the instructions on [V
 ```tsx page.tsx
 import { put } from '@pack/storage';
 import { revalidatePath } from 'next/cache';
- 
+
 export async function Form() {
   async function uploadImage(formData: FormData) {
     'use server';
@@ -25,7 +25,7 @@ export async function Form() {
     revalidatePath('/');
     return blob;
   }
- 
+
   return (
     <form action={uploadImage}>
       <label htmlFor="image">Image</label>
@@ -44,33 +44,33 @@ For client side usage, check out the [Vercel's client upload documentation](http
 
 ```tsx page.tsx
 'use client';
- 
+
 import { type PutBlobResult } from '@pack/storage';
 import { upload } from '@pack/storage/client';
 import { useState, useRef } from 'react';
- 
+
 export default function AvatarUploadPage() {
   const inputFileRef = useRef<HTMLInputElement>(null);
   const [blob, setBlob] = useState<PutBlobResult | null>(null);
   return (
     <>
       <h1>Upload Your Avatar</h1>
- 
+
       <form
         onSubmit={async (event) => {
           event.preventDefault();
- 
+
           if (!inputFileRef.current?.files) {
             throw new Error('No file selected');
           }
- 
+
           const file = inputFileRef.current.files[0];
- 
+
           const newBlob = await upload(file.name, file, {
             access: 'public',
             handleUploadUrl: '/api/avatar/upload',
           });
- 
+
           setBlob(newBlob);
         }}
       >

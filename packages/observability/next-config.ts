@@ -1,10 +1,12 @@
 import { withLogtail } from '@logtail/next';
 import { withSentryConfig } from '@sentry/nextjs';
-import { chaves } from './chaves';
+import { packEnv } from './pack-env';
+
+const _env = packEnv();
 
 export const sentryConfig: Parameters<typeof withSentryConfig>[1] = {
-  org: chaves().SENTRY_ORG,
-  project: chaves().SENTRY_PROJECT,
+  org: _env.SENTRY_ORG,
+  project: _env.SENTRY_PROJECT,
 
   // Only print logs for uploading source maps in CI
   silent: !process.env.CI,

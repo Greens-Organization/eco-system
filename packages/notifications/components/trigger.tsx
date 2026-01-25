@@ -4,9 +4,11 @@ import {
   NotificationFeedPopover,
   NotificationIconButton,
 } from '@knocklabs/react';
-import { useRef, useState } from 'react';
 import type { RefObject } from 'react';
-import { chaves } from '../chaves';
+import { useRef, useState } from 'react';
+import { packEnv } from '../pack-env';
+
+const _env = packEnv();
 
 // Required CSS import, unless you're overriding the styling
 import '@knocklabs/react/dist/index.css';
@@ -24,7 +26,7 @@ export const NotificationsTrigger = () => {
     setIsVisible(false);
   };
 
-  if (!chaves().NEXT_PUBLIC_KNOCK_API_KEY) {
+  if (!_env.NEXT_PUBLIC_KNOCK_API_KEY) {
     return null;
   }
 

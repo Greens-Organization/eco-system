@@ -1,6 +1,8 @@
 import 'server-only';
 import { Liveblocks as LiveblocksNode } from '@liveblocks/node';
-import { chaves } from './chaves';
+import { packEnv } from './pack-env';
+
+const _env = packEnv();
 
 type AuthenticateOptions = {
   userId: string;
@@ -8,7 +10,7 @@ type AuthenticateOptions = {
   userInfo: Liveblocks['UserMeta']['info'];
 };
 
-const secret = chaves().LIVEBLOCKS_SECRET;
+const secret = _env.LIVEBLOCKS_SECRET;
 
 export const authenticate = async ({
   userId,

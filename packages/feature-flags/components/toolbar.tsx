@@ -1,4 +1,6 @@
 import { VercelToolbar } from '@vercel/toolbar/next';
-import { chaves } from '../chaves';
+import { packEnv } from '../pack-env';
 
-export const Toolbar = () => (chaves().FLAGS_SECRET ? <VercelToolbar /> : null);
+const _env = packEnv();
+
+export const Toolbar = () => (_env.FLAGS_SECRET ? <VercelToolbar /> : null);

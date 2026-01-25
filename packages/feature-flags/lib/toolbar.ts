@@ -1,5 +1,7 @@
 import { withVercelToolbar } from '@vercel/toolbar/plugins/next';
-import { chaves } from '../chaves';
+import { packEnv } from '../pack-env';
+
+const _env = packEnv();
 
 export const withToolbar = (config: object) =>
-  chaves().FLAGS_SECRET ? withVercelToolbar()(config) : config;
+  _env.FLAGS_SECRET ? withVercelToolbar()(config) : config;

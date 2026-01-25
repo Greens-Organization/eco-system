@@ -1,0 +1,37 @@
+services:
+  pg:
+    image: postgres:18.1-alpine
+    container_name: eco-system-db-local
+    ports:
+      - 5432:5432
+    networks:
+      - eco_system_network
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=postgres
+    volumes:
+      - "pg:/var/lib/postgresql/data"
+    restart: unless-stopped
+  redis:
+    image: redis:7-alpine
+    container_name: eco-system-redis-local
+    ports:
+      - 6379:6379
+    networks:
+      - eco_system_network
+    environment:
+      - REDIS_PASSWORD=redis
+    command: redis-server --requirepass eco_system_redis
+    volumes:
+      - "redis_data:/data"
+    restart: unless-stopped
+
+volumes:
+  pg: {}
+  redis_data: {}
+
+networks:
+  eco_system_network:
+    name: eco_system_network
+    external: true

@@ -1,8 +1,10 @@
 import { basehub as basehubClient, fragmentOn } from 'basehub';
-import { chaves } from './chaves';
+import { packEnv } from './pack-env';
+
+const _env = packEnv();
 
 const basehub = basehubClient({
-  token: chaves().BASEHUB_TOKEN,
+  token: _env.BASEHUB_TOKEN,
 });
 
 /* -------------------------------------------------------------------------------------------------

@@ -5,11 +5,13 @@
  */
 
 import { init, replayIntegration } from '@sentry/nextjs';
-import { chaves } from './chaves';
+import { packEnv } from './pack-env';
+
+const _env = packEnv();
 
 export const initializeSentry = (): ReturnType<typeof init> =>
   init({
-    dsn: chaves().NEXT_PUBLIC_SENTRY_DSN,
+    dsn: _env.NEXT_PUBLIC_SENTRY_DSN,
 
     // Adjust this value in production, or use tracesSampler for greater control
     tracesSampleRate: 1,

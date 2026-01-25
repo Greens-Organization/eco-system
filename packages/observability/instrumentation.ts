@@ -1,8 +1,10 @@
 import { init } from '@sentry/nextjs';
-import { chaves } from './chaves';
+import { packEnv } from './pack-env';
+
+const _env = packEnv();
 
 const opts = {
-  dsn: chaves().NEXT_PUBLIC_SENTRY_DSN,
+  dsn: _env.NEXT_PUBLIC_SENTRY_DSN,
 };
 
 export const initializeSentry = () => {

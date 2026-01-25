@@ -2,30 +2,24 @@
   "name": "api",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"npm:next\" \"npm:stripe\"",
-    "next": "next dev -p 3002 --turbopack",
-    "build": "next build",
-    "start": "next start",
-    "analyze": "ANALYZE=true npm run build",
-    "test": "NODE_ENV=test vitest run",
-    "stripe": "stripe listen --forward-to localhost:3002/webhooks/stripe",
+    "dev": "bun run --hot ./src/server.ts",
+    "build": "bun build src/server.ts --compile --sourcemap --outfile=api",
+    "preview": "./api",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
+    "@hono/zod-openapi": "1.2.0",
     "@pack/analytics": "workspace:*",
     "@pack/auth": "workspace:*",
     "@pack/db": "workspace:*",
-    "@pack/design-system": "workspace:*",
-    "@pack/next-config": "workspace:*",
     "@pack/observability": "workspace:*",
     "@pack/payments": "workspace:*",
     "@pack/testing": "workspace:*",
+    "@scalar/hono-api-reference": "0.9.36",
     "@sentry/nextjs": "catalog:",
     "@t3-oss/env-nextjs": "catalog:",
-    "next": "catalog:",
-    "react": "catalog:",
-    "react-dom": "catalog:",
+    "hono": "4.11.5",
     "svix": "1.77.0",
     "vitest": "catalog:testing",
     "zod": "catalog:"
@@ -33,8 +27,6 @@
   "devDependencies": {
     "@pack/typescript-config": "workspace:*",
     "@types/node": "catalog:dev",
-    "@types/react": "catalog:dev",
-    "@types/react-dom": "catalog:dev",
     "concurrently": "9.2.1"
   }
 }

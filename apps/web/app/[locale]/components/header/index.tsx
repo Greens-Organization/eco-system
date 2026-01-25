@@ -1,6 +1,5 @@
 'use client';
 
-import { env } from '@/env';
 import { ModeToggle } from '@pack/design-system/components/mode-toggle';
 import { Button } from '@pack/design-system/components/ui/button';
 import {
@@ -11,12 +10,12 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from '@pack/design-system/components/ui/navigation-menu';
+import type { Dictionary } from '@pack/i18n';
 import { Menu, MoveRight, X } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
-
-import type { Dictionary } from '@pack/i18n';
-import Image from 'next/image';
+import { env } from '@/env';
 import { LanguageSwitcher } from './language-switcher';
 import Logo from './logo.svg';
 
@@ -122,7 +121,7 @@ export const Header = ({ dictionary }: HeaderProps) => {
             height={24}
             className="dark:invert"
           />
-          <p className="whitespace-nowrap font-semibold">next-forge</p>
+          <p className="whitespace-nowrap font-semibold">eco-system</p>
         </div>
         <div className="flex w-full justify-end gap-4">
           <Button variant="ghost" className="hidden md:inline" asChild>

@@ -1,6 +1,8 @@
 import { Knock } from '@knocklabs/node';
-import { chaves } from './chaves';
+import { packEnv } from './pack-env';
 
-const key = chaves().KNOCK_SECRET_API_KEY;
+const _env = packEnv();
+
+const key = _env.KNOCK_SECRET_API_KEY;
 
 export const notifications = new Knock({ apiKey: key });

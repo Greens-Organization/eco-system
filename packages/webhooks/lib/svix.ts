@@ -1,9 +1,11 @@
 import 'server-only';
 import { auth } from '@pack/auth/server';
 import { Svix } from 'svix';
-import { chaves } from '../chaves';
+import { packEnv } from '../pack-env';
 
-const svixToken = chaves().SVIX_TOKEN;
+const _env = packEnv();
+
+const svixToken = _env.SVIX_TOKEN;
 
 export const send = async (eventType: string, payload: object) => {
   if (!svixToken) {

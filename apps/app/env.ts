@@ -1,14 +1,14 @@
-import { chaves as analytics } from '@pack/analytics/chaves';
-import { chaves as auth } from '@pack/auth/chaves';
-import { chaves as collaboration } from '@pack/collaboration/chaves';
-import { chaves as database } from '@pack/db/chaves';
-import { chaves as email } from '@pack/email/chaves';
-import { chaves as flags } from '@pack/feature-flags/chaves';
-import { chaves as core } from '@pack/next-config/chaves';
-import { chaves as notifications } from '@pack/notifications/chaves';
-import { chaves as observability } from '@pack/observability/chaves';
-import { chaves as security } from '@pack/security/chaves';
-import { chaves as webhooks } from '@pack/webhooks/chaves';
+import { packEnv as analytics } from '@pack/analytics/pack-env';
+import { packEnv as auth } from '@pack/auth/pack-env';
+import { packEnv as collaboration } from '@pack/collaboration/pack-env';
+import { packEnv as database } from '@pack/db/pack-env';
+import { packEnv as email } from '@pack/email/pack-env';
+import { packEnv as flags } from '@pack/feature-flags/pack-env';
+import { packEnv as core } from '@pack/next-config/pack-env';
+import { packEnv as notifications } from '@pack/notifications/pack-env';
+import { packEnv as observability } from '@pack/observability/pack-env';
+import { packEnv as security } from '@pack/security/pack-env';
+import { packEnv as webhooks } from '@pack/webhooks/pack-env';
 import { createEnv } from '@t3-oss/env-nextjs';
 
 export const env = createEnv({

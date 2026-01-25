@@ -1,9 +1,11 @@
 import 'server-only';
-import { chaves } from '../chaves';
+import { packEnv } from '../pack-env';
 import type { BetterStackResponse } from './types';
 
-const apiKey = chaves().BETTERSTACK_API_KEY;
-const url = chaves().BETTERSTACK_URL;
+const _env = packEnv();
+
+const apiKey = _env.BETTERSTACK_API_KEY;
+const url = _env.BETTERSTACK_URL;
 
 export const Status = async () => {
   if (!apiKey || !url) {

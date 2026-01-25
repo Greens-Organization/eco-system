@@ -1,4 +1,6 @@
 import { Resend } from 'resend';
-import { chaves } from './chaves';
+import { packEnv } from './pack-env';
 
-export const resend = new Resend(chaves().RESEND_TOKEN);
+const _env = packEnv();
+
+export const resend = new Resend(_env.RESEND_TOKEN);

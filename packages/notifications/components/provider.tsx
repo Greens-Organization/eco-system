@@ -2,10 +2,12 @@
 
 import { KnockFeedProvider, KnockProvider } from '@knocklabs/react';
 import type { ReactNode } from 'react';
-import { chaves } from '../chaves';
+import { packEnv } from '../pack-env';
 
-const knockApiKey = chaves().NEXT_PUBLIC_KNOCK_API_KEY;
-const knockFeedChannelId = chaves().NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID;
+const _env = packEnv();
+
+const knockApiKey = _env.NEXT_PUBLIC_KNOCK_API_KEY;
+const knockFeedChannelId = _env.NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID;
 
 type NotificationsProviderProps = {
   children: ReactNode;

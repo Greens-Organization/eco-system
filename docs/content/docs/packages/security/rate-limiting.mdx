@@ -33,7 +33,7 @@ eco-system has a `rate-limit` package powered by [`@upstash/ratelimit`](https://
 
 Rate limiting is enabled for the `web` package contact form automatically by the existence of a `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` environment variable. If enabled, the contact form will limit the number of requests to 1 per day per IP address.
 
-To get your environment variables, you can sign up at [Upstash Console](https://console.upstash.com) and create a Redis KV database. You can then find the REST URL and REST token in the database details page. 
+To get your environment variables, you can sign up at [Upstash Console](https://console.upstash.com) and create a Redis KV database. You can then find the REST URL and REST token in the database details page.
 
 You can then paste these environment variables each of the [environment variables](/env) files.
 
@@ -56,7 +56,7 @@ export const GET = async (request: NextRequest) => {
 
   if (!success) {
     return new Response(
-      JSON.stringify({ error: "Too many requests" }), 
+      JSON.stringify({ error: "Too many requests" }),
       { status: 429 }
     );
   }
@@ -79,7 +79,7 @@ You can learn more about the different rate limiting strategies other features i
 export const ratelimit = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(10, "10 s"),
-  prefix: "next-forge",
+  prefix: "eco-system",
 })
 ```
 
@@ -93,16 +93,16 @@ import { ratelimit } from "@pack/rate-limit";
 export const GET = async (request: NextRequest) => {
   // Use any identifier like username, API key, or IP address
   const identifier = "your-identifier";
-  
+
   const { success, limit, remaining } = await ratelimit.limit(identifier);
-  
+
   if (!success) {
     return new Response(
-      JSON.stringify({ error: "Too many requests" }), 
+      JSON.stringify({ error: "Too many requests" }),
       { status: 429 }
     );
   }
-  
+
   // Continue with your API logic
 };
 ```
@@ -121,7 +121,7 @@ To enable analytics for your rate limiting, pass the `analytics` configuration t
 export const ratelimit = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(10, "10 s"),
-  prefix: "next-forge",
+  prefix: "eco-system",
   analytics: true, // Enable Upstash analytics
 })
 ```
@@ -145,7 +145,7 @@ In the dashboard, you can find information on how many requests were accepted, h
     Use meaningful identifiers for rate limiting like:
 
     - User IDs for authenticated requests
-    - API keys for external integrations  
+    - API keys for external integrations
     - IP addresses for public endpoints
   </Step>
 
@@ -173,5 +173,3 @@ In the dashboard, you can find information on how many requests were accepted, h
 - **Multi-Region Support**: Distribute rate limiting across multiple Redis instances for global applications
 
 For detailed information about these features and their implementation, refer to the [Upstash Ratelimit documentation](https://upstash.com/docs/redis/sdks/ratelimit-ts/overview).
-
-

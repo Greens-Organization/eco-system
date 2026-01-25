@@ -1,17 +1,19 @@
 import { Ratelimit, type RatelimitConfig } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
-import { chaves } from './chaves';
+import { packEnv } from './pack-env';
+
+const _env = packEnv();
 
 export const redis = new Redis({
-  url: chaves().UPSTASH_REDIS_REST_URL,
-  token: chaves().UPSTASH_REDIS_REST_TOKEN,
+  url: _env.UPSTASH_REDIS_REST_URL,
+  token: _env.UPSTASH_REDIS_REST_TOKEN,
 });
 
 export const createRateLimiter = (props: Omit<RatelimitConfig, 'redis'>) =>
   new Ratelimit({
     redis,
     limiter: props.limiter ?? Ratelimit.slidingWindow(10, '10 s'),
-    prefix: props.prefix ?? 'next-forge',
+    prefix: props.prefix ?? 'eco-system',
   });
 
 export const { slidingWindow } = Ratelimit;

@@ -1,4 +1,16 @@
+# whether to enable telemetry
+telemetry = false
+
+[run]
+# Force bun runtime for all scripts (replaces node shebang with bun)
+bun = true
+
 [install]
+
+linker = "hoisted"
+
+# use isolated installs to prevent duplicate dependencies. See more in https://bun.com/docs/install/isolated
+# publicHoistPattern = []
 
 # whether to install optionalDependencies
 optional = true

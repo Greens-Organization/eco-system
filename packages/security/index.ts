@@ -5,9 +5,11 @@ import arcjet, {
   request,
   shield,
 } from '@arcjet/next';
-import { chaves } from './chaves';
+import { packEnv } from './pack-env';
 
-const arcjetKey = chaves().ARCJET_KEY;
+const _env = packEnv();
+
+const arcjetKey = _env.ARCJET_KEY;
 
 export const secure = async (
   allow: (ArcjetWellKnownBot | ArcjetBotCategory)[],

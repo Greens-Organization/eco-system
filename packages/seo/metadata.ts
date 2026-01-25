@@ -1,4 +1,4 @@
-import merge from 'lodash.merge';
+import { merge } from 'es-toolkit/object';
 import type { Metadata } from 'next';
 
 type MetadataGenerator = Omit<Metadata, 'description' | 'title'> & {

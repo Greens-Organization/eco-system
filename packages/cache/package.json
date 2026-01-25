@@ -1,0 +1,19 @@
+{
+  "name": "@pack/cache",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  },
+  "dependencies": {
+    "zod": "catalog:",
+    "@t3-oss/env-nextjs": "catalog:",
+    "bullmq": "5.66.5",
+    "ioredis": "5.8.2"
+  },
+  "devDependencies": {
+    "@pack/typescript-config": "workspace:*",
+    "@types/node": "catalog:dev"
+  }
+}
