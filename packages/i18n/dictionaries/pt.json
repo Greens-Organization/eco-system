@@ -210,6 +210,15 @@
       "settings": "Configurações",
       "help": "Ajuda"
     },
+    "sidebar": {
+      "general": "Geral",
+      "customers": "Clientes",
+      "employees": "Colaboradores",
+      "configurations": "Configurações",
+      "changeTheme": "Mudar tema",
+      "profile": "Perfil",
+      "loading": "Carregando..."
+    },
     "dashboard": {
       "title": "Acme Inc",
       "description": "Minha aplicação.",

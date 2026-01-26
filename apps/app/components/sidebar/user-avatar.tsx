@@ -25,12 +25,15 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { authClient } from '@/lib/auth';
+import { useTranslation, useLocale } from '@/lib/i18n';
 
 export function UserAvatar() {
   const router = useRouter();
   const { isMobile } = useSidebar();
   const { theme, setTheme } = useTheme();
   const { data, isPending } = authClient.useSession();
+  const t = useTranslation();
+  const locale = useLocale();
   const userData = data?.user;
 
   const avatarSrc = userData?.image
@@ -50,7 +53,7 @@ export function UserAvatar() {
               <AvatarFallback className="animate-pulse bg-muted-foreground/30"></AvatarFallback>
             </Avatar>
             <div className="ms-2 flex-1 animate-pulse text-left text-sm leading-tight">
-              <span className="truncate font-medium">Carregando...</span>
+              <span className="truncate font-medium">{t.app.sidebar.loading}</span>
             </div>
           </SidebarMenuButton>
         </SidebarMenuItem>
@@ -102,23 +105,23 @@ export function UserAvatar() {
                   aria-hidden="true"
                 />
               )}
-              <span>Mudar tema</span>
+              <span>{t.app.sidebar.changeTheme}</span>
             </DropdownMenuItem>
               <DropdownMenuItem className="px-1" render={
-              <Link href="/perfil" className="flex items-center gap-3">
+              <Link href={`/${locale}/perfil`} className="flex items-center gap-3">
                 <User
                   size={20}
                   className="text-muted-foreground/70"
                   aria-hidden="true"
                 />
-                <span>Perfil</span>
+                <span>{t.app.sidebar.profile}</span>
               </Link>
             }/>
             <DropdownMenuItem
               className="gap-3 px-1"
               onClick={async () => {
                 await authClient.signOut({ fetchOptions: {} });
-                router.push('/entrar');
+                router.push(`/${locale}/entrar`);
               }}
             >
               <LogOut
@@ -126,7 +129,7 @@ export function UserAvatar() {
                 className="text-destructive/70"
                 aria-hidden="true"
               />
-              <span className="text-destructive/70">Sair</span>
+              <span className="text-destructive/70">{t.app.common.logout}</span>
             </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenuPositioner>
