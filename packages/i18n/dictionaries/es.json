@@ -185,5 +185,57 @@
         }
       }
     }
+  },
+  "app": {
+    "common": {
+      "loading": "Cargando...",
+      "error": "Error",
+      "success": "Éxito",
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "delete": "Eliminar",
+      "edit": "Editar",
+      "close": "Cerrar",
+      "search": "Buscar",
+      "filter": "Filtrar",
+      "sort": "Ordenar",
+      "actions": "Acciones",
+      "settings": "Configuración",
+      "logout": "Cerrar sesión",
+      "profile": "Perfil"
+    },
+    "navigation": {
+      "dashboard": "Panel",
+      "webhooks": "Webhooks",
+      "settings": "Configuración",
+      "help": "Ayuda"
+    },
+    "dashboard": {
+      "title": "Acme Inc",
+      "description": "Mi aplicación.",
+      "welcome": "Bienvenido de nuevo",
+      "pages": "Construyendo tu aplicación",
+      "dataFetching": "Obtención de datos"
+    },
+    "webhooks": {
+      "title": "Webhooks",
+      "description": "Gestiona tus webhooks"
+    },
+    "errors": {
+      "notFound": "Página no encontrada",
+      "unauthorized": "Acceso no autorizado",
+      "serverError": "Algo salió mal",
+      "tryAgain": "Intentar de nuevo"
+    },
+    "auth": {
+      "signIn": {
+        "title": "Bienvenido de nuevo",
+        "description": "Introduce tus datos para iniciar sesión."
+      },
+      "signUp": {
+        "title": "Crear una cuenta",
+        "description": "Introduce tus datos para empezar."
+      }
+    }
   }
 }

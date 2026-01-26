@@ -3,12 +3,34 @@ import {
   noseconeOptions,
   noseconeOptionsWithToolbar,
 } from '@pack/security/middleware';
-import type { NextMiddleware, MiddlewareConfig } from 'next/server';
 import { env } from './env';
+import { NextMiddleware, NextRequest, NextResponse } from 'next/server';
 
 const securityHeaders = env.FLAGS_SECRET
   ? noseconeMiddleware(noseconeOptionsWithToolbar)
   : noseconeMiddleware(noseconeOptions);
+
+const prefixApi = '/auth';
+const API_URL = env.API_URL;
+const unauthenticatedPages = [
+  '/sign-in',
+  '/sign-up',
+];
+
+const isProtectedRoute = (request: NextRequest) => {
+  const pathname = request.nextUrl.pathname;
+  return !unauthenticatedPages.some((page) => pathname.startsWith(page));
+};
+
+const authMiddleware = async (request: NextRequest) => {
+  const sessionCookie = getSessionCookie(request);
+
+  if (isProtectedRoute(request) && !sessionCookie) {
+    return NextResponse.redirect(new URL('/sign-in', request.url));
+  }
+
+  return NextResponse.next();
+};
 
 export default authMiddleware(() =>
   securityHeaders()
