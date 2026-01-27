@@ -2,7 +2,7 @@ import { db } from '@pack/db';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { nextCookies } from 'better-auth/next-js';
-import { makePasswordHasher } from './crypto/argon2-adapter';
+import { argon2Adapter } from './crypto/argon2-adapter';
 import { packEnv } from './pack-env';
 
 const _env = packEnv();
@@ -20,8 +20,8 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     password: {
-      hash: makePasswordHasher().hash,
-      verify: makePasswordHasher().compare,
+      hash: argon2Adapter.hash,
+      verify: argon2Adapter.compare,
     },
     minPasswordLength: 8,
     maxPasswordLength: 128,

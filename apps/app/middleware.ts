@@ -1,19 +1,23 @@
-import { authMiddleware } from '@pack/auth/middleware';
-import {
-  noseconeMiddleware,
-  noseconeOptions,
-  noseconeOptionsWithToolbar,
-} from '@pack/security/middleware';
-import type { NextMiddleware } from 'next/server';
-import { env } from './env';
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import { internationalizationMiddleware } from '@pack/i18n/middleware';
+import type { NextRequest } from 'next/server';
 
-const securityHeaders = env.FLAGS_SECRET
-  ? noseconeMiddleware(noseconeOptionsWithToolbar)
-  : noseconeMiddleware(noseconeOptions);
+const isPublicRoute = createRouteMatcher([
+  '/:locale/sign-in(.*)',
+  '/:locale/sign-up(.*)',
+  '/sign-in(.*)',
+  '/sign-up(.*)',
+]);
 
-export default authMiddleware(() =>
-  securityHeaders()
-) as unknown as NextMiddleware;
+export default clerkMiddleware(async (auth, request: NextRequest) => {
+  // First, handle authentication
+  if (!isPublicRoute(request)) {
+    await auth.protect();
+  }
+
+  // Then, handle internationalization
+  return internationalizationMiddleware(request);
+});
 
 export const config = {
   matcher: [

@@ -11,19 +11,22 @@ type GlobalErrorProperties = {
   readonly reset: () => void;
 };
 
-const GlobalError = ({ error, reset }: GlobalErrorProperties) => {
+export default function GlobalError({ error, reset }: GlobalErrorProperties) {
   useEffect(() => {
     captureException(error);
   }, [error]);
 
   return (
     <html lang="en" className={fonts}>
-      <body>
-        <h1>Oops, something went wrong</h1>
-        <Button onClick={() => reset()}>Try again</Button>
+      <body className="flex min-h-screen items-center justify-center">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <h1 className="font-bold text-4xl">Oops, something went wrong</h1>
+          <p className="text-muted-foreground">
+            An unexpected error occurred. Please try again.
+          </p>
+          <Button onClick={() => reset()}>Try again</Button>
+        </div>
       </body>
     </html>
   );
-};
-
-export default GlobalError;
+}

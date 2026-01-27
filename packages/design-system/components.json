@@ -17,5 +17,9 @@
     "lib": "@pack/design-system/lib",
     "ui": "@pack/design-system/components/ui"
   },
+  "registries": {
+    "@reui": "https://reui.io/r/{name}.json",
+    "@basecn": "https://basecn.dev/r/{name}.json"
+  },
   "iconLibrary": "lucide"
 }
