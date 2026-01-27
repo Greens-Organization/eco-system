@@ -185,5 +185,66 @@
         }
       }
     }
+  },
+  "app": {
+    "common": {
+      "loading": "Carregando...",
+      "error": "Erro",
+      "success": "Sucesso",
+      "cancel": "Cancelar",
+      "save": "Salvar",
+      "delete": "Excluir",
+      "edit": "Editar",
+      "close": "Fechar",
+      "search": "Buscar",
+      "filter": "Filtrar",
+      "sort": "Ordenar",
+      "actions": "Ações",
+      "settings": "Configurações",
+      "logout": "Sair",
+      "profile": "Perfil"
+    },
+    "navigation": {
+      "dashboard": "Painel",
+      "webhooks": "Webhooks",
+      "settings": "Configurações",
+      "help": "Ajuda"
+    },
+    "sidebar": {
+      "general": "Geral",
+      "customers": "Clientes",
+      "employees": "Colaboradores",
+      "configurations": "Configurações",
+      "changeTheme": "Mudar tema",
+      "profile": "Perfil",
+      "loading": "Carregando..."
+    },
+    "dashboard": {
+      "title": "Acme Inc",
+      "description": "Minha aplicação.",
+      "welcome": "Bem-vindo de volta",
+      "pages": "Construindo Sua Aplicação",
+      "dataFetching": "Busca de Dados"
+    },
+    "webhooks": {
+      "title": "Webhooks",
+      "description": "Gerencie seus webhooks"
+    },
+    "errors": {
+      "notFound": "Página não encontrada",
+      "unauthorized": "Acesso não autorizado",
+      "serverError": "Algo deu errado",
+      "tryAgain": "Tente novamente"
+    },
+    "auth": {
+      "signIn": {
+        "title": "Bem-vindo de volta",
+        "description": "Digite seus dados para entrar."
+      },
+      "signUp": {
+        "title": "Criar uma conta",
+        "description": "Digite seus dados para começar."
+      }
+    }
   }
 }

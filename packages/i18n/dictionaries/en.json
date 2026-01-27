@@ -185,5 +185,66 @@
         }
       }
     }
+  },
+  "app": {
+    "common": {
+      "loading": "Loading...",
+      "error": "Error",
+      "success": "Success",
+      "cancel": "Cancel",
+      "save": "Save",
+      "delete": "Delete",
+      "edit": "Edit",
+      "close": "Close",
+      "search": "Search",
+      "filter": "Filter",
+      "sort": "Sort",
+      "actions": "Actions",
+      "settings": "Settings",
+      "logout": "Logout",
+      "profile": "Profile"
+    },
+    "navigation": {
+      "dashboard": "Dashboard",
+      "webhooks": "Webhooks",
+      "settings": "Settings",
+      "help": "Help"
+    },
+    "sidebar": {
+      "general": "General",
+      "customers": "Customers",
+      "employees": "Employees",
+      "configurations": "Configurations",
+      "changeTheme": "Change theme",
+      "profile": "Profile",
+      "loading": "Loading..."
+    },
+    "dashboard": {
+      "title": "Acme Inc",
+      "description": "My application.",
+      "welcome": "Welcome back",
+      "pages": "Building Your Application",
+      "dataFetching": "Data Fetching"
+    },
+    "webhooks": {
+      "title": "Webhooks",
+      "description": "Manage your webhooks"
+    },
+    "errors": {
+      "notFound": "Page not found",
+      "unauthorized": "Unauthorized access",
+      "serverError": "Something went wrong",
+      "tryAgain": "Try again"
+    },
+    "auth": {
+      "signIn": {
+        "title": "Welcome back",
+        "description": "Enter your details to sign in."
+      },
+      "signUp": {
+        "title": "Create an account",
+        "description": "Enter your details to get started."
+      }
+    }
   }
 }
