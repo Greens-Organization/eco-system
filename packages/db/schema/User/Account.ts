@@ -1,12 +1,7 @@
 import { relations } from 'drizzle-orm';
 import { index, pgTable, text } from 'drizzle-orm/pg-core';
-import {
-  createdAt,
-  gTimestamp,
-  updatedAt,
-  uuidv7,
-} from '@/infra/db/schema/utils';
-import { user } from './user';
+import { createdAt, gTimestamp, updatedAt, uuidv7 } from '../utils';
+import { user } from './User';
 
 export const account = pgTable(
   'account',

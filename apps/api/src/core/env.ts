@@ -1,4 +1,3 @@
-import { packEnv as analytics } from '@pack/analytics/pack-env';
 import { packEnv as auth } from '@pack/auth/pack-env';
 import { packEnv as database } from '@pack/db/pack-env';
 import { packEnv as email } from '@pack/email/pack-env';
@@ -12,7 +11,7 @@ const booleanSchema = z.stringbool({
 });
 
 export const env = createEnv({
-  extends: [auth(), analytics(), database(), email(), observability()],
+  extends: [auth(), database(), email(), observability()],
   server: {
     HOST: z.string().default('0.0.0.0'),
     PORT: z.coerce.number().default(3002),
