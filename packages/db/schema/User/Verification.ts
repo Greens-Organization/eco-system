@@ -1,10 +1,5 @@
 import { index, pgTable, text } from 'drizzle-orm/pg-core';
-import {
-  createdAt,
-  gTimestamp,
-  updatedAt,
-  uuidv7,
-} from '@/infra/db/schema/utils';
+import { createdAt, gTimestamp, updatedAt, uuidv7 } from '../utils';
 
 export const verification = pgTable(
   'verification',

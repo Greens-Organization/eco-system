@@ -1,10 +1,17 @@
-import { env } from '@/env';
 import { DesignSystemProvider } from '@pack/design-system';
 import { fonts } from '@pack/design-system/lib/fonts';
 import './styles.css';
 
 import { locales } from '@pack/i18n';
+import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
+
+export const metadata: Metadata = {
+  icons: {
+    icon: '/icon.png',
+    apple: '/apple-icon.png',
+  },
+};
 
 type RootLayoutProperties = {
   readonly children: ReactNode;
@@ -18,14 +25,7 @@ export default function RootLayout({ children }: RootLayoutProperties) {
   return (
     <html lang="en" className={fonts} suppressHydrationWarning>
       <body>
-        <DesignSystemProvider
-          privacyUrl={new URL(
-            '/legal/privacy',
-            env.NEXT_PUBLIC_WEB_URL
-          ).toString()}
-          termsUrl={new URL('/legal/terms', env.NEXT_PUBLIC_WEB_URL).toString()}
-          helpUrl={env.NEXT_PUBLIC_DOCS_URL}
-        >
+        <DesignSystemProvider>
           {children}
         </DesignSystemProvider>
       </body>

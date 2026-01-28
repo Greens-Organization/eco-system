@@ -206,7 +206,6 @@
     },
     "navigation": {
       "dashboard": "Dashboard",
-      "webhooks": "Webhooks",
       "settings": "Settings",
       "help": "Help"
     },
@@ -225,10 +224,6 @@
       "welcome": "Welcome back",
       "pages": "Building Your Application",
       "dataFetching": "Data Fetching"
-    },
-    "webhooks": {
-      "title": "Webhooks",
-      "description": "Manage your webhooks"
     },
     "errors": {
       "notFound": "Page not found",

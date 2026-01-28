@@ -20,7 +20,7 @@
     "@pack/next-config": "workspace:*",
     "@pack/observability": "workspace:*",
     "@pack/seo": "workspace:*",
-    "@pack/webhooks": "workspace:*",
+    "@pack/tools": "workspace:*",
     "@sentry/nextjs": "catalog:",
     "@t3-oss/env-nextjs": "catalog:",
     "fuse.js": "7.1.0",
@@ -43,6 +43,7 @@
     "@types/react-dom": "catalog:dev",
     "jsdom": "27.0.0",
     "tailwindcss": "catalog:",
+    "@tailwindcss/postcss": "catalog:",
     "vitest": "catalog:testing"
   }
 }

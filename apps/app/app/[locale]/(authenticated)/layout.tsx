@@ -1,9 +1,8 @@
-import { env } from '@/env';
-import { auth } from '@pack/auth/server';
-import { secure } from '@pack/security';
+import { SidebarProvider } from '@pack/design-system/components/ui/sidebar';
 import type { ReactNode } from 'react';
 import { GlobalSidebar } from './components/sidebar';
-import { SidebarProvider } from '@pack/design-system/components/ui/sidebar';
+
+export const dynamic = 'force-dynamic';
 
 type AppLayoutProperties = {
   readonly children: ReactNode;
@@ -11,10 +10,8 @@ type AppLayoutProperties = {
 
 export default async function AppLayout({ children }: AppLayoutProperties) {
   return (
-      <SidebarProvider>
-        <GlobalSidebar>
-          {children}
-        </GlobalSidebar>
-      </SidebarProvider>
+    <SidebarProvider>
+      <GlobalSidebar>{children}</GlobalSidebar>
+    </SidebarProvider>
   );
-};
+}

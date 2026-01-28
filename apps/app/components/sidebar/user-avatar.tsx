@@ -3,7 +3,7 @@
 import {
   Avatar,
   AvatarFallback,
-  AvatarImage
+  AvatarImage,
 } from '@pack/design-system/components/ui/base-avatar';
 import {
   DropdownMenu,
@@ -18,14 +18,14 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@pack/design-system/components/ui/sidebar';
-import { getInitials } from '@pack/design-system/utils/formatters'
-import { generateURLDiceBearAvatar } from '@pack/design-system/utils/others'
+import { genericAvatar } from '@pack/design-system/utils';
 import { EllipsisVertical, LogOut, Moon, Sun, User } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { authClient } from '@/lib/auth';
-import { useTranslation, useLocale } from '@/lib/i18n';
+import { authClient } from '@pack/auth/client';
+import { useLocale, useTranslation } from '@/lib/i18n';
+import { mstring } from '@pack/tools';
 
 export function UserAvatar() {
   const router = useRouter();
@@ -38,7 +38,7 @@ export function UserAvatar() {
 
   const avatarSrc = userData?.image
     ? userData.image
-    : generateURLDiceBearAvatar(userData?.email);
+    : genericAvatar(userData?.email);
 
   if (isPending) {
     return (
@@ -53,7 +53,9 @@ export function UserAvatar() {
               <AvatarFallback className="animate-pulse bg-muted-foreground/30"></AvatarFallback>
             </Avatar>
             <div className="ms-2 flex-1 animate-pulse text-left text-sm leading-tight">
-              <span className="truncate font-medium">{t.app.sidebar.loading}</span>
+              <span className="truncate font-medium">
+                {t.app.sidebar.loading}
+              </span>
             </div>
           </SidebarMenuButton>
         </SidebarMenuItem>
@@ -65,72 +67,84 @@ export function UserAvatar() {
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
-          <DropdownMenuTrigger render={
-            <SidebarMenuButton
-              size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-            >
-              <Avatar className="in-data-[state=expanded]:size-6 transition-[width,height] duration-200 ease-in-out">
-                <AvatarImage src={avatarSrc} alt={userData?.name} />
-                <AvatarFallback>
-                  {getInitials(data?.user?.name ?? 'GG')}
-                </AvatarFallback>
-              </Avatar>
-              <div className="ms-1 grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{userData?.name}</span>
-              </div>
-              <div className="flex size-8 items-center justify-center rounded-lg bg-sidebar-accent/50 in-[[data-slot=dropdown-menu-trigger]:hover]:bg-transparent">
-                <EllipsisVertical className="size-5 opacity-40" size={20} />
-              </div>
-            </SidebarMenuButton>
-          } />
-          <DropdownMenuPositioner side={isMobile ? 'bottom' : 'right'} align='end'  sideOffset={4}>
-          <DropdownMenuContent
-            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+          <DropdownMenuTrigger
+            render={
+              <SidebarMenuButton
+                size="lg"
+                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              >
+                <Avatar className="in-data-[state=expanded]:size-6 transition-[width,height] duration-200 ease-in-out">
+                  <AvatarImage src={avatarSrc} alt={userData?.name} />
+                  <AvatarFallback>
+                    {mstring(data?.user?.name ?? 'GG').getInitials()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="ms-1 grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-medium">{userData?.name}</span>
+                </div>
+                <div className="flex size-8 items-center justify-center rounded-lg bg-sidebar-accent/50 in-[[data-slot=dropdown-menu-trigger]:hover]:bg-transparent">
+                  <EllipsisVertical className="size-5 opacity-40" size={20} />
+                </div>
+              </SidebarMenuButton>
+            }
+          />
+          <DropdownMenuPositioner
+            side={isMobile ? 'bottom' : 'right'}
+            align="end"
+            sideOffset={4}
           >
-            <DropdownMenuItem
-              className="gap-3 px-1"
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            >
-              {theme === 'light' ? (
-                <Moon
-                  size={20}
-                  className="text-muted-foreground/70"
-                  aria-hidden="true"
-                />
-              ) : (
-                <Sun
-                  size={20}
-                  className="text-muted-foreground/70"
-                  aria-hidden="true"
-                />
-              )}
-              <span>{t.app.sidebar.changeTheme}</span>
-            </DropdownMenuItem>
-              <DropdownMenuItem className="px-1" render={
-              <Link href={`/${locale}/perfil`} className="flex items-center gap-3">
-                <User
-                  size={20}
-                  className="text-muted-foreground/70"
-                  aria-hidden="true"
-                />
-                <span>{t.app.sidebar.profile}</span>
-              </Link>
-            }/>
-            <DropdownMenuItem
-              className="gap-3 px-1"
-              onClick={async () => {
-                await authClient.signOut({ fetchOptions: {} });
-                router.push(`/${locale}/entrar`);
-              }}
-            >
-              <LogOut
-                size={20}
-                className="text-destructive/70"
-                aria-hidden="true"
+            <DropdownMenuContent className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg">
+              <DropdownMenuItem
+                className="gap-3 px-1"
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              >
+                {theme === 'light' ? (
+                  <Moon
+                    size={20}
+                    className="text-muted-foreground/70"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <Sun
+                    size={20}
+                    className="text-muted-foreground/70"
+                    aria-hidden="true"
+                  />
+                )}
+                <span>{t.app.sidebar.changeTheme}</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="px-1"
+                render={
+                  <Link
+                    href={`/${locale}/perfil`}
+                    className="flex items-center gap-3"
+                  >
+                    <User
+                      size={20}
+                      className="text-muted-foreground/70"
+                      aria-hidden="true"
+                    />
+                    <span>{t.app.sidebar.profile}</span>
+                  </Link>
+                }
               />
-              <span className="text-destructive/70">{t.app.common.logout}</span>
-            </DropdownMenuItem>
+              <DropdownMenuItem
+                className="gap-3 px-1"
+                onClick={async () => {
+                  await authClient.signOut({ fetchOptions: {} });
+                  router.push(`/${locale}/sign-in`);
+                }}
+              >
+                <LogOut
+                  size={20}
+                  className="text-destructive/70"
+                  aria-hidden="true"
+                />
+                <span className="text-destructive/70">
+                  {t.app.common.logout}
+                </span>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenuPositioner>
         </DropdownMenu>

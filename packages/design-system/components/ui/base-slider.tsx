@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { cn } from '@pack/design-system/lib/utils';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@pack/design-system/components/ui/base-tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@pack/design-system/components/ui/base-tooltip';
 import { Slider as SliderPrimitive } from '@base-ui-components/react/slider';
 
 function Slider({
@@ -31,23 +31,13 @@ function Slider({
     }
   }, [value]);
 
-  const handleValueChange = (
-    newValue: number | readonly number[],
-    eventDetails: {
-      reason: 'none';
-      event: Event;
-      cancel: () => void;
-      allowPropagation: () => void;
-      isCanceled: boolean;
-      isPropagationAllowed: boolean;
-    },
-    activeThumbIndex: number,
+  const handleValueChange: NonNullable<React.ComponentProps<typeof SliderPrimitive.Root>['onValueChange']> = (
+    newValue,
+    eventDetails,
   ) => {
     const values = Array.isArray(newValue) ? [...newValue] : [newValue];
     setInternalValues(values);
-    if (onValueChange) {
-      onValueChange(values, eventDetails, activeThumbIndex);
-    }
+    onValueChange?.(values, eventDetails);
   };
 
   const [showTooltipState, setShowTooltipState] = React.useState(false);
@@ -88,18 +78,16 @@ function Slider({
     if (!showTooltip) return thumb;
 
     return (
-      <TooltipProvider key={index}>
-        <Tooltip open={showTooltipState}>
-          <TooltipTrigger render={thumb} />
-          <TooltipContent
-            className="px-2 py-1 text-xs"
-            sideOffset={8}
-            side={props.orientation === 'vertical' ? 'right' : 'top'}
-          >
-            <p>{tooltipContent ? tooltipContent(thumbValue) : thumbValue}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <Tooltip key={index} open={showTooltipState}>
+        <TooltipTrigger render={thumb} />
+        <TooltipContent
+          className="px-2 py-1 text-xs"
+          sideOffset={8}
+          side={props.orientation === 'vertical' ? 'right' : 'top'}
+        >
+          <p>{tooltipContent ? tooltipContent(thumbValue) : thumbValue}</p>
+        </TooltipContent>
+      </Tooltip>
     );
   };
 

@@ -6,11 +6,14 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@pack/design-system/components/ui/select';
+} from '@pack/design-system/components/ui/base-select';
+import { locales } from '@pack/i18n/shared';
 import { usePathname, useRouter } from 'next/navigation';
 import { useLocale } from '@/lib/i18n/provider';
-import { locales } from '@pack/i18n';
-import { addLocaleToPathname, removeLocaleFromPathname } from '@/lib/i18n/utils';
+import {
+  addLocaleToPathname,
+  removeLocaleFromPathname,
+} from '@/lib/i18n/utils';
 
 const languageNames: Record<string, string> = {
   en: 'English',
@@ -29,7 +32,8 @@ export function LanguageSelector() {
   const pathname = usePathname();
   const currentLocale = useLocale();
 
-  const handleLocaleChange = (newLocale: string) => {
+  const handleLocaleChange = (value: unknown) => {
+    const newLocale = value as string;
     const pathWithoutLocale = removeLocaleFromPathname(pathname);
     const newPath = addLocaleToPathname(pathWithoutLocale, newLocale as any);
     router.push(newPath);

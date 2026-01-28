@@ -1,4 +1,3 @@
-import { withLogtail } from '@logtail/next';
 import { withSentryConfig } from '@sentry/nextjs';
 import { packEnv } from './pack-env';
 
@@ -46,8 +45,4 @@ export const withSentry = (sourceConfig: object): object => {
   };
 
   return withSentryConfig(configWithTranspile, sentryConfig);
-};
-
-export const withLogging = (config: object): object => {
-  return withLogtail(config);
 };

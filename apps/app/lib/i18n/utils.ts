@@ -1,4 +1,4 @@
-import { locales, type Dictionary } from '@pack/i18n';
+import { type Dictionary, locales } from '@pack/i18n/shared';
 
 export type Locale = (typeof locales)[number];
 

@@ -16,6 +16,10 @@ export const PostHogProvider = (
   properties: Omit<PostHogProviderProps, 'client'>
 ) => {
   useEffect(() => {
+    if (!_env.NEXT_PUBLIC_POSTHOG_KEY) {
+      return;
+    }
+
     posthog.init(_env.NEXT_PUBLIC_POSTHOG_KEY, {
       api_host: '/ingest',
       ui_host: _env.NEXT_PUBLIC_POSTHOG_HOST,

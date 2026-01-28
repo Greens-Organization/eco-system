@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@pack/design-system/components/ui/button';
+import { Button } from '@pack/design-system/components/ui/base-button';
 import { fonts } from '@pack/design-system/lib/fonts';
 import { captureException } from '@sentry/nextjs';
 import type NextError from 'next/error';
@@ -24,7 +24,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProperties) {
           <p className="text-muted-foreground">
             An unexpected error occurred. Please try again.
           </p>
-          <Button onClick={() => reset()}>Try again</Button>
+          <Button onClick={() => typeof reset === 'function' ? reset() : window.location.reload()}>Try again</Button>
         </div>
       </body>
     </html>

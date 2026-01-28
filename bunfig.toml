@@ -7,7 +7,7 @@ bun = true
 
 [install]
 
-linker = "hoisted"
+linker = "isolated"
 
 # use isolated installs to prevent duplicate dependencies. See more in https://bun.com/docs/install/isolated
 # publicHoistPattern = []

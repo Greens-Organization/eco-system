@@ -1,9 +1,15 @@
-
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@pack/design-system/components/ui/base-breadcrumb';
 import { Separator } from '@pack/design-system/components/ui/base-separator';
-import {Breadcrumb, BreadcrumbList,BreadcrumbSeparator,BreadcrumbItem,BreadcrumbLink,BreadcrumbPage } from '@pack/design-system/components/ui/base-breadcrumb';
 import { SidebarTrigger } from '@pack/design-system/components/ui/sidebar';
-import { LanguageSelector } from '@/components/language-selector';
 import { Fragment, type ReactNode } from 'react';
+import { LanguageSelector } from '@/components/language-selector';
 
 type HeaderProps = {
   pages: string[];
