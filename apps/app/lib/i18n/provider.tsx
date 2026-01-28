@@ -1,7 +1,7 @@
 'use client';
 
-import type { Dictionary } from '@pack/i18n';
-import { createContext, useContext, type ReactNode } from 'react';
+import type { Dictionary } from '@pack/i18n/shared';
+import { createContext, type ReactNode, useContext } from 'react';
 import type { Locale } from './utils';
 
 interface I18nContextValue {
@@ -17,7 +17,11 @@ interface I18nProviderProps {
   children: ReactNode;
 }
 
-export function I18nProvider({ locale, dictionary, children }: I18nProviderProps) {
+export function I18nProvider({
+  locale,
+  dictionary,
+  children,
+}: I18nProviderProps) {
   return (
     <I18nContext.Provider value={{ locale, dictionary }}>
       {children}

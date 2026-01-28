@@ -4,8 +4,8 @@ import { z } from 'zod';
 export const packEnv = () =>
   createEnv({
     client: {
-      NEXT_PUBLIC_POSTHOG_KEY: z.string().min(1).startsWith('phc_'),
-      NEXT_PUBLIC_POSTHOG_HOST: z.url(),
+      NEXT_PUBLIC_POSTHOG_KEY: z.string().min(1).startsWith('phc_').optional(),
+      NEXT_PUBLIC_POSTHOG_HOST: z.url().optional(),
       NEXT_PUBLIC_GA_MEASUREMENT_ID: z
         .string()
         .min(1)

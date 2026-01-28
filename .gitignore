@@ -275,3 +275,6 @@ packages/database/generated
 
 # Sentry
 .sentryclirc
+
+# .claude
+alpha_zed*.md

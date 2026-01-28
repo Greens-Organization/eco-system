@@ -1,10 +1,10 @@
-export { I18nProvider, useI18n, useTranslation, useLocale } from './provider';
+export { I18nProvider, useI18n, useLocale, useTranslation } from './provider';
 export {
-  type Locale,
-  defaultLocale,
-  isValidLocale,
-  getLocaleFromPathname,
-  removeLocaleFromPathname,
   addLocaleToPathname,
-  type TranslationKeys
+  defaultLocale,
+  getLocaleFromPathname,
+  isValidLocale,
+  type Locale,
+  removeLocaleFromPathname,
+  type TranslationKeys,
 } from './utils';

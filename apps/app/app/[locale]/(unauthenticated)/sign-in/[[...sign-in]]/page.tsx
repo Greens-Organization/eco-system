@@ -1,8 +1,8 @@
 import { getDictionary } from '@pack/i18n';
-import type { Locale } from '@/lib/i18n/utils';
 import { createMetadata } from '@pack/seo/metadata';
 import type { Metadata } from 'next';
 import dynamic from 'next/dynamic';
+import type { Locale } from '@/lib/i18n/utils';
 
 const SignIn = dynamic(() =>
   import('@pack/auth/components/sign-in').then((mod) => mod.SignIn)
@@ -12,7 +12,9 @@ type PageProps = {
   params: Promise<{ locale: Locale }>;
 };
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { locale } = await params;
   const dictionary = await getDictionary(locale);
 
@@ -36,7 +38,7 @@ export default async function SignInPage({ params }: PageProps) {
           {dictionary.app.auth.signIn.description}
         </p>
       </div>
-      <SignIn />
+      <SignIn callbackURL={`/${locale}`} />
     </>
   );
 }

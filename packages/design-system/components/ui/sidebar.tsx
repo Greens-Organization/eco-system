@@ -15,7 +15,7 @@ import {
 } from "@pack/design-system/components/ui/sheet";
 import { useIsMobile } from "@pack/design-system/hooks/use-mobile";
 import { Skeleton } from "./skeleton";
-import { Tooltip, TooltipContent, TooltipPositioner, TooltipProvider, TooltipTrigger } from "./base-tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./base-tooltip";
 import { Button } from "./base-button";
 import { Input } from "./base-input";
 import { Separator } from "./base-separator";
@@ -530,12 +530,12 @@ function SidebarMenuButton({
       <TooltipTrigger
         render={button as React.ReactElement<Record<string, unknown>>}
       />
-      <TooltipPositioner side="right" align="center">
-        <TooltipContent
-          hidden={state !== "collapsed" || isMobile}
-          {...tooltip}
-        />
-      </TooltipPositioner>
+      <TooltipContent
+        side="right"
+        align="center"
+        hidden={state !== "collapsed" || isMobile}
+        {...tooltip}
+      />
     </Tooltip>
   );
 }

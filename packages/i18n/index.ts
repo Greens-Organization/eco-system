@@ -1,13 +1,8 @@
 import 'server-only';
-import type en from './dictionaries/en.json';
-import languine from './languine.json';
+import type { Dictionary } from './shared';
+import { locales } from './shared';
 
-export const locales = [
-  languine.locale.source,
-  ...languine.locale.targets,
-] as const;
-
-export type Dictionary = typeof en;
+export { locales, type Dictionary };
 
 const dictionaries: Record<string, () => Promise<Dictionary>> =
   Object.fromEntries(
