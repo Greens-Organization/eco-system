@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@arcjet/next": "1.0.0-beta.13",
-    "@nosecone/next": "1.0.0-beta.13",
+    "@nosecone/next": "1.1.0",
     "@t3-oss/env-nextjs": "catalog:",
     "zod": "catalog:"
   },

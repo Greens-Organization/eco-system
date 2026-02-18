@@ -8,6 +8,7 @@ import {
   type AuthVariables,
   authMiddleware,
 } from '@/main/middleware/auth-middleware';
+import statsRoute from './stats';
 
 export type Variables = RequestIdVariables & AuthVariables;
 
@@ -82,3 +83,4 @@ v1.use('/*', authMiddleware);
  * API Routes
  */
 // v1.route('/todo', todoApi)
+v1.route('/stats', statsRoute);

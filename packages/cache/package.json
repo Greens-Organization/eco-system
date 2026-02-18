@@ -9,8 +9,8 @@
   "dependencies": {
     "zod": "catalog:",
     "@t3-oss/env-nextjs": "catalog:",
-    "bullmq": "5.66.5",
-    "ioredis": "5.8.2"
+    "bullmq": "5.69.3",
+    "ioredis": "5.9.3"
   },
   "devDependencies": {
     "@pack/typescript-config": "workspace:*",

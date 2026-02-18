@@ -1,6 +1,5 @@
 ## Description
-
-Please provide a brief description of the changes introduced in this pull request.
+<!-- Please provide a brief description of the changes introduced in this pull request. -->
 
 ## Related Issues
 
@@ -16,9 +15,7 @@ Closes #<issue_number>
 - [ ] New and existing tests pass locally with my changes.
 
 ## Screenshots (if applicable)
-
 <!-- Add screenshots to help explain your changes, especially if this is a UI-related PR. -->
 
 ## Additional Notes
-
 <!-- Add any additional information or context about the pull request here. -->

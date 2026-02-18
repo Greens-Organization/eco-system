@@ -8,8 +8,8 @@
   },
   "dependencies": {
     "@t3-oss/env-nextjs": "catalog:",
-    "@upstash/ratelimit": "2.0.6",
-    "@upstash/redis": "1.35.5",
+    "@upstash/ratelimit": "2.0.8",
+    "@upstash/redis": "1.36.2",
     "zod": "catalog:"
   },
   "devDependencies": {

@@ -8,7 +8,6 @@ import { fileURLToPath } from "node:url";
  * Remove node_modules e outros arquivos que não estão presentes no git
  */
 
-// @ts-ignore
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const rootDir = resolve(__dirname, "../");
 

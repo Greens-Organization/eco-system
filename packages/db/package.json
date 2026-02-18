@@ -19,12 +19,12 @@
     "drizzle-seed": "0.3.1",
     "postgres": "3.4.8",
     "server-only": "catalog:",
-    "ws": "8.18.3",
+    "ws": "8.19.0",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@pack/typescript-config": "workspace:*",
     "@types/node": "catalog:dev",
-    "drizzle-kit": "0.31.8"
+    "drizzle-kit": "0.31.9"
   }
 }

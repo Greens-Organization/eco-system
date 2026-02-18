@@ -7,18 +7,19 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@react-email/components": "1.0.6",
+    "@react-email/components": "1.0.7",
+    "@react-email/render": "2.0.4",
     "@t3-oss/env-nextjs": "catalog:",
-    "nodemailer": "7.0.12",
+    "nodemailer": "8.0.1",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "resend": "6.8.0",
+    "resend": "6.9.2",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@pack/typescript-config": "workspace:*",
     "@types/node": "catalog:dev",
-    "@types/nodemailer": "7.0.5",
+    "@types/nodemailer": "7.0.10",
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev"
   }

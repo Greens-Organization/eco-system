@@ -11,8 +11,8 @@
     "@pack/auth": "workspace:*",
     "@pack/design-system": "workspace:*",
     "@t3-oss/env-nextjs": "catalog:",
-    "@vercel/toolbar": "0.1.41",
-    "flags": "4.0.1",
+    "@vercel/toolbar": "0.2.2",
+    "flags": "4.0.3",
     "react": "catalog:",
     "zod": "catalog:"
   },

@@ -9,18 +9,18 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@hono/zod-openapi": "1.2.0",
+    "@hono/zod-openapi": "1.2.2",
     "@pack/analytics": "workspace:*",
     "@pack/auth": "workspace:*",
     "@pack/db": "workspace:*",
     "@pack/observability": "workspace:*",
     "@pack/payments": "workspace:*",
     "@pack/testing": "workspace:*",
-    "@scalar/hono-api-reference": "0.9.36",
+    "@scalar/hono-api-reference": "0.9.41",
     "@sentry/nextjs": "catalog:",
     "@t3-oss/env-nextjs": "catalog:",
-    "hono": "4.11.5",
-    "svix": "1.77.0",
+    "hono": "4.11.9",
+    "svix": "1.85.0",
     "vitest": "catalog:testing",
     "zod": "catalog:"
   },
