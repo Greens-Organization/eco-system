@@ -23,7 +23,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@pack/auth": "workspace:*",
+    "@pack/tools": "workspace:*",
     "@pack/tsconfig": "workspace:*",
     "drizzle-kit": "0.31.9"
   }

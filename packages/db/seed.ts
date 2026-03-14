@@ -1,6 +1,6 @@
 import { db, disconnectDatabase } from './index'
 import { account, user } from './schema'
-import { argon2Adapter } from '@pack/auth/crypto'
+import { argon2Adapter } from '@pack/tools'
 
 const SEED_USER = {
   name: 'Admin',
