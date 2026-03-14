@@ -9,9 +9,6 @@ export function handleError(err: Error, c: Context): Response {
   if (err instanceof ZodError) {
     const error = SchemaError.fromZod(err, c);
 
-    // If the error is a client error, we disable Sentry
-    c.get('sentry').setEnabled(false);
-
     return c.json<ErrorSchema>(
       {
         code: 'BAD_REQUEST',
@@ -27,11 +24,6 @@ export function handleError(err: Error, c: Context): Response {
    */
   if (err instanceof OpenStatusApiError) {
     const code = statusToCode(err.status);
-
-    // If the error is a client error, we disable Sentry
-    if (err.status < 499) {
-      c.get('sentry').setEnabled(false);
-    }
 
     return c.json<ErrorSchema>(
       {
@@ -67,7 +59,6 @@ export function handleError(err: Error, c: Context): Response {
     },
     'Request error'
   );
-  c.get('sentry').captureException(err);
 
   return c.json<ErrorSchema>(
     {
@@ -75,7 +66,6 @@ export function handleError(err: Error, c: Context): Response {
       message: err.message ?? 'Something went wrong',
       requestId: c.get('requestId'),
     },
-
     { status: 500 }
   );
 }

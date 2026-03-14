@@ -3,10 +3,12 @@
   "private": true,
   "scripts": {
     "dev": "bun run --hot ./src/server.ts",
-    "build": "bun build src/server.ts --compile --sourcemap --outfile=api",
+    "build": "bun build src/server.ts --compile --outfile=api",
     "preview": "./api",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "docker:db:up": "docker compose -f docker-compose.local.yml up -d",
+    "docker:db:down": "docker compose -f docker-compose.local.yml down"
   },
   "dependencies": {
     "@hono/zod-openapi": "1.2.2",
@@ -17,7 +19,6 @@
     "@pack/payments": "workspace:*",
     "@pack/testing": "workspace:*",
     "@scalar/hono-api-reference": "0.9.41",
-    "@sentry/nextjs": "catalog:",
     "@t3-oss/env-nextjs": "catalog:",
     "hono": "4.11.9",
     "svix": "1.85.0",
@@ -25,8 +26,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@pack/typescript-config": "workspace:*",
-    "@types/node": "catalog:dev",
+    "@pack/tsconfig": "workspace:*",
     "concurrently": "9.2.1"
   }
 }

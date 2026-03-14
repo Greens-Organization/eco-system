@@ -1,5 +1,5 @@
 import { log } from '@pack/observability/logger';
-import { CONSTANTS } from '@/common/constants';
+import { CONSTANTS } from '@/infra/common/constants';
 import { env, isLocal } from '@/core/env';
 
 export const setup = {

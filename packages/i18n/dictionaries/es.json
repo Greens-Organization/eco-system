@@ -207,7 +207,9 @@
     "navigation": {
       "dashboard": "Panel",
       "settings": "Configuración",
-      "help": "Ayuda"
+      "help": "Ayuda",
+      "customers": "Clientes",
+      "employees": "Empleados"
     },
     "sidebar": {
       "general": "General",
@@ -223,7 +225,11 @@
       "description": "Mi aplicación.",
       "welcome": "Bienvenido de nuevo",
       "pages": "Construyendo tu aplicación",
-      "dataFetching": "Obtención de datos"
+      "dataFetching": "Obtención de datos",
+      "totalUsers": "Total de Usuarios",
+      "activeUsers": "Usuarios Activos",
+      "totalRevenue": "Ingresos Totales",
+      "recentActivity": "Actividad Reciente"
     },
     "errors": {
       "notFound": "Página no encontrada",
@@ -239,7 +245,12 @@
       "signUp": {
         "title": "Crear una cuenta",
         "description": "Introduce tus datos para empezar."
-      }
+      },
+      "name": "Nombre",
+      "email": "Correo electrónico",
+      "password": "Contraseña",
+      "noAccount": "¿No tienes una cuenta?",
+      "hasAccount": "¿Ya tienes una cuenta?"
     }
   }
 }

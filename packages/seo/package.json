@@ -6,15 +6,16 @@
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
+  "exports": {
+    "./metadata": "./metadata.ts",
+    "./json-ld": "./json-ld.ts"
+  },
   "dependencies": {
     "es-toolkit": "catalog:",
-    "react": "catalog:",
     "schema-dts": "1.1.5"
   },
   "devDependencies": {
-    "@pack/typescript-config": "workspace:*",
-    "@types/node": "catalog:dev",
-    "@types/react": "catalog:dev",
-    "next": "catalog:"
+    "@pack/tsconfig": "workspace:*",
+    "@types/node": "catalog:dev"
   }
 }

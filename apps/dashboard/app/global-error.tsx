@@ -2,20 +2,14 @@
 
 import { Button } from '@pack/design-system/components/ui/base-button';
 import { fonts } from '@pack/design-system/lib/fonts';
-import { captureException } from '@sentry/nextjs';
 import type NextError from 'next/error';
-import { useEffect } from 'react';
 
 type GlobalErrorProperties = {
   readonly error: NextError & { digest?: string };
   readonly reset: () => void;
 };
 
-export default function GlobalError({ error, reset }: GlobalErrorProperties) {
-  useEffect(() => {
-    captureException(error);
-  }, [error]);
-
+export default function GlobalError({ error: _error, reset }: GlobalErrorProperties) {
   return (
     <html lang="en" className={fonts}>
       <body className="flex min-h-screen items-center justify-center">

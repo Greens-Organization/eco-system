@@ -6,6 +6,14 @@
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
+  "exports": {
+    ".": "./index.ts",
+    "./server": "./server.ts",
+    "./client": "./client.ts",
+    "./client.svelte": "./client.svelte.ts",
+    "./cookies": "./cookies.ts",
+    "./crypto": "./crypto/index.ts"
+  },
   "dependencies": {
     "@pack/db": "workspace:*",
     "@t3-oss/env-nextjs": "catalog:",
@@ -16,7 +24,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@pack/typescript-config": "workspace:*",
+    "@pack/tsconfig": "workspace:*",
     "@types/node": "catalog:dev",
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev"

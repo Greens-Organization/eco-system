@@ -9,6 +9,8 @@
       "outputs": [
         ".next/**",
         "!.next/cache/**",
+        ".svelte-kit/**",
+        "build/**",
         "**/generated/**",
         ".react-email/**"
       ]

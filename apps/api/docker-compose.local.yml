@@ -34,4 +34,3 @@ volumes:
 networks:
   eco_system_network:
     name: eco_system_network
-    external: true

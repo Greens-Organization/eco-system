@@ -2,7 +2,7 @@ import { db } from '@pack/db';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { nextCookies } from 'better-auth/next-js';
-import { argon2Adapter } from './crypto/argon2-adapter';
+import { argon2Adapter } from './crypto';
 import { packEnv } from './pack-env';
 
 const _env = packEnv();

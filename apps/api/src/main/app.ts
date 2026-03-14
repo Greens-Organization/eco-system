@@ -4,7 +4,7 @@ import { showRoutes } from 'hono/dev';
 import { logger } from 'hono/logger';
 import { prettyJSON } from 'hono/pretty-json';
 import { requestId } from 'hono/request-id';
-import { CONSTANTS } from '@/common/constants';
+import { CONSTANTS } from '@/infra/common/constants';
 import { debug, env, isProduction } from '@/core/env';
 import { handleError } from './infra/error-handler';
 import { publicRoute } from './routes/public';

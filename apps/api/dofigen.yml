@@ -22,14 +22,13 @@ builders:
       - packages/observability/package.json
       - packages/payments/package.json
       - packages/storage/package.json
-      - packages/tsconfig-config/package.json
-      - packages/webhooks/package.json
+      - packages/tsconfig/package.json
     run: bun install --production --frozen-lockfile --verbose
     cache:
       - /root/.bun/install/cache
 
   build:
-    fromImage: oven/bun:1.3.9
+    fromImage: oven/bun:1.3.10
     workdir: /app/apps/api
     labels:
       org.opencontainers.image.stage: build
@@ -38,9 +37,9 @@ builders:
       - fromBuilder: install
         source: /app/node_modules
         target: /app/node_modules
-    run: bun build --compile --sourcemap src/server.ts --outfile=api
+    run: bun build --compile src/server.ts --outfile=api
 
-fromImage: oven/bun:1.3.9
+fromImage: oven/bun:1.3.10
 
 labels:
   org.opencontainers.image.title: Eco System API

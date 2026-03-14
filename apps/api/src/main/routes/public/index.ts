@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { timing } from 'hono/timing';
-import { CONSTANTS } from '@/common/constants';
+import { CONSTANTS } from '@/infra/common/constants';
 import { auth } from './auth';
 import { health } from './health';
 

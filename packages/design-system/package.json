@@ -28,7 +28,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@pack/typescript-config": "workspace:*",
+    "@pack/tsconfig": "workspace:*",
     "@tailwindcss/postcss": "catalog:",
     "@tailwindcss/typography": "0.5.19",
     "@types/node": "catalog:dev",

@@ -1,45 +1,59 @@
-import { merge } from 'es-toolkit/object';
-import type { Metadata } from 'next';
+import { merge } from 'es-toolkit/object'
 
-type MetadataGenerator = Omit<Metadata, 'description' | 'title'> & {
-  title: string;
-  description: string;
-  image?: string;
-};
+export interface SeoImage {
+  url: string
+  width?: number
+  height?: number
+  alt?: string
+}
 
-const applicationName = 'eco-system';
-const author: Metadata['authors'] = {
-  name: 'GRN Group',
-  url: 'https://g.grngroup.net/',
-};
-const publisher = 'GRN Group';
-const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
-const productionUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+export interface SeoOpenGraph {
+  title: string
+  description: string
+  type?: string
+  siteName?: string
+  locale?: string
+  images?: SeoImage[]
+}
+
+export interface SeoMetadata {
+  title: string
+  description: string
+  applicationName?: string
+  authors?: Array<{ name: string; url?: string }>
+  creator?: string
+  publisher?: string
+  robots?: string
+  openGraph?: SeoOpenGraph
+  [key: string]: unknown
+}
+
+type MetadataGenerator = {
+  title: string
+  description: string
+  image?: string
+  [key: string]: unknown
+}
+
+const applicationName = 'eco-system'
+const author = { name: 'GRN Group', url: 'https://g.grngroup.net/' }
+const publisher = 'GRN Group'
 
 export const createMetadata = ({
   title,
   description,
   image,
   ...properties
-}: MetadataGenerator): Metadata => {
-  const parsedTitle = `${title} | ${applicationName}`;
-  const defaultMetadata: Metadata = {
+}: MetadataGenerator): SeoMetadata => {
+  const parsedTitle = `${title} | ${applicationName}`
+
+  const defaultMetadata: SeoMetadata = {
     title: parsedTitle,
     description,
     applicationName,
-    metadataBase: productionUrl
-      ? new URL(`${protocol}://${productionUrl}`)
-      : undefined,
     authors: [author],
     creator: author.name,
-    formatDetection: {
-      telephone: false,
-    },
-    appleWebApp: {
-      capable: true,
-      statusBarStyle: 'default',
-      title: parsedTitle,
-    },
+    publisher,
     openGraph: {
       title: parsedTitle,
       description,
@@ -47,21 +61,15 @@ export const createMetadata = ({
       siteName: applicationName,
       locale: 'en_US',
     },
-    publisher,
-  };
+  }
 
-  const metadata: Metadata = merge(defaultMetadata, properties);
+  const metadata: SeoMetadata = merge(defaultMetadata, properties as SeoMetadata)
 
   if (image && metadata.openGraph) {
     metadata.openGraph.images = [
-      {
-        url: image,
-        width: 1200,
-        height: 630,
-        alt: title,
-      },
-    ];
+      { url: image, width: 1200, height: 630, alt: title },
+    ]
   }
 
-  return metadata;
-};
+  return metadata
+}

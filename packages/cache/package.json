@@ -13,7 +13,7 @@
     "ioredis": "5.9.3"
   },
   "devDependencies": {
-    "@pack/typescript-config": "workspace:*",
+    "@pack/tsconfig": "workspace:*",
     "@types/node": "catalog:dev"
   }
 }

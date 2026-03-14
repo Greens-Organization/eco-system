@@ -1,5 +1,5 @@
 {
-  "extends": "@pack/typescript-config/nextjs.json",
+  "extends": "@pack/tsconfig/bun.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
@@ -8,10 +8,7 @@
     }
   },
   "include": [
-    "next-env.d.ts",
-    "next.config.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
   ]
 }

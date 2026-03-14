@@ -1,0 +1,40 @@
+{
+  "name": "@pack/design-system-svelte",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  },
+  "exports": {
+    ".": "./src/lib/index.ts",
+    "./styles/globals.css": "./styles/globals.css",
+    "./styles/colors.css": "./styles/colors.css",
+    "./providers": "./src/lib/providers/index.ts",
+    "./utils": "./src/lib/utils/index.ts"
+  },
+  "dependencies": {
+    "bits-ui": "catalog:",
+    "mode-watcher": "catalog:",
+    "lucide-svelte": "catalog:",
+    "svelte-sonner": "catalog:",
+    "@tanstack/svelte-form": "catalog:",
+    "class-variance-authority": "catalog:",
+    "clsx": "catalog:",
+    "tailwind-merge": "catalog:",
+    "tw-animate-css": "catalog:",
+    "svelte": "catalog:"
+  },
+  "devDependencies": {
+    "@pack/tsconfig": "workspace:*",
+    "@sveltejs/vite-plugin-svelte": "catalog:",
+    "@types/node": "catalog:dev",
+    "tailwindcss": "catalog:",
+    "@tailwindcss/typography": "catalog:",
+    "@tailwindcss/postcss": "catalog:",
+    "postcss": "catalog:"
+  },
+  "peerDependencies": {
+    "svelte": "^5.0.0"
+  }
+}

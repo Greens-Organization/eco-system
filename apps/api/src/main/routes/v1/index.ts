@@ -1,7 +1,7 @@
 import { OpenAPIHono } from '@hono/zod-openapi';
 import { Scalar } from '@scalar/hono-api-reference';
 import type { RequestIdVariables } from 'hono/request-id';
-import { CONSTANTS } from '@/common/constants';
+import { CONSTANTS } from '@/infra/common/constants';
 import { env } from '@/core/env';
 import { handleZodError } from '@/main/infra/openapi/utils';
 import {
@@ -41,7 +41,13 @@ v1.doc('/openapi', {
     description:
       'Eco System API allows you to monitor and manage your infrastructure health checks, workspaces, and more.\n\nTo get started, create an account and authenticate via Better Auth.',
   },
-  tags: [],
+  tags: [
+    {
+      name: 'stats',
+      description: 'Stats endpoints',
+      'x-displayName': 'Stats',
+    },
+  ],
   security: [
     {
       CookieAuth: [],
@@ -77,10 +83,12 @@ v1.get(
  * Authentication middleware
  * Applied to all routes except /openapi (spec) and / (docs)
  */
-v1.use('/*', authMiddleware);
+// v1.use('/*', authMiddleware);
 
 /**
  * API Routes
  */
-// v1.route('/todo', todoApi)
-v1.route('/stats', statsRoute);
+const routes = v1.route('/stats', statsRoute);
+
+export default routes;
+export type AppType = typeof routes;

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "Svelte",
+  "extends": "./bun.json",
+  "compilerOptions": {
+    // Svelte-specific overrides
+    "verbatimModuleSyntax": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+
+    // DOM is needed for browser APIs in Svelte components
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+
+    // Svelte components use special JSX-like syntax handled by preprocessor
+    "isolatedModules": true,
+
+    // noUncheckedIndexedAccess is too noisy in Svelte template land
+    "noUncheckedIndexedAccess": false
+  }
+}

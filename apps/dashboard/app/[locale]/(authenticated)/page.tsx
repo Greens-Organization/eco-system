@@ -1,50 +1,12 @@
 import { getDictionary } from '@pack/i18n';
-import type { Metadata } from 'next';
 import { Activity, Clock, DollarSign, Users } from 'lucide-react';
-import { env } from '@/env';
 import type { Locale } from '@/lib/i18n/utils';
 import { Header } from './components/header';
+import { getStats } from '@/actions/v1/stats';
 
 type PageProps = {
   params: Promise<{ locale: Locale }>;
 };
-
-type Stat = {
-  totalUsers: number;
-  activeUsers: number;
-  totalRevenue: number;
-  recentActivity: Array<{
-    id: string;
-    user: string;
-    action: string;
-    timestamp: string;
-  }>;
-};
-
-async function getStats(): Promise<Stat | null> {
-  try {
-    const res = await fetch(`${env.API_URL}/v1/stats`, {
-      cache: 'no-store',
-    });
-    if (!res.ok) return null;
-    return res.json();
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
-}
-
-export async function generateMetadata({
-  params,
-}: PageProps): Promise<Metadata> {
-  const { locale } = await params;
-  const dictionary = await getDictionary(locale);
-
-  return {
-    title: dictionary.app.dashboard.title,
-    description: dictionary.app.dashboard.description,
-  };
-}
 
 export default async function DashboardPage({ params }: PageProps) {
   const { locale } = await params;

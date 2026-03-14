@@ -14,6 +14,6 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@pack/typescript-config": "workspace:*"
+    "@pack/tsconfig": "workspace:*"
   }
 }
