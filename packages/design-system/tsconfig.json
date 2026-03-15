@@ -4,14 +4,14 @@
     "baseUrl": ".",
     "plugins": [
       {
-        "name": "next"
-      }
+        "name": "next",
+      },
     ],
     "paths": {
       "@pack/*": ["../*"],
-      "@pack/design-system/*": ["./*"]
-    }
+      "@pack/design-system/*": ["./*"],
+    },
   },
   "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
 }

@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@pack/auth": "workspace:*",
-    "@pack/design-system-svelte": "workspace:*",
+    "@pack/design-system-sv": "workspace:*",
     "@pack/i18n": "workspace:*",
     "@pack/observability": "workspace:*",
     "@pack/tools": "workspace:*",

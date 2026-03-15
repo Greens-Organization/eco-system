@@ -1,6 +1,6 @@
-import { hc } from 'hono/client'
-import type { AppType } from '@api/main/routes/v1'
-import { env } from '$lib/env'
+import type { AppType } from '@api/main/routes/v1';
+import { hc } from 'hono/client';
+import { env } from '$lib/env';
 
 /**
  * Creates a typed Hono RPC client with cookie forwarding.
@@ -24,5 +24,5 @@ export function createApiClient(cookieHeader: string) {
           Cookie: cookieHeader,
         },
       }),
-  })
+  });
 }
