@@ -26,7 +26,6 @@
 				"noNodejsModules": "off"
 			},
 			"nursery": {
-				"noSecrets": "off",
 				"useExplicitType": "off",
 				"useSortedClasses": {
 					"fix": "safe",

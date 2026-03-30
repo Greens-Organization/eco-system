@@ -1,15 +1,17 @@
 <script lang="ts">
-  import { SidebarProvider, SidebarInset } from '@pack/design-system-svelte'
-  import AppSidebar from '$lib/components/sidebar/app-sidebar.svelte'
-  import type { Snippet } from 'svelte'
+import * as Sidebar from '@pack/design-system-sv/components/ui/sidebar';
+import type { Snippet } from 'svelte';
+import AppSidebar from '$lib/components/sidebar/app-sidebar.svelte';
 
-  interface Props { children?: Snippet }
-  let { children }: Props = $props()
+interface Props {
+  children?: Snippet;
+}
+let { children }: Props = $props();
 </script>
 
-<SidebarProvider>
-  <AppSidebar />
-  <SidebarInset>
-    {@render children?.()}
-  </SidebarInset>
-</SidebarProvider>
+<Sidebar.Provider>
+    <AppSidebar />
+    <Sidebar.Inset>
+        {@render children?.()}
+    </Sidebar.Inset>
+</Sidebar.Provider>

@@ -1,7 +1,7 @@
-import { createApiClient } from '$lib/api/hono-client'
-import { safeFetch } from '$lib/api/safe-fetch'
-import type { PageServerLoad } from './$types'
-import z from 'zod'
+import z from 'zod';
+import { createApiClient } from '$lib/api/hono-client';
+import { safeFetch } from '$lib/api/safe-fetch';
+import type { PageServerLoad } from './$types';
 
 const StatsSchema = z.object({
   totalUsers: z.number(),
@@ -15,15 +15,15 @@ const StatsSchema = z.object({
       timestamp: z.string(),
     })
   ),
-})
+});
 
-type Stats = z.infer<typeof StatsSchema>
+type Stats = z.infer<typeof StatsSchema>;
 
 export const load: PageServerLoad = async ({ request }) => {
-  const api = createApiClient(request.headers.get('cookie') ?? '')
-  const result = await safeFetch<Stats>(api.stats.$get())
+  const api = createApiClient(request.headers.get('cookie') ?? '');
+  const result = await safeFetch<Stats>(api.stats.$get());
 
   return {
     stats: result.success ? result.data : null,
-  }
-}
+  };
+};

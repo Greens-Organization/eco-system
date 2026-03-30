@@ -1,7 +1,7 @@
-import { redirect } from '@sveltejs/kit'
-import { defaultLocale } from '@pack/i18n'
-import type { PageServerLoad } from './$types'
+import { defaultLocale } from '@pack/i18n';
+import { redirect } from '@sveltejs/kit';
+import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
-  redirect(307, `/${locals.locale ?? defaultLocale}`)
-}
+  redirect(307, `/${locals.locale ?? defaultLocale}`);
+};
