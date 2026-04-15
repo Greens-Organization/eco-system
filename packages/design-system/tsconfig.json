@@ -1,17 +1,11 @@
 {
-  "extends": "@pack/tsconfig/nextjs.json",
+  "extends": "@pack/tsconfig/svelte.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "plugins": [
-      {
-        "name": "next",
-      },
-    ],
     "paths": {
-      "@pack/*": ["../*"],
-      "@pack/design-system/*": ["./*"],
+      "$lib/*": ["./*"],
     },
   },
-  "include": ["**/*.ts", "**/*.tsx"],
+  "include": ["**/*.ts", "**/*.svelte"],
   "exclude": ["node_modules"],
 }

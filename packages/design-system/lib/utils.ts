@@ -1,12 +1,16 @@
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
-/**
- * Merges Tailwind class names, resolving any conflicts.
- *
- * @param inputs - An array of class names to merge.
- * @returns A string of merged and optimized class names.
- */
-export function cn(...inputs: ClassValue[]): string {
-  return twMerge(clsx(inputs));
+export function cn(...inputs: ClassValue[]) {
+	return twMerge(clsx(inputs));
+}
+
+export type WithoutChild<T> = T extends { child?: any } ? Omit<T, "child"> : T;
+export type WithoutChildren<T> = T extends { children?: any } ? Omit<T, "children"> : T;
+export type WithoutChildrenOrChild<T> = WithoutChildren<WithoutChild<T>>;
+export type WithElementRef<T, U extends HTMLElement = HTMLElement> = T & { ref?: U | null };
+
+
+export function genericAvatar(name = 'GG') {
+  return `https://api.dicebear.com/9.x/glass/svg?seed=${name}`;
 }

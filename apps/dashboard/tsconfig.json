@@ -1,21 +1,16 @@
 {
-  "extends": "@pack/tsconfig/nextjs.json",
+  "extends": "./.svelte-kit/tsconfig.json",
   "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./*"],
-      "@pack/*": ["../../packages/*"],
-      "@api/*": ["../api/src/*"],
-      "@/core/*": ["../api/src/core/*"],
-      "@/infra/*": ["../api/src/infra/*"],
-      "@/main/*": ["../api/src/main/*"]
-    }
+    "strict": true,
+    "skipLibCheck": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true
   },
   "include": [
-    "next-env.d.ts",
-    "next.config.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts"
-  ]
+    "src/**/*.ts",
+    "src/**/*.svelte",
+    "vite.config.ts",
+    "svelte.config.js"
+  ],
+  "exclude": ["node_modules"]
 }
