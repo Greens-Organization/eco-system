@@ -1,0 +1,21 @@
+# whether to enable telemetry
+telemetry = false
+
+[run]
+# Force bun runtime for all scripts (replaces node shebang with bun)
+bun = true
+
+# whether to install optionalDependencies
+optional = true
+
+# whether to install devDependencies
+dev = true
+
+# whether to install peerDependencies
+peer = true
+
+# equivalent to `--dry-run` flag
+dryRun = false
+
+# equivalent to 'save-exact=true' on .npmrc
+exact = true

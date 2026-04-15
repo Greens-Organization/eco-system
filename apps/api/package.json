@@ -7,12 +7,11 @@
     "preview": "./api",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
-    "docker:db:up": "docker compose -f docker-compose.local.yml up -d",
-    "docker:db:down": "docker compose -f docker-compose.local.yml down"
+    "docker:infra:up": "docker compose -f docker-compose.local.yml up -d",
+    "docker:infra:down": "docker compose -f docker-compose.local.yml down"
   },
   "dependencies": {
     "@hono/zod-openapi": "1.2.2",
-    "@pack/analytics": "workspace:*",
     "@pack/auth": "workspace:*",
     "@pack/db": "workspace:*",
     "@pack/observability": "workspace:*",
@@ -21,7 +20,6 @@
     "@scalar/hono-api-reference": "0.9.41",
     "@t3-oss/env-nextjs": "catalog:",
     "hono": "4.11.9",
-    "svix": "1.85.0",
     "vitest": "catalog:testing",
     "zod": "catalog:"
   },

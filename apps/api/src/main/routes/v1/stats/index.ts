@@ -5,7 +5,6 @@ import { getStatsHandler, getStatsRoute } from './get';
 
 const statsRoutes = new OpenAPIHono<{ Variables: Variables }>({
   defaultHook: handleZodError,
-})
-  .openapi(getStatsRoute, getStatsHandler);
+}).openapi(getStatsRoute, getStatsHandler);
 
 export default statsRoutes;

@@ -13,7 +13,6 @@
     "boundaries": "turbo boundaries",
     "lint": "biome check ./",
     "format": "biome check --write ./",
-    "clean": "git clean -xdf node_modules",
     "clean:all": "bun ./scripts/cleanup.ts",
     "tree": "tree -I 'node_modules|.cache|.turbo|dist' -L 10"
   },

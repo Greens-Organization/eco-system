@@ -1,6 +1,6 @@
 import { log } from '@pack/observability/logger';
-import { CONSTANTS } from '@/infra/common/constants';
 import { env, isLocal } from '@/core/env';
+import { CONSTANTS } from '@/infra/common/constants';
 
 export const setup = {
   timezone: () => {

@@ -1,7 +1,7 @@
-import { createRoute } from '@hono/zod-openapi';
 import type { RouteHandler } from '@hono/zod-openapi';
-import { statsSchemaRes } from './schema';
+import { createRoute } from '@hono/zod-openapi';
 import type { Variables } from '..';
+import { statsSchemaRes } from './schema';
 
 export const getStatsRoute = createRoute({
   method: 'get',
@@ -18,7 +18,10 @@ export const getStatsRoute = createRoute({
   },
 });
 
-export const getStatsHandler: RouteHandler<typeof getStatsRoute, { Variables: Variables }> = async (c) => {
+export const getStatsHandler: RouteHandler<
+  typeof getStatsRoute,
+  { Variables: Variables }
+> = async (c) => {
   return c.json({
     totalUsers: 12543,
     activeUsers: 234,
