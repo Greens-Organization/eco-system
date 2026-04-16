@@ -4,10 +4,7 @@ import type { RequestIdVariables } from 'hono/request-id';
 import { env } from '@/core/env';
 import { CONSTANTS } from '@/infra/common/constants';
 import { handleZodError } from '@/main/infra/openapi/utils';
-import type {
-  AuthVariables,
-  authMiddleware,
-} from '@/main/middleware/auth-middleware';
+import { type AuthVariables, authMiddleware } from '@/main/middleware';
 import statsRoute from './stats';
 
 export type Variables = RequestIdVariables & AuthVariables;
@@ -83,7 +80,7 @@ v1.get(
  * Authentication middleware
  * Applied to all routes except /openapi (spec) and / (docs)
  */
-// v1.use('/*', authMiddleware);
+v1.use('/*', authMiddleware);
 
 /**
  * API Routes

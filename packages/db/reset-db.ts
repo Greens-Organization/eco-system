@@ -3,11 +3,11 @@ import { db } from '.';
 import * as schema from './schema';
 
 if (process.env.NODE_ENV === 'local') {
-  console.log('Initializing database reset...');
+  console.log('Initializing data reset...');
 
   await reset(db, schema);
 
-  console.log('Reset completed!');
+  console.log('Data eeset completed!');
 } else {
   console.error(
     `THIS SCRIPT CAN NOT BE EXECUTED ON "${process.env.NODE_ENV?.toUpperCase()}" ENVIRONMENT!`

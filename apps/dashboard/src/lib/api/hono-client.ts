@@ -16,13 +16,15 @@ import { env } from '$lib/env';
  */
 export function createApiClient(cookieHeader: string) {
   return hc<AppType>(`${env.API_URL}/v1`, {
-    fetch: (input: RequestInfo | URL, init?: RequestInit) =>
-      fetch(input, {
+    fetch: (input: RequestInfo | URL, init?: RequestInit) => {
+      const existingHeaders =
+        init?.headers instanceof Headers
+          ? Object.fromEntries(init.headers.entries())
+          : (init?.headers ?? {})
+      return fetch(input, {
         ...init,
-        headers: {
-          ...init?.headers,
-          Cookie: cookieHeader,
-        },
-      }),
+        headers: { ...existingHeaders, Cookie: cookieHeader },
+      })
+    },
   });
 }

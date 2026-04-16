@@ -5,6 +5,9 @@ export const schema = z.object({
   DRIZZLE_SQL_LOGS: z
     .stringbool({ truthy: ['yes', 'true'], falsy: ['no', 'false'] })
     .default(false),
+  ADMIN_EMAIL: z.email().optional(),
+  ADMIN_PASSWORD: z.string().min(1).optional(),
+  ADMIN_NAME: z.string().min(1).optional(),
 })
 
 export const env = schema.parse(process.env)

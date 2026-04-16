@@ -7,9 +7,8 @@
     "db:generate": "bun x --bun drizzle-kit generate",
     "db:migrate": "bun x --bun drizzle-kit migrate",
     "db:studio": "bun x --bun drizzle-kit studio",
-    "db:seed": "bun --bun seed.ts",
-    "db:reset": "./scripts/reset-db.ts",
-    "db:reset:force": "./scripts/reset-db.ts --force",
+    "db:seed": "bun --bun seed/index.ts",
+    "db:reset": "bun run ./reset-db.ts",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },

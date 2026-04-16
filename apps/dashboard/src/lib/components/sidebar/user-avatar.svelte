@@ -1,5 +1,4 @@
 <script lang="ts">
-import { authClient } from '@pack/auth/client.svelte';
 import * as DropdownMenu from '@pack/design-system/components/ui/dropdown-menu';
 import { genericAvatar } from '@pack/design-system/lib/utils';
 import { EllipsisVertical, LogOut, Moon, Sun, User } from 'lucide-svelte';
@@ -18,11 +17,6 @@ const avatarSrc = $derived(
   user?.image ?? genericAvatar(user?.name ?? user?.email ?? 'U')
 );
 
-async function handleSignOut() {
-  await authClient.signOut();
-  goto(`/${locale}/sign-in`);
-}
-
 const btnClass =
   'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm ' +
   'outline-none ring-sidebar-ring transition-[width,height,padding] ' +
@@ -32,29 +26,30 @@ const btnClass =
   'data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground';
 </script>
 
-{#if user}
-    <DropdownMenu.Root>
-        <DropdownMenu.Trigger>
-            {#snippet child({ props })}
-                <button type="button" {...props} class={btnClass}>
-                    <img
-                        src={avatarSrc}
-                        alt={user?.name}
-                        class="size-8 shrink-0 rounded-full object-cover"
-                    />
-                    <div
-                        class="grid min-w-0 flex-1 text-left text-sm leading-tight"
+<DropdownMenu.Root>
+    <DropdownMenu.Trigger>
+        {#snippet child({ props })}
+            <button type="button" {...props} class={btnClass}>
+                <img
+                    src={avatarSrc}
+                    alt={user?.name ?? 'User'}
+                    class="size-8 shrink-0 rounded-full object-cover"
+                />
+                <div
+                    class="grid min-w-0 flex-1 text-left text-sm leading-tight"
+                >
+                    <span class="truncate font-medium"
+                        >{user?.name ?? '—'}</span
                     >
-                        <span class="truncate font-medium">{user?.name}</span>
-                    </div>
-                    <div
-                        class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-accent/50"
-                    >
-                        <EllipsisVertical class="size-4 opacity-40" />
-                    </div>
-                </button>
-            {/snippet}
-        </DropdownMenu.Trigger>
+                </div>
+                <div
+                    class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-accent/50"
+                >
+                    <EllipsisVertical class="size-4 opacity-40" />
+                </div>
+            </button>
+        {/snippet}
+    </DropdownMenu.Trigger>
 
         <DropdownMenu.Content
             side="right"
@@ -84,13 +79,21 @@ const btnClass =
 
             <DropdownMenu.Separator class="my-1 h-px bg-border" />
 
-            <DropdownMenu.Item
-                class="flex cursor-pointer items-center gap-3 rounded-sm px-2 py-1.5 text-sm outline-none data-highlighted:bg-accent data-highlighted:text-accent-foreground"
-                onclick={handleSignOut}
-            >
-                <LogOut class="size-4 text-destructive/70" />
-                <span class="text-destructive/70">{t.app.common.logout}</span>
+            <DropdownMenu.Item asChild>
+                {#snippet child({ props })}
+                    <form method="POST" action="/{locale}/sign-out">
+                        <button
+                            type="submit"
+                            {...props}
+                            class="flex w-full cursor-pointer items-center gap-3 rounded-sm px-2 py-1.5 text-sm outline-none data-highlighted:bg-accent data-highlighted:text-accent-foreground"
+                        >
+                            <LogOut class="size-4 text-destructive/70" />
+                            <span class="text-destructive/70"
+                                >{t.app.common.logout}</span
+                            >
+                        </button>
+                    </form>
+                {/snippet}
             </DropdownMenu.Item>
         </DropdownMenu.Content>
     </DropdownMenu.Root>
-{/if}
