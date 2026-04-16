@@ -16,7 +16,6 @@
   "dependencies": {
     "@pack/db": "workspace:*",
     "@pack/tools": "workspace:*",
-    "@t3-oss/env-nextjs": "catalog:",
     "better-auth": "1.4.18",
     "next-themes": "catalog:",
     "react": "catalog:",

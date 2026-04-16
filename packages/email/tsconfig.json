@@ -1,5 +1,5 @@
 {
-  "extends": "@pack/tsconfig/nextjs.json",
+  "extends": "@pack/tsconfig/svelte.json",
   "compilerOptions": {
     "baseUrl": "."
   },

@@ -9,7 +9,6 @@
   "dependencies": {
     "@react-email/components": "1.0.7",
     "@react-email/render": "2.0.4",
-    "@t3-oss/env-nextjs": "catalog:",
     "nodemailer": "8.0.1",
     "react": "catalog:",
     "react-dom": "catalog:",

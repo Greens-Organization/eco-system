@@ -1,21 +1,11 @@
-import { createEnv } from '@t3-oss/env-nextjs';
-import { z } from 'zod';
+import { z } from 'zod'
 
-const booleanSchema = z.stringbool({
-  truthy: ['yes', 'true'],
-  falsy: ['no', 'false'],
-});
+export const schema = z.object({
+  DATABASE_URL: z.url(),
+  DRIZZLE_SQL_LOGS: z
+    .stringbool({ truthy: ['yes', 'true'], falsy: ['no', 'false'] })
+    .default(false),
+})
 
-export const packEnv = () =>
-  createEnv({
-    server: {
-      DATABASE_URL: z.url(),
-      DRIZZLE_SQL_LOGS: booleanSchema.default(false),
-    },
-    runtimeEnv: {
-      DATABASE_URL: process.env.DATABASE_URL,
-      DRIZZLE_SQL_LOGS: process.env.DRIZZLE_SQL_LOGS,
-    },
-  });
-
-export const connectionString = packEnv().DATABASE_URL;
+export const env = schema.parse(process.env)
+export const connectionString = env.DATABASE_URL

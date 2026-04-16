@@ -1,9 +1,7 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { connectionString, packEnv } from './pack-env';
+import { connectionString, env } from './pack-env'
 import * as schema from './schema';
-
-const _env = packEnv();
 
 const client = postgres(connectionString, {
   max: 10,
@@ -25,7 +23,7 @@ const client = postgres(connectionString, {
 export const db = drizzle({
   client,
   schema,
-  logger: _env.DRIZZLE_SQL_LOGS,
+  logger: env.DRIZZLE_SQL_LOGS,
   casing: 'snake_case',
 });
 

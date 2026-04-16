@@ -1,5 +1,5 @@
 {
-  "extends": "@pack/tsconfig/nextjs.json",
+  "extends": "@pack/tsconfig/bun.json",
   "compilerOptions": {
     "baseUrl": "."
   },

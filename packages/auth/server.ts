@@ -1,11 +1,9 @@
 import { db } from '@pack/db';
+import { argon2Adapter } from '@pack/tools';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { nextCookies } from 'better-auth/next-js';
-import { argon2Adapter } from '@pack/tools';
-import { packEnv } from './pack-env';
-
-const _env = packEnv();
+import { env } from './pack-env'
 
 export const auth = betterAuth({
   basePath: '/auth',
@@ -13,7 +11,7 @@ export const auth = betterAuth({
     provider: 'pg',
   }),
   plugins: [nextCookies()],
-  trustedOrigins: _env.ORIGIN_ALLOWED,
+  trustedOrigins: env.ORIGIN_ALLOWED,
 
   session: { cookieCache: { enabled: true, maxAge: 60 * 5 } },
 

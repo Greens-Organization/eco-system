@@ -7,7 +7,6 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@t3-oss/env-nextjs": "catalog:",
     "@upstash/ratelimit": "2.0.8",
     "@upstash/redis": "1.36.2",
     "zod": "catalog:"

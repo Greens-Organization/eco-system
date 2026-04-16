@@ -1,9 +1,7 @@
 import { render } from '@react-email/render';
 import nodemailer from 'nodemailer';
 import type { ReactElement } from 'react';
-import { packEnv } from './pack-env';
-
-const _env = packEnv();
+import { env } from './pack-env'
 
 export interface SendEmailOptions {
   react: ReactElement;
@@ -36,11 +34,11 @@ export interface SendEmailHtmlOptions {
 
 // Create transporter singleton
 const transporter = nodemailer.createTransport({
-  host: _env.SMTP_HOST,
-  port: Number(_env.SMTP_PORT),
+  host: env.SMTP_HOST,
+  port: Number(env.SMTP_PORT),
   auth: {
-    user: _env.SMTP_USER,
-    pass: _env.SMTP_PASS,
+    user: env.SMTP_USER,
+    pass: env.SMTP_PASS,
   },
 });
 
@@ -56,7 +54,7 @@ export const sendEmail = async (options: SendEmailOptions): Promise<void> => {
     console.log('[DEV] Email que seria enviado:', {
       to: options.to,
       subject: options.subject,
-      from: options.from || _env.SMTP_FROM,
+      from: options.from || env.SMTP_FROM,
     });
     return;
   }
@@ -84,7 +82,7 @@ export const sendEmailHtml = async (
     console.log('[DEV] Email HTML que seria enviado:', {
       to: options.to,
       subject: options.subject,
-      from: options.from || _env.SMTP_FROM,
+      from: options.from || env.SMTP_FROM,
     });
     return;
   }
@@ -92,9 +90,9 @@ export const sendEmailHtml = async (
   const from = options.fromDisplayName
     ? {
         name: options.fromDisplayName,
-        address: options.from || _env.SMTP_FROM,
+        address: options.from || env.SMTP_FROM,
       }
-    : options.from || _env.SMTP_FROM;
+    : options.from || env.SMTP_FROM;
 
   const to = Array.isArray(options.to) ? options.to.join(',') : options.to;
   const cc = options.cc

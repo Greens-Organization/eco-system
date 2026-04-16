@@ -18,7 +18,6 @@
     "@pack/payments": "workspace:*",
     "@pack/testing": "workspace:*",
     "@scalar/hono-api-reference": "0.9.41",
-    "@t3-oss/env-nextjs": "catalog:",
     "hono": "4.11.9",
     "vitest": "catalog:testing",
     "zod": "catalog:"

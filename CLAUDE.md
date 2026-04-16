@@ -1,159 +1,220 @@
 # Eco-System v2 — CLAUDE.md
 
-## Visão Geral
+## Overview
 
-Monorepo SaaS em evolução, inspirado no [next-forge](https://www.next-forge.com/), mas progressivamente desvinculado do ecossistema Next.js.
-O backend migrou para **Hono** (Bun runtime). O frontend ainda é **Next.js**, mas a dependência está sendo reduzida.
+SaaS monorepo in active development, inspired by [next-forge](https://www.next-forge.com/) but progressively decoupled from the Next.js ecosystem.
+The backend runs on **Hono** (Bun runtime). The frontend has migrated to **SvelteKit** (Svelte 5 + Bun runtime).
 
 - **Package manager:** Bun 1.3.5
-- **Orquestração:** Turborepo 2.8.9
+- **Orchestration:** Turborepo 2.8.9
 - **Lint/Format:** Biome 2.4.2
-- **Linguagem:** TypeScript 5.9.3 (strict)
-- **Branch principal:** `main` | Branch ativa: `alpha/eco-system-v2`
+- **Language:** TypeScript 5.9.3 (strict)
+- **Main branch:** `main` | Active branch: `alpha/eco-system-v2`
 
 ---
 
-## Estrutura
+## Structure
 
 ```
 eco-system/
 ├── apps/
-│   ├── api/        — Backend Hono (Bun runtime, OpenAPI + Scalar)
-│   └── dashboard/  — Frontend Next.js 16 + React 19
+│   ├── api/        — Hono backend (Bun runtime, OpenAPI + Scalar)
+│   └── dashboard/  — SvelteKit frontend + Svelte 5 (Bun runtime)
 └── packages/
     ├── auth/               — better-auth + Argon2 + Drizzle adapter
     ├── cache/              — Upstash Redis + BullMQ
     ├── db/                 — Drizzle ORM + PostgreSQL
-    ├── design-system/      — Base UI, Radix, Geist, CVA, TanStack Form
-    ├── analytics/          — PostHog + Vercel Analytics + Google Analytics
+    ├── design-system/      — bits-ui, Radix, Geist, CVA, TanStack Form (Svelte)
     ├── email/              — Resend + React-Email + Nodemailer
-    ├── feature-flags/      — flags + Vercel toolbar
-    ├── i18n/               — next-international (dictionaries por locale)
-    ├── next-config/        — NextConfig compartilhado
+    ├── i18n/               — per-locale dictionaries, locale utils
     ├── observability/      — Pino (logger + parseError)
-    ├── payments/           — PLACEHOLDER (sem integração real ainda)
+    ├── payments/           — PLACEHOLDER (no real integration yet)
     ├── rate-limit/         — Upstash sliding window
-    ├── security/           — Arcjet + NoseCone
-    ├── seo/                — schema-dts, metadata helpers
+    ├── seo/                — schema-dts, metadata helpers (framework-agnostic)
     ├── storage/            — Vercel Blob
     ├── testing/            — Vitest + Testing Library
     ├── tools/              — es-toolkit utilities
-    └── tsconfig/           — tsconfigs base (nextjs, bun, react-library)
+    └── tsconfig/           — base tsconfigs (bun.json, nextjs.json, react-library.json)
+```
+
+### Internal structure — apps/api
+
+```
+apps/api/src/
+├── core/
+│   └── env.ts              — Zod-validated env vars (T3 Env)
+├── infra/
+│   └── common/
+│       └── constants.ts    — CONSTANTS (base routes: /v1, /health, /auth)
+├── main/
+│   ├── app.ts              — Hono instance, CORS, global middlewares, route mounts
+│   ├── setup.ts            — timezone + startup log
+│   ├── routes/
+│   │   ├── public/         — unauthenticated routes (e.g. health)
+│   │   └── v1/             — authenticated routes
+│   │       ├── index.ts    — OpenAPIHono, Scalar docs, securitySchemes, AppType export
+│   │       └── stats/      — example resource (route definition + handler split by file)
+│   ├── middleware/
+│   │   └── auth-middleware.ts — better-auth session middleware (currently commented out)
+│   └── infra/
+│       ├── error-handler.ts
+│       ├── graceful-shutdown.ts
+│       └── openapi/        — Zod → OpenAPI validation utils
+└── server.ts               — entry point: Bun.serve()
+```
+
+### Internal structure — apps/dashboard
+
+```
+apps/dashboard/src/
+├── app.d.ts                — SvelteKit global types (App.Locals, App.PageData)
+├── hooks.server.ts         — handle chain: authHandle → localeHandle → sessionHandle → i18nHandle
+├── lib/
+│   ├── env.ts              — env vars (API_URL etc.)
+│   ├── api/
+│   │   ├── hono-client.ts  — createApiClient(cookieHeader) → hc<AppType>
+│   │   └── safe-fetch.ts   — safeFetch<T>(request) → Result<T>
+│   ├── i18n/               — client-side i18n helpers
+│   └── components/         — reusable Svelte components
+└── routes/
+    ├── +layout.server.ts
+    ├── +layout.svelte
+    ├── +page.server.ts
+    └── [locale]/
+        ├── (authenticated)/   — protected routes
+        │   ├── +layout.server.ts  — verifies session, fetches user via API
+        │   ├── +layout.svelte
+        │   ├── +page.server.ts
+        │   └── +page.svelte
+        └── (unauthenticated)/
+            ├── sign-in/
+            └── sign-up/
 ```
 
 ---
 
-## Scripts Principais
+## Main Scripts
 
 ```bash
-bun dev          # Inicia todos os apps em modo dev (Turbo)
-bun build        # Build completo
-bun test         # Testes (Vitest)
+bun dev          # Start all apps in dev mode (Turbo)
+bun build        # Full build
+bun test         # Tests (Vitest)
 bun lint         # Biome check
 bun format       # Biome check --write
 bun clean        # Remove node_modules (git clean)
-bun clean:all    # Limpeza profunda via scripts/cleanup.ts
-bun tree         # Visualiza estrutura (ignora node_modules, dist, etc.)
+bun clean:all    # Deep cleanup via scripts/cleanup.ts
+bun tree         # Visualize structure (ignores node_modules, dist, etc.)
 ```
 
 ### API (apps/api)
 ```bash
 cd apps/api
-bun dev          # Dev server
-bun build        # Compila para binário único (bun compile)
-bun db:generate  # Gera migrations Drizzle
-bun db:migrate   # Executa migrations
+bun dev          # Dev server (hot reload)
+bun build        # Compile to single binary (bun compile)
+bun db:generate  # Generate Drizzle migrations
+bun db:migrate   # Run migrations
 bun db:studio    # Drizzle Studio
-bun db:seed      # Seed do banco
+bun db:seed      # Seed the database
 ```
 
 ---
 
-## Convenções
+## Conventions
 
-### Pacotes internos
-- Prefixo: `@pack/` (ex: `@pack/auth`, `@pack/db`)
-- Cada pacote tem responsabilidade única
-- Usar `server-only` / `client-only` para separar contextos
+### Internal packages
+- Prefix: `@pack/` (e.g. `@pack/auth`, `@pack/db`)
+- Each package has a single responsibility
+- Isolation is enforced by package entry points (e.g. `@pack/auth/server` vs `@pack/auth/client.svelte`), not `server-only`/`client-only`
 
 ### TypeScript
-- Strict mode sempre ativado
-- Nunca usar `any` implícito
-- Pacote de configs: `@pack/tsconfig` (renomeado de `typescript-config`)
-- `nextjs.json` extende `bun.json` — flags incompatíveis com Next.js são explicitamente desativados:
-  `verbatimModuleSyntax: false`, `noUncheckedIndexedAccess: false`, `allowImportingTsExtensions: false`
-- `bun.json` tem `verbatimModuleSyntax: true` — válido apenas em projetos pure Bun (ex: `apps/api`)
-- Não adicionar `"use server"` em arquivos que exportam objetos/constantes — só em arquivos de server actions (funções async)
+- Strict mode always on
+- Never use implicit `any`
+- Config package: `@pack/tsconfig`
+- `bun.json` has `verbatimModuleSyntax: true` — valid only in pure Bun projects (e.g. `apps/api`)
+- `nextjs.json` — kept for packages that still reference Next.js (e.g. `@pack/email`, `@pack/storage`)
+- The dashboard tsconfig maps `@api/*` paths to resolve transitive imports when using `AppType` — keep in sync with the API folder structure
 
-### Validação
-- Zod em todas as fronteiras (API inputs, env vars)
-- T3 env (`@t3-oss/env-core` ou `@t3-oss/env-nextjs`) para variáveis de ambiente
+### Validation
+- Zod at all boundaries (API inputs, env vars)
+- T3 env (`@t3-oss/env-core`) for environment variables
 
-### Estilo de código
-- Aspas simples, sem ponto-e-vírgula, 2 espaços, 80 chars (Biome)
-- Trailing commas ES5
-- Ordenação de classes Tailwind via Biome (clsx, cva, cn, twMerge)
+### Code style
+- Single quotes, no semicolons, 2 spaces, 80 chars (Biome)
+- ES5 trailing commas
+- Tailwind class ordering via Biome (clsx, cva, cn, twMerge)
 
 ### API (Hono)
-- Rotas em `apps/api/src/main/routes/`
-- Versioning: `/v1/`, `/public/`
-- OpenAPI com `@hono/zod-openapi` + docs via Scalar em `GET /v1/`
-- Auth via cookie session (`better-auth.session_token`)
 
-### Dashboard (Next.js)
-- App Router com `[locale]/(authenticated)/` para rotas protegidas
-- Server actions em `apps/dashboard/actions/`
-- Client HTTP tipado via Hono RPC (`hc<AppType>`) em `apps/dashboard/lib/api/hono-client.ts`
-- i18n obrigatório: `getDictionary(locale)` em todas as pages
-- `proxy.ts` é o middleware — faz rewrite de `/auth/*` para a API e protege rotas autenticadas
-- `instrumentation.ts` exporta `function register() {}` vazio — Sentry removido, manter para compatibilidade futura
-- O tsconfig do dashboard mapeia paths internos da API (`@/core/*`, `@/infra/*`, `@/main/*`) para resolver imports transitivos ao usar `AppType` — manter sincronizado com a estrutura de pastas da API
+- Routes in `apps/api/src/main/routes/`
+- Versioning: `/v1/`, `/public/`
+- OpenAPI via `@hono/zod-openapi` + docs via Scalar at `GET /v1/`
+- Auth via cookie session (`better-auth.session_token`)
+- Each resource has split files: `<resource>/index.ts` (router) + `<resource>/get.ts`, `post.ts`, etc. (route definition + handler)
+- `AppType` is exported from `routes/v1/index.ts` — used by the dashboard to type the RPC client
+
+### Dashboard (SvelteKit)
+
+- Svelte 5 with runes (`$state`, `$derived`, `$effect`, `$props`)
+- `hooks.server.ts` is the central entry point: proxies `/auth/*` → API, locale detection, session guard, i18n dictionary loading
+- Route groups: `(authenticated)/` for protected routes, `(unauthenticated)/` for sign-in/sign-up
+- All routes are prefixed with `[locale]` — never redirect without including the locale
+- `App.Locals` (in `app.d.ts`) carries: `locale`, `session` (cookie string or null), `dictionary`
+- `App.PageData` carries: `locale`, `dictionary`, `user` (optional, set by the authenticated layout)
+- Use `$lib/` alias for `src/lib/` — always prefer it over long relative paths
 
 ### Auth (better-auth)
-- Handler de auth roda na **API Hono** em `/auth/*` — não no Next.js
-- `proxy.ts` faz `NextResponse.rewrite` de `/auth/*` → `API_URL/auth/*` (URL da API nunca exposta ao browser)
-- `authClient` (browser) usa `basePath: '/auth'` sem `baseURL` — funciona via rewrite transparente
-- Em server actions, usar `auth.api.getSession({ headers: await headers() })` de `@pack/auth/server`
-- `@pack/auth/cookies` re-exporta `getSessionCookie` do better-auth (já lida com nomes dev/prod)
-- Não criar helper `getServerSession` — não necessário nessa arquitetura
+
+- Auth handler runs on the **Hono API** at `/auth/*` — never on the dashboard
+- `hooks.server.ts` (`authHandle`) fetches `/auth/*` → `API_URL/auth/*` directly (API URL is never exposed to the browser)
+- `@pack/auth/client.svelte` exports `authClient` (reactive Svelte stores via `better-auth/svelte`) + `Session`/`User` types
+- `@pack/auth/server` exports `auth` (better-auth instance with Drizzle adapter)
+- `@pack/auth/cookies` exports `getSessionCookie` — used in `hooks.server.ts` to read the session cookie
+- In server-side load functions, session is read from `event.locals.session` (already resolved by `sessionHandle`)
+- For full user data, fetch `API_URL/auth/get-session` with the forwarded cookie header
+- `nextCookies()` plugin in `@pack/auth/server` is a no-op in the Hono context — harmless, will be removed later
 
 ### Hono RPC Client (dashboard)
-- `hono-client.ts` **não tem** `"use server"` — `api` é um objeto, não uma server action
-- Cookie forwarding automático via custom `fetch` no `hc`
-- Para tipar responses, usar `z.infer<typeof schemaRes>` e passar explicitamente ao `safeFetch`:
-  `safeFetch<MyType>(api.resource.$get())`
-- **Não usar** `InferResponseType` com `@hono/zod-openapi` — não propaga tipos corretamente via `.openapi()`
+
+- `createApiClient(cookieHeader: string)` in `$lib/api/hono-client.ts` — takes the cookie header and returns a typed `hc<AppType>` with automatic forwarding
+- Call inside `load` functions or actions, passing `request.headers.get('cookie') ?? ''`
+- `safeFetch<T>(request)` in `$lib/api/safe-fetch.ts` → `Result<T>` (`{ success: true, data }` | `{ success: false, error, status }`)
+- **Do not use** `InferResponseType` with `@hono/zod-openapi` — types don't propagate correctly through `.openapi()`
+- To type responses, use `z.infer<typeof schemaRes>` and pass it explicitly to `safeFetch`
 
 ---
 
-## Estado Atual — Em Manutenção
+## Current State — Work in Progress
 
-O projeto está em evolução ativa. Itens ainda em aberto são esperados e fazem parte do processo:
+The project is in active evolution. Open items are expected and part of the process:
 
-- `@pack/payments` — placeholder, sem Stripe ainda
-- Auth middleware na API está comentado (`v1.use('/*', authMiddleware)`)
-- Possível duplicação entre `@pack/cache` e `@pack/rate-limit` (ambos Upstash) — consolidar futuramente
-- Alguns pacotes ainda acoplados ao Next.js (`@pack/next-config`, `@pack/seo`, `@pack/i18n`) — desacoplamento progressivo
-- `packages/tsconfig/base.json` removido, substituído por configs específicas (`bun.json`, `nextjs.json`, `react-library.json`)
+- `@pack/payments` — placeholder, no Stripe integration yet
+- Auth middleware in the API is commented out (`v1.use('/*', authMiddleware)`)
+- `@pack/auth/server` uses `nextCookies()` — legacy plugin, no effect on Hono, remove later
+- `@pack/auth/client.ts` uses `better-auth/react` — legacy, use `client.svelte.ts` in the dashboard
+- `@pack/email` and `@pack/storage` still depend on `@t3-oss/env-nextjs` — migrate to `env-core` later
+- Potential overlap between `@pack/cache` and `@pack/rate-limit` (both Upstash) — consolidate later
+- `packages/tsconfig/nextjs.json` kept for packages that still reference Next.js
 
-**Não questionar nem tentar "consertar" itens em aberto sem instrução explícita.**
-
----
-
-## O que Evitar
-
-- Não usar `npm` ou `yarn` — sempre `bun`
-- Não adicionar dependências sem verificar o catalog em `package.json` (raiz)
-- Não criar arquivos de documentação (`.md`) além dos já existentes, a menos que solicitado
-- Não refatorar código fora do escopo da tarefa
-- Não adicionar comentários ou docstrings em código que não foi alterado
-- Não usar `any` em TypeScript
-- Não commitar sem instrução explícita do usuário
+**Do not question or attempt to "fix" open items without explicit instruction.**
 
 ---
 
-## Referências
+## What to Avoid
 
-- Orquestração e workflow: `.prompts/orchestration.md`
-- Tarefas e progresso: `tasks/todo.md`
-- Lições aprendidas: `tasks/lessons.md`
+- Never use `npm` or `yarn` — always `bun`
+- Never add dependencies without checking the catalog in the root `package.json`
+- Never create documentation files (`.md`) beyond those already existing, unless requested
+- Never refactor code outside the task scope
+- Never add comments or docstrings to code that wasn't changed
+- Never use `any` in TypeScript
+- Never commit without explicit instruction from the user
+- Never create Next.js server actions — the dashboard uses SvelteKit `Actions` in `+page.server.ts`
+- Never reference `proxy.ts` or `instrumentation.ts` — they are removed Next.js artifacts
+
+---
+
+## References
+
+- Orchestration and workflow: `.prompts/orchestration.md`
+- Tasks and progress: `tasks/todo.md`
+- Lessons learned: `tasks/lessons.md`

@@ -1,10 +1,8 @@
 import fs from 'node:fs';
 import pino, { type TransportTargetOptions } from 'pino';
-import { packEnv } from '../pack-env';
+import { env } from '../pack-env'
 
-const _env = packEnv();
-
-const level = _env.LOG_LEVEL;
+const level = env.LOG_LEVEL;
 
 const transports: TransportTargetOptions[] = [];
 
@@ -23,7 +21,7 @@ transports.push({
   },
 });
 
-if (_env.FILE_LOG) {
+if (env.FILE_LOG) {
   const logDirectory = './logs';
 
   if (!fs.existsSync(logDirectory)) {
@@ -62,7 +60,7 @@ export const log = pino({
     err: pino.stdSerializers.err,
   },
   // Use pretty priting in development, structured JSON in production
-  ...(_env.LOG_PRETTY && {
+  ...(env.LOG_PRETTY && {
     transport: {
       targets: transports,
     },

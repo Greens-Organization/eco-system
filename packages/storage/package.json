@@ -7,7 +7,6 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@t3-oss/env-nextjs": "catalog:",
     "@vercel/blob": "2.2.0",
     "zod": "catalog:"
   },
