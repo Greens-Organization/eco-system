@@ -9,7 +9,6 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "catalog:testing",
     "vitest": "catalog:testing"
   }
 }

@@ -7,25 +7,20 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "exports": {
-    ".": "./index.ts",
     "./server": "./server.ts",
-    "./client": "./client.ts",
     "./client.svelte": "./client.svelte.ts",
-    "./cookies": "./cookies.ts"
+    "./cookies": "./cookies.ts",
+    "./pack-env": "./pack-env.ts"
   },
   "dependencies": {
     "@pack/db": "workspace:*",
     "@pack/tools": "workspace:*",
     "better-auth": "1.6.9",
-    "next-themes": "catalog:",
-    "react": "catalog:",
     "server-only": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@pack/tsconfig": "workspace:*",
-    "@types/node": "catalog:dev",
-    "@types/react": "catalog:dev",
-    "@types/react-dom": "catalog:dev"
+    "@types/node": "catalog:dev"
   }
 }
