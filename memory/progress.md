@@ -21,14 +21,17 @@ changed but this file wasn't updated.
 - [x] Remove typecheck script from @pack/tsconfig (config-only pkg)
 - [x] Add typecheck task to turbo.json
 - [x] Stub verify gate in agent-md.toml during migration
+- [x] Compact stop-verify hook output (~90 → ~17 lines via compact_errors)
+- [x] Fix Stop hook schema bug (hookSpecificOutput.additionalContext → systemMessage)
+- [x] Two-commit split: deps bump (e52c934) + agent-md bootstrap (5bed406)
+- [x] Remove React/Next leftovers from Svelte migration:
+      packages/auth (4 files + deps), observability/testing pkg deps, root catalog
 
 ## Backlog (migration debt — re-enable verify after)
 
 - [ ] @pack/payments — empty package, tsconfig include matches no files;
       either remove typecheck script or add .gitkeep stub
-- [ ] apps/api — broken imports: @/core/env, @/main/*, @pack/auth/pack-env,
-      @pack/email/pack-env (run `bun install`?)
-- [ ] apps/api/src/server.ts:29 — TS1470 import.meta in CommonJS output
+- [ ] apps/api — broken imports likely resolved by deps bump; revalidate
 - [ ] apps/dashboard — $lib/env missing; +layout.server.ts/+page.server.ts
       need explicit .js extensions for NodeNext moduleResolution
 - [ ] packages/db/schema/User/*.ts — useFilenamingConvention failures

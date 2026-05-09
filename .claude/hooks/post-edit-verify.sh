@@ -43,8 +43,15 @@ if [ -n "$CFG_LINT_FILE" ]; then
   # quoted env var, not via literal string splicing.
   export AGENT_MD_FILE="$FILE_PATH"
   OUT=$(bash -c "${CFG_LINT_FILE//\{file\}/\"\$AGENT_MD_FILE\"}" 2>&1)
-  # shellcheck disable=SC2181
-  if [ $? -ne 0 ]; then
+  RC=$?
+  # Linters can refuse to process a file because it's intentionally
+  # excluded by the project's config (e.g. biome.json `files.includes`
+  # ignore patterns). That's not a lint failure — it's the project
+  # saying "don't lint this." Treat it as a pass.
+  if [ $RC -ne 0 ] && echo "$OUT" | grep -qE 'No files were processed|file ignored|matched no files'; then
+    RC=0
+  fi
+  if [ $RC -ne 0 ]; then
     ERRORS="lint errors in ${FILE_PATH}:
 ${OUT}"
   fi

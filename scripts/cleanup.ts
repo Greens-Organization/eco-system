@@ -1,56 +1,84 @@
 #!/usr/bin/env bun
-import { $ } from "bun";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { $, Glob } from 'bun';
+import { basename, dirname, resolve } from 'node:path';
 
 /**
- * Script de limpeza que executa o comando 'clean' em todos os pacotes do monorepo
- * Remove node_modules e outros arquivos que não estão presentes no git
+ * Limpeza do monorepo: roda `bun run clean` em cada workspace que define
+ * o script. Workspaces sem `clean` são pulados (não viram falso positivo).
+ * Falhas reais são reportadas com stderr e exit code != 0.
  */
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const rootDir = resolve(__dirname, "../");
+type Status = 'cleaned' | 'skipped' | 'failed';
+type Result = { name: string; status: Status; error?: string };
 
-async function cleanup() {
-	console.log("🧹 Iniciando limpeza do monorepo...\n");
+const rootDir = resolve(import.meta.dir, '..');
 
-	try {
-		console.log("📦 Limpando raiz do projeto...");
-		await $`cd ${rootDir} && bun run clean`.quiet();
-		console.log("✅ Raiz limpa com sucesso!\n");
-
-		const packagePaths =
-			await $`find ${rootDir}/packages ${rootDir}/apps -name "package.json" -type f -not -path "*/node_modules/*" -not -path "*/.next/*"`.text();
-
-		const packages = packagePaths
-			.trim()
-			.split("\n")
-			.filter((path) => path.length > 0);
-
-		console.log(`📦 Encontrados ${packages.length} pacotes para limpar\n`);
-
-		for (const packagePath of packages) {
-			const packageDir = packagePath.replace("/package.json", "");
-			const packageName = packageDir.split("/").pop();
-
-			try {
-				console.log(`🔧 Limpando ${packageName}...`);
-				await $`cd ${packageDir} && bun run clean`.nothrow().quiet();
-				console.log(`✅ ${packageName} limpo com sucesso!`);
-			} catch (error) {
-				console.error(
-					`⚠️  Erro ao limpar ${packageName}: ${error instanceof Error ? error.message : "Erro desconhecido"}`,
-				);
-			}
-		}
-
-		console.log("\n✨ Limpeza concluída com sucesso!");
-	} catch (error) {
-		console.error(
-			`❌ Erro durante a limpeza: ${error instanceof Error ? error.message : "Erro desconhecido"}`,
-		);
-		process.exit(1);
-	}
+async function readPackageScripts(
+  packageJsonPath: string,
+): Promise<Record<string, string> | null> {
+  try {
+    const pkg = (await Bun.file(packageJsonPath).json()) as {
+      scripts?: Record<string, string>;
+    };
+    return pkg.scripts ?? null;
+  } catch {
+    return null;
+  }
 }
 
-cleanup();
+async function cleanPackage(packageJsonPath: string): Promise<Result> {
+  const dir = dirname(packageJsonPath);
+  const name = dir === rootDir ? '(root)' : basename(dir);
+  const scripts = await readPackageScripts(packageJsonPath);
+
+  if (!scripts?.clean) {
+    return { name, status: 'skipped' };
+  }
+
+  const result = await $`bun run clean`.cwd(dir).nothrow().quiet();
+  if (result.exitCode !== 0) {
+    const stderr = result.stderr.toString().trim().slice(0, 200);
+    return {
+      name,
+      status: 'failed',
+      error: stderr || `exit ${result.exitCode}`,
+    };
+  }
+  return { name, status: 'cleaned' };
+}
+
+async function main(): Promise<void> {
+  const start = performance.now();
+  console.log('🧹 Iniciando limpeza do monorepo...\n');
+
+  const glob = new Glob('{packages,apps}/*/package.json');
+  const workspaces = await Array.fromAsync(
+    glob.scan({ cwd: rootDir, absolute: true }),
+  );
+
+  console.log(
+    `📦 ${workspaces.length} workspaces encontrados — limpando em paralelo...\n`,
+  );
+
+  const results = await Promise.all([
+    cleanPackage(`${rootDir}/package.json`),
+    ...workspaces.map(cleanPackage),
+  ]);
+
+  const cleaned = results.filter((r) => r.status === 'cleaned');
+  const skipped = results.filter((r) => r.status === 'skipped');
+  const failed = results.filter((r) => r.status === 'failed');
+
+  for (const r of cleaned) console.log(`  ✅ ${r.name}`);
+  for (const r of skipped) console.log(`  ⏭  ${r.name} (sem script clean)`);
+  for (const r of failed) console.log(`  ❌ ${r.name} — ${r.error}`);
+
+  const elapsed = ((performance.now() - start) / 1000).toFixed(1);
+  console.log(
+    `\n✨ ${cleaned.length} limpos, ${skipped.length} pulados, ${failed.length} falharam em ${elapsed}s`,
+  );
+
+  if (failed.length > 0) process.exit(1);
+}
+
+main();
