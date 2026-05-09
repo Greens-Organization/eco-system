@@ -12,7 +12,7 @@
     "./utils": "./utils.ts"
   },
   "dependencies": {
-    "@formatjs/intl-localematcher": "0.6.2",
+    "@formatjs/intl-localematcher": "0.8.6",
     "negotiator": "1.0.0"
   },
   "devDependencies": {

@@ -13,16 +13,16 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "drizzle-orm": "0.45.1",
+    "drizzle-orm": "0.45.2",
     "drizzle-seed": "0.3.1",
-    "postgres": "3.4.8",
+    "postgres": "3.4.9",
     "server-only": "catalog:",
-    "ws": "8.19.0",
+    "ws": "8.20.0",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@pack/tools": "workspace:*",
     "@pack/tsconfig": "workspace:*",
-    "drizzle-kit": "0.31.9"
+    "drizzle-kit": "0.31.10"
   }
 }

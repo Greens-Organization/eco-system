@@ -8,8 +8,8 @@
   },
   "dependencies": {
     "zod": "catalog:",
-    "bullmq": "5.69.3",
-    "ioredis": "5.9.3"
+    "bullmq": "5.76.6",
+    "ioredis": "5.10.1"
   },
   "devDependencies": {
     "@pack/tsconfig": "workspace:*",

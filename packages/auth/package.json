@@ -16,7 +16,7 @@
   "dependencies": {
     "@pack/db": "workspace:*",
     "@pack/tools": "workspace:*",
-    "better-auth": "1.4.18",
+    "better-auth": "1.6.9",
     "next-themes": "catalog:",
     "react": "catalog:",
     "server-only": "catalog:",

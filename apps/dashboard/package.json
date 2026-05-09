@@ -17,7 +17,7 @@
     "@pack/i18n": "workspace:*",
     "@pack/observability": "workspace:*",
     "@pack/tools": "workspace:*",
-    "hono": "4.11.9",
+    "hono": "4.12.18",
     "lucide-svelte": "catalog:",
     "mode-watcher": "catalog:",
     "zod": "catalog:"

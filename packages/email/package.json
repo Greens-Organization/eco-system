@@ -7,18 +7,18 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@react-email/components": "1.0.7",
-    "@react-email/render": "2.0.4",
-    "nodemailer": "8.0.1",
+    "@react-email/components": "1.0.12",
+    "@react-email/render": "2.0.8",
+    "nodemailer": "8.0.7",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "resend": "6.9.2",
+    "resend": "6.12.3",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@pack/tsconfig": "workspace:*",
     "@types/node": "catalog:dev",
-    "@types/nodemailer": "7.0.10",
+    "@types/nodemailer": "8.0.0",
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev"
   }

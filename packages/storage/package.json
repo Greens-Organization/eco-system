@@ -7,7 +7,7 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@vercel/blob": "2.2.0",
+    "@vercel/blob": "2.3.3",
     "zod": "catalog:"
   },
   "devDependencies": {
