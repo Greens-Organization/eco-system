@@ -9,6 +9,30 @@ changed but this file wasn't updated.
 ## In Progress
 
 - [ ] Migration debt cleanup before re-enabling verify gate
+- [x] Revert c44f310 (`getSession` middleware on `/auth/*`) — reintroduced
+      the sign-in hang the PRD §5 had already fixed. Refactor-only, no new
+      exports; `auth` Hono instance was pre-existing.
+- [x] Frontend observability (DX) — `requestId` + child pino logger on
+      `event.locals` via `logHandle`; `handleError` server + client;
+      browser logger `$lib/logger`; sign-in/sign-up/sign-out with
+      `AbortSignal.timeout(10s)` + structured log events
+      (attempt/response/rejected/fetch-failed). Refactor — handler exports
+      are the SvelteKit framework contract, not user-facing API.
+- [x] Auth Layer 1 from `tasks/auth-improvements-plug-and-play.md`:
+      drop `nextCookies()`, enable built-in `rateLimit`, fix cookie
+      URL-encode bug in sign-in/sign-out via `parseSetCookieHeader` +
+      `encode: v => v`, swap `getSessionCookie` for `getCookieCache`
+      (HMAC validation) in `sessionHandle` with token-presence fallback.
+      Refactor-only — `handle`/`handleError` exports are SvelteKit
+      framework contracts, no user-facing API added.
+- [x] Auth form-action log hardening:
+      added `$lib/auth-proxy.ts` (`authFetch` / `redactEmail` /
+      `userMessageFor`) and migrated sign-in / sign-up / sign-out to
+      structured pino fields (`auth.<flow>.<event>`), redacted email
+      logging (domain + 2-char hint), and `requestId` propagated to
+      fail() responses + UI `ref:` line. Refactor-only; new exports in
+      `auth-proxy.ts` have no tests yet (helpers exercised end-to-end
+      via the form actions; unit tests TBD when stack stabilizes).
 
 ## Completed (this session)
 
@@ -40,3 +64,9 @@ changed but this file wasn't updated.
 ## Blocked
 
 <!-- empty -->
+
+## Notes
+
+- Dangling diff in `apps/dashboard/src/routes/[locale]/(unauthenticated)/+layout.svelte`
+  (added `cursor-pointer` to a button) is from the user's editor / vite hot
+  reload during dev probes — not part of this session's tracked tasks.
