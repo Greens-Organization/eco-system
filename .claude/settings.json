@@ -1,0 +1,47 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/post-edit-verify.sh",
+            "timeout": 120,
+            "statusMessage": "Verifying edit..."
+          },
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/tdd-check.sh",
+            "timeout": 10,
+            "statusMessage": "TDD check..."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/stop-verify.sh",
+            "timeout": 300,
+            "statusMessage": "Running final verification..."
+          },
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/state-enforcement.sh",
+            "timeout": 10,
+            "statusMessage": "Checking progress.md..."
+          },
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/sensory-reminder.sh",
+            "timeout": 10,
+            "statusMessage": "Visual-check reminder..."
+          }
+        ]
+      }
+    ]
+  }
+}

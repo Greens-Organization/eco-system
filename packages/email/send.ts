@@ -1,7 +1,7 @@
 import { render } from '@react-email/render';
 import nodemailer from 'nodemailer';
 import type { ReactElement } from 'react';
-import { env } from './pack-env'
+import { env } from './pack-env';
 
 export interface SendEmailOptions {
   react: ReactElement;

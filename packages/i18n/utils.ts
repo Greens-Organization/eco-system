@@ -1,15 +1,15 @@
-import { match as matchLocale } from '@formatjs/intl-localematcher'
-import Negotiator from 'negotiator'
-import { locales } from './shared'
+import { match as matchLocale } from '@formatjs/intl-localematcher';
+import Negotiator from 'negotiator';
+import { locales } from './shared';
 
-export type Locale = (typeof locales)[number]
+export type Locale = (typeof locales)[number];
 
-export { locales }
+export { locales };
 
-export const defaultLocale: Locale = 'en'
+export const defaultLocale: Locale = 'en';
 
 export function isValidLocale(locale: string): locale is Locale {
-  return locales.includes(locale as Locale)
+  return locales.includes(locale as Locale);
 }
 
 /**
@@ -17,16 +17,20 @@ export function isValidLocale(locale: string): locale is Locale {
  * Intended for use in SvelteKit hooks.server.ts.
  */
 export function resolveLocale(acceptLanguageHeader: string | null): Locale {
-  if (!acceptLanguageHeader) return defaultLocale
+  if (!acceptLanguageHeader) return defaultLocale;
 
-  const headers = { 'accept-language': acceptLanguageHeader }
-  const negotiator = new Negotiator({ headers })
-  const acceptedLanguages = negotiator.languages()
+  const headers = { 'accept-language': acceptLanguageHeader };
+  const negotiator = new Negotiator({ headers });
+  const acceptedLanguages = negotiator.languages();
 
   try {
-    return matchLocale(acceptedLanguages, locales as unknown as string[], defaultLocale) as Locale
+    return matchLocale(
+      acceptedLanguages,
+      locales as unknown as string[],
+      defaultLocale
+    ) as Locale;
   } catch {
-    return defaultLocale
+    return defaultLocale;
   }
 }
 
@@ -35,25 +39,25 @@ export function resolveLocale(acceptLanguageHeader: string | null): Locale {
  * Returns defaultLocale if not found or invalid.
  */
 export function getLocaleFromPathname(pathname: string): Locale {
-  const segment = pathname.split('/')[1] ?? ''
-  return isValidLocale(segment) ? segment : defaultLocale
+  const segment = pathname.split('/')[1] ?? '';
+  return isValidLocale(segment) ? segment : defaultLocale;
 }
 
 /**
  * Removes locale prefix from a pathname (e.g. '/en/dashboard' → '/dashboard').
  */
 export function removeLocaleFromPathname(pathname: string): string {
-  const segment = pathname.split('/')[1] ?? ''
+  const segment = pathname.split('/')[1] ?? '';
   if (isValidLocale(segment)) {
-    return pathname.slice(segment.length + 1) || '/'
+    return pathname.slice(segment.length + 1) || '/';
   }
-  return pathname
+  return pathname;
 }
 
 /**
  * Adds locale prefix to a pathname (e.g. '/dashboard', 'pt' → '/pt/dashboard').
  */
 export function addLocaleToPathname(pathname: string, locale: Locale): string {
-  const clean = removeLocaleFromPathname(pathname)
-  return `/${locale}${clean === '/' ? '' : clean}`
+  const clean = removeLocaleFromPathname(pathname);
+  return `/${locale}${clean === '/' ? '' : clean}`;
 }

@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod';
 
 export const schema = z.object({
   FILE_LOG: z
@@ -8,6 +8,6 @@ export const schema = z.object({
     .stringbool({ truthy: ['yes', 'true'], falsy: ['no', 'false'] })
     .default(false),
   LOG_LEVEL: z.string().min(1).default('info'),
-})
+});
 
-export const env = schema.parse(process.env)
+export const env = schema.parse(process.env);

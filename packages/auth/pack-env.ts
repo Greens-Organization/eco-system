@@ -1,5 +1,5 @@
-import { schema as dbSchema } from '@pack/db/pack-env'
-import { z } from 'zod'
+import { schema as dbSchema } from '@pack/db/pack-env';
+import { z } from 'zod';
 
 export const schema = z.object({
   ...dbSchema.shape,
@@ -8,6 +8,6 @@ export const schema = z.object({
   ORIGIN_ALLOWED: z
     .string()
     .transform((value) => value.split(',').map((origin) => origin.trim())),
-})
+});
 
-export const env = schema.parse(process.env)
+export const env = schema.parse(process.env);

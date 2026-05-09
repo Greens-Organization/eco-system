@@ -20,11 +20,11 @@ export function createApiClient(cookieHeader: string) {
       const existingHeaders =
         init?.headers instanceof Headers
           ? Object.fromEntries(init.headers.entries())
-          : (init?.headers ?? {})
+          : (init?.headers ?? {});
       return fetch(input, {
         ...init,
         headers: { ...existingHeaders, Cookie: cookieHeader },
-      })
+      });
     },
   });
 }

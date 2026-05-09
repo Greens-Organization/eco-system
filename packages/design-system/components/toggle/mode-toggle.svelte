@@ -1,12 +1,12 @@
 <script lang="ts">
-    import { toggleMode } from "mode-watcher";
-    import { Moon, Sun } from "@lucide/svelte/icons";
-    import { cn } from "../../lib/utils";
+import { Moon, Sun } from '@lucide/svelte/icons';
+import { toggleMode } from 'mode-watcher';
+import { cn } from '../../lib/utils';
 
-    interface Props {
-        class?: string;
-    }
-    let { class: className }: Props = $props();
+interface Props {
+  class?: string;
+}
+let { class: className }: Props = $props();
 </script>
 
 <button

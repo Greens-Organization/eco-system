@@ -1,1 +1,1 @@
-export * from './argon2-adapter'
+export * from './argon2-adapter';

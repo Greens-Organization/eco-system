@@ -1,16 +1,16 @@
-import type { Dictionary } from './shared'
-import { locales } from './shared'
+import type { Dictionary } from './shared';
+import { locales } from './shared';
 
-export { locales, type Dictionary }
-export type { Locale } from './utils'
+export { locales, type Dictionary };
+export type { Locale } from './utils';
 export {
-  defaultLocale,
-  isValidLocale,
-  resolveLocale,
-  getLocaleFromPathname,
-  removeLocaleFromPathname,
   addLocaleToPathname,
-} from './utils'
+  defaultLocale,
+  getLocaleFromPathname,
+  isValidLocale,
+  removeLocaleFromPathname,
+  resolveLocale,
+} from './utils';
 
 const dictionaries: Record<string, () => Promise<Dictionary>> =
   Object.fromEntries(
@@ -23,27 +23,27 @@ const dictionaries: Record<string, () => Promise<Dictionary>> =
             console.error(
               `Failed to load dictionary for locale: ${locale}`,
               err
-            )
-            return import('./dictionaries/en.json').then((mod) => mod.default)
+            );
+            return import('./dictionaries/en.json').then((mod) => mod.default);
           }),
     ])
-  )
+  );
 
 export const getDictionary = async (locale: string): Promise<Dictionary> => {
-  const normalizedLocale = locale.split('-')[0]
+  const normalizedLocale = locale.split('-')[0];
 
   if (!locales.includes(normalizedLocale as (typeof locales)[number])) {
-    console.warn(`Locale "${locale}" is not supported, defaulting to "en"`)
-    return dictionaries['en']()
+    console.warn(`Locale "${locale}" is not supported, defaulting to "en"`);
+    return dictionaries['en']();
   }
 
   try {
-    return await dictionaries[normalizedLocale]()
+    return await dictionaries[normalizedLocale]();
   } catch (error) {
     console.error(
       `Error loading dictionary for locale "${normalizedLocale}", falling back to "en"`,
       error
-    )
-    return dictionaries['en']()
+    );
+    return dictionaries['en']();
   }
-}
+};

@@ -6,9 +6,11 @@
       "!**/packages/design-system/components/ui",
       "!**/packages/design-system/lib",
       "!**/packages/design-system/hooks",
+      "!**/packages/design-system/styles",
       "!**/apps/docs/**/*.json",
       "!**/apps/email/.react-email",
-      "!**/scripts/**/*"
+      "!**/scripts/**/*",
+      "!**/study"
     ]
   },
   "formatter": {

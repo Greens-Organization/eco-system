@@ -31,7 +31,7 @@ export const SignUp = ({ callbackURL = '/' }: SignUpProps) => {
         onSuccess: () => {
           window.location.href = callbackURL;
         },
-      },
+      }
     );
 
     setLoading(false);

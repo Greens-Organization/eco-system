@@ -3,7 +3,7 @@ import { argon2Adapter } from '@pack/tools';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { nextCookies } from 'better-auth/next-js';
-import { env } from './pack-env'
+import { env } from './pack-env';
 
 export const auth = betterAuth({
   baseURL: env.BETTER_AUTH_URL,

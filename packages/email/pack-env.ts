@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod';
 
 export const schema = z.object({
   SMTP_HOST: z.string().optional(),
@@ -6,6 +6,6 @@ export const schema = z.object({
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
   SMTP_FROM: z.string(),
-})
+});
 
-export const env = schema.parse(process.env)
+export const env = schema.parse(process.env);

@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod';
 
 export const schema = z.object({
   DATABASE_URL: z.url(),
@@ -8,7 +8,7 @@ export const schema = z.object({
   ADMIN_EMAIL: z.email().optional(),
   ADMIN_PASSWORD: z.string().min(1).optional(),
   ADMIN_NAME: z.string().min(1).optional(),
-})
+});
 
-export const env = schema.parse(process.env)
-export const connectionString = env.DATABASE_URL
+export const env = schema.parse(process.env);
+export const connectionString = env.DATABASE_URL;

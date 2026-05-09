@@ -1,7 +1,7 @@
-import { schema as authSchema } from '@pack/auth/pack-env'
-import { schema as emailSchema } from '@pack/email/pack-env'
-import { schema as observabilitySchema } from '@pack/observability/pack-env'
-import z from 'zod'
+import { schema as authSchema } from '@pack/auth/pack-env';
+import { schema as emailSchema } from '@pack/email/pack-env';
+import { schema as observabilitySchema } from '@pack/observability/pack-env';
+import z from 'zod';
 
 export const env = z
   .object({
@@ -20,9 +20,9 @@ export const env = z
       .stringbool({ truthy: ['yes', 'true'], falsy: ['no', 'false'] })
       .default(false),
   })
-  .parse(process.env)
+  .parse(process.env);
 
-export const isProduction = process.env.NODE_ENV === 'production'
-export const isDevelopment = process.env.NODE_ENV === 'development'
-export const isLocal = process.env.NODE_ENV === ('local' as string)
-export const debug = env.DEBUG
+export const isProduction = process.env.NODE_ENV === 'production';
+export const isDevelopment = process.env.NODE_ENV === 'development';
+export const isLocal = process.env.NODE_ENV === ('local' as string);
+export const debug = env.DEBUG;

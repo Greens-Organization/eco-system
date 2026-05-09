@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import pino, { type TransportTargetOptions } from 'pino';
-import { env } from '../pack-env'
+import { env } from '../pack-env';
 
 const level = env.LOG_LEVEL;
 

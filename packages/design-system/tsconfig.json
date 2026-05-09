@@ -3,9 +3,9 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "$lib/*": ["./*"],
-    },
+      "$lib/*": ["./*"]
+    }
   },
   "include": ["**/*.ts", "**/*.svelte"],
-  "exclude": ["node_modules"],
+  "exclude": ["node_modules"]
 }

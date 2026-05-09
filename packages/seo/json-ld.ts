@@ -1,6 +1,6 @@
-import type { Thing, WithContext } from 'schema-dts'
+import type { Thing, WithContext } from 'schema-dts';
 
-export type { Thing, WithContext }
+export type { Thing, WithContext };
 
 /**
  * Serializes a JSON-LD schema object to a string.
@@ -12,6 +12,6 @@ export type { Thing, WithContext }
  * </svelte:head>
  */
 export const jsonLdScript = (code: WithContext<Thing>): string =>
-  JSON.stringify(code)
+  JSON.stringify(code);
 
-export * from 'schema-dts'
+export * from 'schema-dts';

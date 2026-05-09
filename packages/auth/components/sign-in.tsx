@@ -30,7 +30,7 @@ export const SignIn = ({ callbackURL = '/' }: SignInProps) => {
         onSuccess: () => {
           window.location.href = callbackURL;
         },
-      },
+      }
     );
 
     setLoading(false);

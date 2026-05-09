@@ -1,4 +1,4 @@
-import { createAuthClient } from 'better-auth/svelte'
+import { createAuthClient } from 'better-auth/svelte';
 
 /**
  * Better Auth client for SvelteKit.
@@ -12,11 +12,11 @@ export const authClient = createAuthClient({
   fetchOptions: {
     onError(e) {
       if (e.error.status === 401 && typeof window !== 'undefined') {
-        window.location.href = '/sign-in'
+        window.location.href = '/sign-in';
       }
     },
   },
-})
+});
 
-export type Session = typeof authClient.$Infer.Session
-export type User = typeof authClient.$Infer.Session.user
+export type Session = typeof authClient.$Infer.Session;
+export type User = typeof authClient.$Infer.Session.user;

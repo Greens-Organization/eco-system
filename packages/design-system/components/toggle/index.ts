@@ -1,3 +1,3 @@
-import ModeToggle from "./mode-toggle.svelte"
+import ModeToggle from './mode-toggle.svelte';
 
-export {ModeToggle}
+export { ModeToggle };

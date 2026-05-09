@@ -1,14 +1,14 @@
-import { disconnectDatabase } from '../index'
-import { seedAdmin } from './admin.seed'
+import { disconnectDatabase } from '../index';
+import { seedAdmin } from './admin.seed';
 
 async function seed() {
-  console.log('[seed] Starting...')
+  console.log('[seed] Starting...');
 
-  await seedAdmin()
+  await seedAdmin();
 
-  console.log('[seed] All done.')
+  console.log('[seed] All done.');
 }
 
 seed()
   .catch(console.error)
-  .finally(() => disconnectDatabase())
+  .finally(() => disconnectDatabase());

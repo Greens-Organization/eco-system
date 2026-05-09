@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { connectionString, env } from './pack-env'
+import { connectionString, env } from './pack-env';
 import * as schema from './schema';
 
 const client = postgres(connectionString, {

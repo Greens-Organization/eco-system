@@ -1,2 +1,2 @@
-export * from './m-string'
-export * from './uuid-tail'
+export * from './m-string';
+export * from './uuid-tail';

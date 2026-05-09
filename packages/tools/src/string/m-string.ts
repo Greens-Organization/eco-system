@@ -1,8 +1,37 @@
-import { deburr, startCase, kebabCase, camelCase, snakeCase } from 'es-toolkit/string';
+import {
+  camelCase,
+  deburr,
+  kebabCase,
+  snakeCase,
+  startCase,
+} from 'es-toolkit/string';
 
 const NAME_EXCEPTIONS = [
-  'da', 'das', 'de', 'do', 'dos', 'e', 'a', 'an', 'and', 'as', 'at',
-  'but', 'by', 'for', 'if', 'in', 'nor', 'of', 'on', 'or', 'so', 'the', 'to', 'up', 'yet',
+  'da',
+  'das',
+  'de',
+  'do',
+  'dos',
+  'e',
+  'a',
+  'an',
+  'and',
+  'as',
+  'at',
+  'but',
+  'by',
+  'for',
+  'if',
+  'in',
+  'nor',
+  'of',
+  'on',
+  'or',
+  'so',
+  'the',
+  'to',
+  'up',
+  'yet',
 ] as const;
 
 class MString {
@@ -19,7 +48,10 @@ class MString {
       .toLowerCase()
       .split(' ')
       .map((word, index) => {
-        if (index === 0 || !NAME_EXCEPTIONS.includes(word as typeof NAME_EXCEPTIONS[number])) {
+        if (
+          index === 0 ||
+          !NAME_EXCEPTIONS.includes(word as (typeof NAME_EXCEPTIONS)[number])
+        ) {
           return word.charAt(0).toUpperCase() + word.slice(1);
         }
         return word;
@@ -61,7 +93,7 @@ class MString {
     const names = this._value.trim().split(' ').filter(Boolean);
     const first = names[0]?.[0]?.toUpperCase() ?? '';
     if (names.length <= 1) return first;
-    return first + names[names.length - 1][0].toUpperCase();
+    return first + (names[names.length - 1]?.[0]?.toUpperCase() ?? '');
   }
 
   // --- Saída ---
