@@ -1,7 +1,5 @@
 {
   "extends": "@pack/tsconfig/bun.json",
-  "compilerOptions": {
-    "baseUrl": "."
-  },
+  "compilerOptions": {},
   "exclude": ["node_modules"]
 }

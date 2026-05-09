@@ -1,7 +1,6 @@
 {
   "extends": "@pack/tsconfig/bun.json",
   "compilerOptions": {
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
       "@pack/*": ["../../packages/*"]
