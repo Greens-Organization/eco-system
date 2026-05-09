@@ -1,20 +1,37 @@
 import type { Dictionary, Locale } from '@pack/i18n';
 import { getContext, setContext } from 'svelte';
 
+/**
+ * I18n context backed by accessor closures so that consumers re-read
+ * the latest `data.locale` / `data.dictionary` on every access. Avoids
+ * the Svelte 5 `state_referenced_locally` warning that fires when
+ * reactive props are passed by value at creation time.
+ */
 class I18nContext {
-  locale: Locale = $state('en' as Locale);
-  dictionary: Dictionary = $state({} as Dictionary);
+  readonly #getLocale: () => Locale;
+  readonly #getDictionary: () => Dictionary;
 
-  constructor(locale: Locale, dictionary: Dictionary) {
-    this.locale = locale;
-    this.dictionary = dictionary;
+  constructor(getLocale: () => Locale, getDictionary: () => Dictionary) {
+    this.#getLocale = getLocale;
+    this.#getDictionary = getDictionary;
+  }
+
+  get locale(): Locale {
+    return this.#getLocale();
+  }
+
+  get dictionary(): Dictionary {
+    return this.#getDictionary();
   }
 }
 
 const I18N_KEY = Symbol('i18n');
 
-export function setI18n(locale: Locale, dictionary: Dictionary): I18nContext {
-  const ctx = new I18nContext(locale, dictionary);
+export function setI18n(
+  getLocale: () => Locale,
+  getDictionary: () => Dictionary
+): I18nContext {
+  const ctx = new I18nContext(getLocale, getDictionary);
   setContext(I18N_KEY, ctx);
   return ctx;
 }

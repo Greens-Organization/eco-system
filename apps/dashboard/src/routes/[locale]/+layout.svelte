@@ -9,12 +9,10 @@ interface Props {
 
 let { data, children }: Props = $props();
 
-const ctx = setI18n(data.locale, data.dictionary);
-
-$effect(() => {
-  ctx.locale = data.locale;
-  ctx.dictionary = data.dictionary;
-});
+setI18n(
+  () => data.locale,
+  () => data.dictionary
+);
 </script>
 
 {@render children?.()}
