@@ -6,7 +6,7 @@ export const schema = z.object({
     .default(false),
   LOG_PRETTY: z
     .stringbool({ truthy: ['yes', 'true'], falsy: ['no', 'false'] })
-    .default(false),
+    .optional(),
   LOG_LEVEL: z.string().min(1).default('info'),
 });
 
