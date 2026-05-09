@@ -16,7 +16,6 @@
     "drizzle-orm": "0.45.2",
     "drizzle-seed": "0.3.1",
     "postgres": "3.4.9",
-    "server-only": "catalog:",
     "ws": "8.20.0",
     "zod": "catalog:"
   },

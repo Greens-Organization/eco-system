@@ -7,7 +7,6 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "server-only": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

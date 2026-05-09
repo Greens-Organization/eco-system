@@ -18,7 +18,7 @@
     "@pack/payments": "workspace:*",
     "@pack/testing": "workspace:*",
     "@scalar/hono-api-reference": "0.10.14",
-    "hono": "4.12.18",
+    "hono": "catalog:",
     "vitest": "catalog:testing",
     "zod": "catalog:"
   },

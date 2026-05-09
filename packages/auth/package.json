@@ -16,7 +16,6 @@
     "@pack/db": "workspace:*",
     "@pack/tools": "workspace:*",
     "better-auth": "1.6.9",
-    "server-only": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
