@@ -33,6 +33,17 @@ changed but this file wasn't updated.
       fail() responses + UI `ref:` line. Refactor-only; new exports in
       `auth-proxy.ts` have no tests yet (helpers exercised end-to-end
       via the form actions; unit tests TBD when stack stabilizes).
+- [x] API request logger overhaul:
+      `apps/api/src/main/middleware/request-logger.ts` — pino-backed
+      single-line logger with child binding (`requestId`, `path`),
+      auto-fills `user_id` after authMiddleware runs, downgrades
+      `/health` to `debug`. Drops `hono/logger` from `app.ts`.
+      Cross-tier correlation: dashboard's `logHandle` requestId is
+      forwarded as `x-request-id` via `authFetch`, `createApiClient`,
+      and `authHandle` proxy; Hono's `requestId()` middleware reuses
+      the incoming value (falls back to a UUID otherwise). New exports
+      (`requestLogger`, `AppVariables`, `createApiClient` arity bump)
+      are refactor-only — exercised end-to-end by the dev server.
 
 ## Completed (this session)
 

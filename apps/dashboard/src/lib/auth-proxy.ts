@@ -17,15 +17,23 @@ export type AuthFetchResult =
 /**
  * Wraps `fetch` with a hard timeout and converts every transport-level
  * failure into a typed result. Never throws — callers branch on `ok`.
+ *
+ * Pass `requestId` to forward `x-request-id` to the API so its logs
+ * share the same correlation id as the dashboard's `logHandle`.
  */
 export async function authFetch(
   url: string,
-  init: RequestInit,
+  init: RequestInit & { requestId?: string },
   timeoutMs = 10_000
 ): Promise<AuthFetchResult> {
+  const { requestId, headers, ...rest } = init;
+  const merged = new Headers(headers);
+  if (requestId) merged.set('x-request-id', requestId);
+
   try {
     const response = await fetch(url, {
-      ...init,
+      ...rest,
+      headers: merged,
       signal: AbortSignal.timeout(timeoutMs),
     });
     return { ok: true, response };

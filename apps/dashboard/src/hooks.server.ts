@@ -56,9 +56,16 @@ const authHandle: Handle = async ({ event, resolve }) => {
 
   if (pathname.startsWith('/auth')) {
     const target = `${env.API_URL}${pathname}${event.url.search}`;
+    // Forward the per-request id so the API logs share our correlation
+    // chain (same id appears in dashboard logHandle output and Hono's
+    // requestLogger output).
+    const headers = new Headers(event.request.headers);
+    if (event.locals.requestId) {
+      headers.set('x-request-id', event.locals.requestId);
+    }
     return fetch(target, {
       method: event.request.method,
-      headers: event.request.headers,
+      headers,
       body: ['GET', 'HEAD'].includes(event.request.method)
         ? undefined
         : event.request.body,

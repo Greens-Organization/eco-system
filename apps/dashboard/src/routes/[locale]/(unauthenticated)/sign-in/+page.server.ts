@@ -35,6 +35,7 @@ export const actions: Actions = {
 
     const result = await authFetch(`${env.API_URL}/auth/sign-in/email`, {
       method: 'POST',
+      requestId: locals.requestId,
       headers: {
         'Content-Type': 'application/json',
         Cookie: request.headers.get('cookie') ?? '',

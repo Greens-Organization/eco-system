@@ -1,16 +1,16 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { showRoutes } from 'hono/dev';
-import { logger } from 'hono/logger';
 import { prettyJSON } from 'hono/pretty-json';
 import { requestId } from 'hono/request-id';
-import { debug, env, isProduction } from '@/core/env';
+import { env, isProduction } from '@/core/env';
 import { CONSTANTS } from '@/infra/common/constants';
 import { handleError } from './infra/error-handler';
+import { type AppVariables, requestLogger } from './middleware';
 import { publicRoute } from './routes/public';
 import { v1 } from './routes/v1';
 
-const app = new Hono({ strict: false });
+const app = new Hono<{ Variables: AppVariables }>({ strict: false });
 
 /**
  * Global CORS middleware
@@ -28,12 +28,13 @@ app.use(
 );
 
 /**
- * Middlewares
+ * Observability — order matters:
+ *   `requestId()` runs first so `requestLogger` can pull the id and
+ *   bind it to the per-request child logger that handlers inherit
+ *   via `c.get('log')`.
  */
 app.use('*', requestId());
-if (debug) {
-  app.use(logger());
-}
+app.use('*', requestLogger());
 app.use('*', prettyJSON());
 
 /**

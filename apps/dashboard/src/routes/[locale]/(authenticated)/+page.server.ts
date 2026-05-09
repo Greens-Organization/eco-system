@@ -22,7 +22,7 @@ type Stats = z.infer<typeof StatsSchema>;
 
 export const load: PageServerLoad = async ({ request, locals, cookies }) => {
   const cookieHeader = request.headers.get('cookie') ?? '';
-  const api = createApiClient(cookieHeader);
+  const api = createApiClient(cookieHeader, locals.requestId);
   const result = await safeFetch<Stats>(api.stats.$get());
 
   if (!result.success && result.status === 401) {

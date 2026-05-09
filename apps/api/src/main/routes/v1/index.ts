@@ -1,13 +1,12 @@
 import { OpenAPIHono } from '@hono/zod-openapi';
 import { Scalar } from '@scalar/hono-api-reference';
-import type { RequestIdVariables } from 'hono/request-id';
 import { env } from '@/core/env';
 import { CONSTANTS } from '@/infra/common/constants';
 import { handleZodError } from '@/main/infra/openapi/utils';
-import { type AuthVariables, authMiddleware } from '@/main/middleware';
+import { type AppVariables, authMiddleware } from '@/main/middleware';
 import statsRoute from './stats';
 
-export type Variables = RequestIdVariables & AuthVariables;
+export type Variables = AppVariables;
 
 export const v1 = new OpenAPIHono<{ Variables: Variables }>({
   defaultHook: handleZodError,
