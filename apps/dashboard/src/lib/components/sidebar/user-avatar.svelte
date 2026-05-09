@@ -1,7 +1,11 @@
 <script lang="ts">
 import * as DropdownMenu from '@pack/design-system/components/ui/dropdown-menu';
 import { genericAvatar } from '@pack/design-system/lib/utils';
-import { EllipsisVertical, LogOut, Moon, Sun, User } from 'lucide-svelte';
+import EllipsisVertical from 'lucide-svelte/icons/ellipsis-vertical';
+import LogOut from 'lucide-svelte/icons/log-out';
+import Moon from 'lucide-svelte/icons/moon';
+import Sun from 'lucide-svelte/icons/sun';
+import User from 'lucide-svelte/icons/user';
 import { mode, toggleMode } from 'mode-watcher';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';

@@ -1,6 +1,6 @@
 <script lang="ts">
 import { ModeToggle } from '@pack/design-system/components/toggle';
-import { Trees } from 'lucide-svelte';
+import Trees from 'lucide-svelte/icons/trees';
 import type { Snippet } from 'svelte';
 
 interface Props {
@@ -26,7 +26,7 @@ let { children }: Props = $props();
 
         <div class="flex items-center gap-2">
             <ModeToggle
-                class="border-zinc-700 bg-zinc-800 text-zinc-100 hover:bg-zinc-700 hover:text-white"
+                class="border-zinc-700 bg-zinc-800 text-zinc-100 hover:bg-zinc-700 hover:text-white cursor-pointer"
             />
         </div>
     </div>

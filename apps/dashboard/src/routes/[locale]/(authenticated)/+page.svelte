@@ -1,5 +1,8 @@
 <script lang="ts">
-import { Activity, Clock, DollarSign, Users } from 'lucide-svelte';
+import Activity from 'lucide-svelte/icons/activity';
+import Clock from 'lucide-svelte/icons/clock';
+import DollarSign from 'lucide-svelte/icons/dollar-sign';
+import Users from 'lucide-svelte/icons/users';
 import Header from '$lib/components/header.svelte';
 import { useLocale, useTranslation } from '$lib/i18n/context.svelte';
 
