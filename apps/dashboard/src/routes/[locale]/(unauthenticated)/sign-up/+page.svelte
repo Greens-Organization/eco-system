@@ -4,7 +4,7 @@ import { enhance } from '$app/forms';
 import { useLocale, useTranslation } from '$lib/i18n/context.svelte';
 
 interface Props {
-  form?: { error?: string } | null;
+  form?: { error?: string; requestId?: string } | null;
   data?: Record<string, never>;
 }
 
@@ -85,12 +85,17 @@ let loading = $state(false);
         </div>
 
         {#if form?.error}
-            <p
+            <div
                 class="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive"
                 role="alert"
             >
-                {form.error}
-            </p>
+                <p>{form.error}</p>
+                {#if form.requestId}
+                    <p class="mt-1 font-mono text-xs opacity-70">
+                        ref: {form.requestId}
+                    </p>
+                {/if}
+            </div>
         {/if}
 
         <Button type="submit" disabled={loading} class="w-full">

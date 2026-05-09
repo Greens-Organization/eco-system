@@ -1,33 +1,43 @@
+import { parseSetCookieHeader } from '@pack/auth/cookies';
 import { defaultLocale } from '@pack/i18n';
 import { fail, redirect } from '@sveltejs/kit';
+import { authFetch, reasonFor, userMessageFor } from '$lib/auth-proxy';
 import { env } from '$lib/env';
 import type { Actions } from './$types';
 
 export const actions: Actions = {
   default: async ({ request, cookies, locals, url }) => {
-    const cookie = request.headers.get('cookie') ?? '';
+    const t0 = performance.now();
+    locals.log.info('auth.signout.attempt');
 
-    try {
-      const res = await fetch(`${env.API_URL}/auth/sign-out`, {
-        method: 'POST',
-        headers: {
-          Cookie: cookie,
-          Origin: url.origin,
-        },
+    const result = await authFetch(`${env.API_URL}/auth/sign-out`, {
+      method: 'POST',
+      headers: {
+        Cookie: request.headers.get('cookie') ?? '',
+        Origin: url.origin,
+      },
+    });
+
+    const dur_ms = Math.round(performance.now() - t0);
+
+    if (!result.ok) {
+      locals.log.error(
+        { kind: result.kind, reason: reasonFor(result), dur_ms },
+        'auth.signout.unreachable'
+      );
+      return fail(503, {
+        error: userMessageFor(result.kind),
+        requestId: locals.requestId,
       });
+    }
 
-      // Forward cookie-clearing headers from better-auth
-      const rawSetCookie = res.headers.getSetCookie();
-      for (const raw of rawSetCookie) {
-        const parts = raw.split(';').map((p) => p.trim());
-        const nameValue = parts[0] ?? '';
-        const eqIdx = nameValue.indexOf('=');
-        if (eqIdx < 1) continue;
-        const name = nameValue.slice(0, eqIdx);
-        cookies.delete(name, { path: '/' });
+    const { response: res } = result;
+    locals.log.info({ status: res.status, dur_ms }, 'auth.signout.success');
+
+    for (const raw of res.headers.getSetCookie()) {
+      for (const [name, attrs] of parseSetCookieHeader(raw)) {
+        cookies.delete(name, { path: attrs.path ?? '/' });
       }
-    } catch {
-      return fail(503, { error: 'Could not reach the server.' });
     }
 
     const locale = locals.locale ?? defaultLocale;
