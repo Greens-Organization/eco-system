@@ -1,11 +1,12 @@
-import { getSessionCookie } from '@pack/auth/cookies';
+import { getCookieCache, getSessionCookie } from '@pack/auth/cookies';
 import {
   defaultLocale,
   getDictionary,
   isValidLocale,
   resolveLocale,
 } from '@pack/i18n';
-import type { Handle } from '@sveltejs/kit';
+import { log } from '@pack/observability/logger';
+import type { Handle, HandleServerError } from '@sveltejs/kit';
 import { redirect } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { env } from '$lib/env';
@@ -22,6 +23,32 @@ function isProtectedPath(pathname: string): boolean {
 
   return !unauthenticatedPaths.some((p) => withoutLocale.startsWith(p));
 }
+
+/**
+ * Per-request observability:
+ *  - generates a short requestId, exposes via `locals.requestId` and the
+ *    `x-request-id` response header
+ *  - puts a child pino logger in `locals.log` so every load/action shares
+ *    the same correlation id (requestId + path inlined by pino-pretty)
+ *  - logs ONE line per request with method, status, and duration
+ */
+const logHandle: Handle = async ({ event, resolve }) => {
+  // Short, copy-pasteable id. Collisions are fine — only used for
+  // correlation within a single dev session.
+  const requestId = crypto.randomUUID().slice(0, 8);
+  const reqLog = log.child({ requestId, path: event.url.pathname });
+
+  event.locals.requestId = requestId;
+  event.locals.log = reqLog;
+
+  const t0 = performance.now();
+  const response = await resolve(event);
+  const dur = Math.round(performance.now() - t0);
+
+  reqLog.info(`${event.request.method} ${response.status} ${dur}ms`);
+  response.headers.set('x-request-id', requestId);
+  return response;
+};
 
 /** Proxy /auth/* requests transparently to the Hono API */
 const authHandle: Handle = async ({ event, resolve }) => {
@@ -63,14 +90,37 @@ const localeHandle: Handle = async ({ event, resolve }) => {
   return resolve(event);
 };
 
-/** Guard protected routes — redirect to sign-in if no session */
+/**
+ * Guard protected routes.
+ *
+ * Fast path: `getCookieCache` validates the HMAC-signed session data cookie
+ * locally (no DB hop). When fresh, populates `locals.session` and
+ * `locals.user` with real data — load functions can use them directly.
+ *
+ * Fallback: cookie cache stale or missing. We still trust the presence of
+ * `session_token` to keep the request flowing; downstream API calls will
+ * re-validate against the api server (which itself hits the DB on cache
+ * miss) and refresh the cookie cache as a side-effect.
+ *
+ * No cookie at all → redirect to sign-in.
+ */
 const sessionHandle: Handle = async ({ event, resolve }) => {
-  const sessionCookie = getSessionCookie(event.request);
-  event.locals.session = sessionCookie ?? null;
+  const cached = await getCookieCache(event.request, {
+    secret: env.BETTER_AUTH_SECRET,
+  });
 
-  const { pathname } = event.url;
+  if (cached) {
+    event.locals.session = cached.session;
+    event.locals.user = cached.user;
+  } else {
+    event.locals.session = null;
+    event.locals.user = null;
+  }
 
-  if (isProtectedPath(pathname) && !sessionCookie) {
+  const authenticated =
+    cached !== null || getSessionCookie(event.request) !== null;
+
+  if (isProtectedPath(event.url.pathname) && !authenticated) {
     const locale = event.locals.locale ?? defaultLocale;
     redirect(307, `/${locale}/sign-in`);
   }
@@ -85,8 +135,26 @@ const i18nHandle: Handle = async ({ event, resolve }) => {
 };
 
 export const handle = sequence(
+  logHandle,
   authHandle,
   localeHandle,
   sessionHandle,
   i18nHandle
 );
+
+/**
+ * Catch unhandled errors from load functions, form actions, and the
+ * resolve chain. Stamps each with an `errorId` so the UI (+error.svelte)
+ * can show it and the user can quote it back when filing a bug.
+ */
+export const handleError: HandleServerError = ({
+  error,
+  event,
+  status,
+  message,
+}) => {
+  const errorId = crypto.randomUUID();
+  const requestLog = event.locals.log ?? log;
+  requestLog.error({ err: error, status, errorId }, 'unhandled');
+  return { message, errorId };
+};

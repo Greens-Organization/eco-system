@@ -1,30 +1,15 @@
 // see more https://www.better-auth.com/docs/integrations/hono
+//
+// Intentionally no `getSession` middleware here. The PRD
+// (tasks/auth-architecture-review.md §5) removed it because the redundant
+// session lookup blocks sign-in when the DB is slow / under contention,
+// and `/auth/*` routes don't need session context — better-auth's handler
+// resolves session state internally. Authenticated routes (/v1/*) get
+// session via `authMiddleware`.
 
 import { auth as bAuth } from '@pack/auth/server';
 import { Hono } from 'hono';
 
-export const auth = new Hono<{
-  Variables: {
-    user: typeof bAuth.$Infer.Session.user | null;
-    session: typeof bAuth.$Infer.Session.session | null;
-  };
-}>();
-
-auth.use('*', async (c, next) => {
-  const session = await bAuth.api.getSession({
-    headers: c.req.raw.headers,
-  });
-
-  if (!session) {
-    c.set('user', null);
-    c.set('session', null);
-    await next();
-    return;
-  }
-
-  c.set('user', session.user);
-  c.set('session', session.session);
-  await next();
-});
+export const auth = new Hono();
 
 auth.on(['POST', 'GET'], '/*', (c) => bAuth.handler(c.req.raw));
