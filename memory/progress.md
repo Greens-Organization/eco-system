@@ -33,6 +33,42 @@ changed but this file wasn't updated.
       fail() responses + UI `ref:` line. Refactor-only; new exports in
       `auth-proxy.ts` have no tests yet (helpers exercised end-to-end
       via the form actions; unit tests TBD when stack stabilizes).
+- [x] Localize better-auth API error responses:
+      `auth-proxy.ts` adds `localizeAuthError(status, body, copy)` and
+      `AuthErrorCopy` type. Maps better-auth's English-only error
+      codes (INVALID_EMAIL_OR_PASSWORD, INVALID_EMAIL,
+      USER_ALREADY_EXISTS*, PASSWORD_TOO_SHORT/LONG, EMAIL_NOT_VERIFIED,
+      INVALID_PASSWORD, INVALID_USER) to dictionary-backed strings;
+      HTTP 429 (rate-limit, no `code`) handled by status fallback.
+      Unknown codes fall through to `body.message ?? copy.unknown`.
+      Sign-in / sign-up form actions use it; replaced the now-redundant
+      `signInFailed` / `signUpFailed` keys (dropped from dicts) with
+      the catch-all `unknown` and the specific code mappings. New
+      exports `localizeAuthError`, `AuthErrorCopy` are refactor-only
+      (1 caller per flow, 2 form actions).
+- [x] i18n cleanup pass (en/pt/es):
+      Dropped `web.*` (~190 unused lines/dict — leftover marketing
+      copy never wired into the dashboard). Added new `app.errors.*`
+      keys (reference, missingFields, signInFailed, signUpFailed,
+      timeout, unreachable), `app.common.{selectLanguage, user}`,
+      `app.dashboard.noActivity`. Polished pt/es welcome to be
+      gender-neutral. Migrated form actions + `auth-proxy.userMessageFor`
+      to source copy from `locals.dictionary.app.errors` instead of
+      hardcoded English. i18n'd `language-selector` aria-label,
+      authenticated dashboard "no activity" text, and the `ref:`
+      correlation-id line in sign-in/sign-up. Refactor-only;
+      `userMessageFor` signature changed but only one caller per
+      flow (3 form actions).
+- [x] i18n monetary base (boilerplate "visual sensor" only):
+      `packages/i18n/format.ts` adds `formatCurrency` / `formatNumber` /
+      `formatPercent` thin wrappers around `Intl.NumberFormat`, with
+      sensible default currency per locale (en→USD, pt→BRL, es→EUR).
+      Apps that need real money handling — multi-tenant, conversion,
+      tax, audit — own that layer themselves; this file stays a pure
+      display helper. Also fixed the latent bug where pt/es stats `type`
+      discriminator was translated (`unidade`/`moneda`) — restored to
+      literal `unit`/`currency`. New helpers exercised end-to-end via
+      the authenticated dashboard page; unit tests TBD.
 - [x] API request logger overhaul:
       `apps/api/src/main/middleware/request-logger.ts` — pino-backed
       single-line logger with child binding (`requestId`, `path`),

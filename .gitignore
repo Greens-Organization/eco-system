@@ -278,3 +278,6 @@ packages/database/generated
 
 # Study Cases
 study/
+
+# Screenshots to analyser
+screenshots/*.png
