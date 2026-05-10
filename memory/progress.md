@@ -33,6 +33,23 @@ changed but this file wasn't updated.
       fail() responses + UI `ref:` line. Refactor-only; new exports in
       `auth-proxy.ts` have no tests yet (helpers exercised end-to-end
       via the form actions; unit tests TBD when stack stabilizes).
+- [x] Theme contrast fix (dark mode destructive):
+      `packages/design-system/styles/colors.css` — dark
+      `--destructive` `oklch(0.396 …)` was failing WCAG AA on dark
+      bg (~1.5:1). Bumped to `oklch(0.704 0.191 22.216)` (shadcn-ui
+      standard); both modes' `--destructive-foreground` set to
+      near-white so `bg-destructive text-destructive-foreground`
+      renders correctly (light-mode bug: foreground was identical
+      to background, invisible). Sidebar logout row tightened —
+      dropped `/70` opacity on the text label, icon kept at `/80`.
+- [x] Force full reload on locale dropdown change:
+      `language-selector.svelte` swaps `goto()` (SvelteKit
+      client-side nav) for `window.location.assign()`. Locale change
+      now resets `<html lang>`, dictionary, and any locale-bound
+      state from a fresh server render — the `goto()` partial-data
+      refresh was leaving stale i18n context in components.
+      Refactor-only — `handleChange` is a private inline handler,
+      no exported API change.
 - [x] Localize better-auth API error responses:
       `auth-proxy.ts` adds `localizeAuthError(status, body, copy)` and
       `AuthErrorCopy` type. Maps better-auth's English-only error
