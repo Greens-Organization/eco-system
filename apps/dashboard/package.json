@@ -12,7 +12,7 @@
     "typecheck": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "analyze": "ANALYZE=1 vite build",
     "clean": "git clean -xdf .cache .svelte-kit build",
-    "clean:hard": "git clean -xdf .cache .svelte-kit dist node_modules"
+    "clean:hard": "git clean -xdf .cache .svelte-kit build node_modules"
   },
   "dependencies": {
     "@pack/auth": "workspace:*",
