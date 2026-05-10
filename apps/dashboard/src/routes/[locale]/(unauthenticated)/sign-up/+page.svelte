@@ -92,7 +92,7 @@ let loading = $state(false);
                 <p>{form.error}</p>
                 {#if form.requestId}
                     <p class="mt-1 font-mono text-xs opacity-70">
-                        ref: {form.requestId}
+                        {t.app.errors.reference}: {form.requestId}
                     </p>
                 {/if}
             </div>

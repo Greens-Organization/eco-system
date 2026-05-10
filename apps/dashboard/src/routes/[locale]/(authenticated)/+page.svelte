@@ -1,4 +1,5 @@
 <script lang="ts">
+import { formatCurrency, formatNumber } from '@pack/i18n';
 import Activity from 'lucide-svelte/icons/activity';
 import Clock from 'lucide-svelte/icons/clock';
 import DollarSign from 'lucide-svelte/icons/dollar-sign';
@@ -48,7 +49,7 @@ const stats = $derived(data.stats);
                 <Users class="size-4 text-muted-foreground" />
             </div>
             <div class="text-2xl font-bold">
-                {stats?.totalUsers.toLocaleString(locale) ?? "—"}
+                {stats ? formatNumber(stats.totalUsers, locale) : "—"}
             </div>
         </div>
 
@@ -62,7 +63,7 @@ const stats = $derived(data.stats);
                 <Activity class="size-4 text-muted-foreground" />
             </div>
             <div class="text-2xl font-bold">
-                {stats?.activeUsers.toLocaleString(locale) ?? "—"}
+                {stats ? formatNumber(stats.activeUsers, locale) : "—"}
             </div>
         </div>
 
@@ -76,12 +77,7 @@ const stats = $derived(data.stats);
                 <DollarSign class="size-4 text-muted-foreground" />
             </div>
             <div class="text-2xl font-bold">
-                {stats
-                    ? new Intl.NumberFormat(locale, {
-                          style: "currency",
-                          currency: "USD",
-                      }).format(stats.totalRevenue)
-                    : "—"}
+                {stats ? formatCurrency(stats.totalRevenue, locale) : "—"}
             </div>
         </div>
     </div>
@@ -120,7 +116,9 @@ const stats = $derived(data.stats);
                     </div>
                 {/each}
             {:else}
-                <p class="text-muted-foreground">No activity found.</p>
+                <p class="text-muted-foreground">
+                    {t.app.dashboard.noActivity}
+                </p>
             {/if}
         </div>
     </div>

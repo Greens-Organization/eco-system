@@ -43,11 +43,62 @@ export async function authFetch(
   }
 }
 
-/** End-user-facing copy for transport failures. */
-export function userMessageFor(kind: AuthFetchFailure['kind']): string {
-  return kind === 'timeout'
-    ? 'Server took too long to respond. Please try again.'
-    : 'Could not reach the server. Please try again later.';
+/** End-user-facing copy for transport failures, sourced from the
+ * locale dictionary so the message matches the user's language. */
+export function userMessageFor(
+  kind: AuthFetchFailure['kind'],
+  errors: { timeout: string; unreachable: string }
+): string {
+  return kind === 'timeout' ? errors.timeout : errors.unreachable;
+}
+
+/**
+ * Maps better-auth's English error response to a localized message.
+ * better-auth ships English-only `message`s — we dispatch on the
+ * stable `code` field (or HTTP status when no code is present, e.g.
+ * the rate-limiter response) and fall back to the API's raw message,
+ * then to a generic "unknown" string.
+ *
+ * Error code reference:
+ * `node_modules/@better-auth/core/dist/error/codes.mjs` (BASE_ERROR_CODES).
+ */
+export type AuthErrorCopy = {
+  unknown: string;
+  invalidCredentials: string;
+  invalidEmail: string;
+  emailTaken: string;
+  passwordTooShort: string;
+  passwordTooLong: string;
+  emailNotVerified: string;
+  tooManyRequests: string;
+};
+
+export function localizeAuthError(
+  status: number,
+  body: { code?: string; message?: string },
+  copy: AuthErrorCopy
+): string {
+  if (status === 429) return copy.tooManyRequests;
+
+  switch (body.code) {
+    case 'INVALID_EMAIL_OR_PASSWORD':
+    case 'INVALID_PASSWORD':
+    case 'INVALID_USER':
+      return copy.invalidCredentials;
+    case 'INVALID_EMAIL':
+      return copy.invalidEmail;
+    case 'USER_ALREADY_EXISTS':
+    case 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL':
+      return copy.emailTaken;
+    case 'PASSWORD_TOO_SHORT':
+      return copy.passwordTooShort;
+    case 'PASSWORD_TOO_LONG':
+      return copy.passwordTooLong;
+    case 'EMAIL_NOT_VERIFIED':
+      return copy.emailNotVerified;
+    default:
+      return body.message ?? copy.unknown;
+  }
 }
 
 /** Short string suitable for `reason` log fields (never includes stack). */

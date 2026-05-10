@@ -4,6 +4,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import { env } from '$lib/env';
 import {
   authFetch,
+  localizeAuthError,
   reasonFor,
   redactEmail,
   userMessageFor,
@@ -22,9 +23,11 @@ export const actions: Actions = {
     const email = data.get('email') as string;
     const password = data.get('password') as string;
 
+    const errors = locals.dictionary.app.errors;
+
     if (!email || !password) {
       return fail(400, {
-        error: 'Email and password are required',
+        error: errors.missingFields,
         requestId: locals.requestId,
       });
     }
@@ -52,7 +55,7 @@ export const actions: Actions = {
         'auth.signin.unreachable'
       );
       return fail(503, {
-        error: userMessageFor(result.kind),
+        error: userMessageFor(result.kind, errors),
         requestId: locals.requestId,
       });
     }
@@ -69,7 +72,7 @@ export const actions: Actions = {
         'auth.signin.rejected'
       );
       return fail(res.status, {
-        error: body.message ?? 'Sign in failed',
+        error: localizeAuthError(res.status, body, errors),
         requestId: locals.requestId,
       });
     }

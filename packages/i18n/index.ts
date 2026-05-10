@@ -1,7 +1,7 @@
 import type { Dictionary } from './shared';
 import { locales } from './shared';
 
-export { locales, type Dictionary };
+export { formatCurrency, formatNumber, formatPercent } from './format';
 export type { Locale } from './utils';
 export {
   addLocaleToPathname,
@@ -11,6 +11,7 @@ export {
   removeLocaleFromPathname,
   resolveLocale,
 } from './utils';
+export { type Dictionary, locales };
 
 const dictionaries: Record<string, () => Promise<Dictionary>> =
   Object.fromEntries(
@@ -19,11 +20,7 @@ const dictionaries: Record<string, () => Promise<Dictionary>> =
       () =>
         import(`./dictionaries/${locale}.json`)
           .then((mod) => mod.default)
-          .catch((err) => {
-            console.error(
-              `Failed to load dictionary for locale: ${locale}`,
-              err
-            );
+          .catch(async () => {
             return import('./dictionaries/en.json').then((mod) => mod.default);
           }),
     ])

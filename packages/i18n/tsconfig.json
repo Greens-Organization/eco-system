@@ -1,5 +1,5 @@
 {
-  "extends": "@pack/tsconfig/bun.json",
+  "extends": "@pack/tsconfig/svelte.json",
   "compilerOptions": {},
   "include": ["**/*.ts"],
   "exclude": ["node_modules"]

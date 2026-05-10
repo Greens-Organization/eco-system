@@ -22,12 +22,13 @@ export const actions: Actions = {
     const dur_ms = Math.round(performance.now() - t0);
 
     if (!result.ok) {
+      const errors = locals.dictionary.app.errors;
       locals.log.error(
         { kind: result.kind, reason: reasonFor(result), dur_ms },
         'auth.signout.unreachable'
       );
       return fail(503, {
-        error: userMessageFor(result.kind),
+        error: userMessageFor(result.kind, errors),
         requestId: locals.requestId,
       });
     }
