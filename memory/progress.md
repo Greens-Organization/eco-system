@@ -134,3 +134,6 @@ changed but this file wasn't updated.
 - Dangling diff in `apps/dashboard/src/routes/[locale]/(unauthenticated)/+layout.svelte`
   (added `cursor-pointer` to a button) is from the user's editor / vite hot
   reload during dev probes — not part of this session's tracked tasks.
+- `screenshots/` is for ad-hoc local visual evidence; `.gitignore` skips
+  PNG dumps but `.gitkeep` is committed so the directory exists in the
+  repo for new clones.
