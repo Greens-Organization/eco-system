@@ -49,9 +49,11 @@
     },
     "errors": {
       "notFound": "Página no encontrada",
+      "notFoundDescription": "La página que buscas no existe o ha sido movida.",
       "unauthorized": "Acceso no autorizado",
       "serverError": "Algo salió mal",
       "tryAgain": "Intentar de nuevo",
+      "backHome": "Volver al inicio",
       "reference": "ref",
       "missingFields": "Todos los campos son obligatorios",
       "timeout": "El servidor tardó demasiado en responder. Por favor, inténtalo de nuevo.",

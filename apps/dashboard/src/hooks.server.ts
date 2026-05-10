@@ -162,6 +162,18 @@ export const handleError: HandleServerError = ({
 }) => {
   const errorId = crypto.randomUUID();
   const requestLog = event.locals.log ?? log;
-  requestLog.error({ err: error, status, errorId }, 'unhandled');
+
+  // 4xx are user-driven and expected (404 from typos, 401 from
+  // expired sessions, 403 from missing permissions). Logging the
+  // full stack drowns real 5xx bugs in noise — emit a single warn
+  // line with status + correlation id and let the rest stay quiet.
+  // Genuine 5xx exceptions still get the full `err` serializer
+  // (stack, cause, name) so we have what we need to debug.
+  if (status >= 400 && status < 500) {
+    requestLog.warn({ status, errorId }, message);
+  } else {
+    requestLog.error({ err: error, status, errorId }, message);
+  }
+
   return { message, errorId };
 };

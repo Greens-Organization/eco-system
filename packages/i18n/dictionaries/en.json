@@ -49,9 +49,11 @@
     },
     "errors": {
       "notFound": "Page not found",
+      "notFoundDescription": "The page you are looking for doesn't exist or has been moved.",
       "unauthorized": "Unauthorized access",
       "serverError": "Something went wrong",
       "tryAgain": "Try again",
+      "backHome": "Back to home",
       "reference": "ref",
       "missingFields": "All fields are required",
       "timeout": "Server took too long to respond. Please try again.",

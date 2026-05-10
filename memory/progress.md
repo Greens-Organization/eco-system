@@ -33,6 +33,33 @@ changed but this file wasn't updated.
       fail() responses + UI `ref:` line. Refactor-only; new exports in
       `auth-proxy.ts` have no tests yet (helpers exercised end-to-end
       via the form actions; unit tests TBD when stack stabilizes).
+- [x] Quiet down 4xx in `handleError`:
+      `apps/dashboard/src/hooks.server.ts` — for `status >= 400 && < 500`
+      (404, 401, 403, etc — user-driven, expected) emit a single
+      `warn` line `{status, errorId}` without the `err` serializer
+      so the stack stays out of the log. Genuine 5xx exceptions
+      keep the full `err` (stack, cause, name) at `error` level.
+      Replaces the always-`error+stack+text` pattern that was
+      dumping ~10 lines per 404. Refactor — `handleError` is a
+      SvelteKit framework contract.
+- [x] Locale-aware 404 / error page (root-level):
+      `apps/dashboard/src/routes/+error.svelte` — renders the HTTP
+      status big and centered with a localized title and description
+      (`app.errors.{notFound, notFoundDescription, unauthorized,
+      serverError, backHome}` added to en/pt/es), shows `errorId`
+      if `handleError` stamped one, and a "back to home" Button
+      (Button auto-renders as `<a>` when given href). `localeHandle`
+      already redirects unprefixed paths to `/{locale}/...`.
+      Initially placed at `[locale]/+error.svelte` but had to move
+      to the root: SvelteKit's `respond_with_error` only mounts
+      `manifest._.nodes[0]` (root layout) + `nodes[1]` (root error)
+      for path-not-found 404s — nested `+error.svelte` files only
+      catch errors *inside* matched routes. Reads `locale` /
+      `dictionary` directly from `page.data` (populated by root
+      `+layout.server.ts` from `event.locals`) instead of the
+      Svelte i18n context, since `[locale]/+layout.svelte`'s
+      `setI18n` call doesn't run for root-level errors. Refactor —
+      `+error.svelte` is a SvelteKit framework contract.
 - [x] Theme contrast fix (dark mode destructive):
       `packages/design-system/styles/colors.css` — dark
       `--destructive` `oklch(0.396 …)` was failing WCAG AA on dark
