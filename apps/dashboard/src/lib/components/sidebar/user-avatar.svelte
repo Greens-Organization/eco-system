@@ -91,10 +91,10 @@ const btnClass =
                             {...props}
                             class="flex w-full cursor-pointer items-center gap-3 rounded-sm px-2 py-1.5 text-sm outline-none data-highlighted:bg-accent data-highlighted:text-accent-foreground"
                         >
-                            <LogOut class="size-4 text-destructive/70" />
-                            <span class="text-destructive/70"
-                                >{t.app.common.logout}</span
-                            >
+                            <LogOut class="size-4 text-destructive/80" />
+                            <span class="text-destructive">
+                                {t.app.common.logout}
+                            </span>
                         </button>
                     </form>
                 {/snippet}
