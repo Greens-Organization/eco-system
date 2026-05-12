@@ -15,7 +15,11 @@
     "format": "biome check --write ./",
     "clean": "git clean -xdf .cache .turbo node_modules",
     "clean:all": "bun ./scripts/cleanup.ts",
-    "tree": "tree -I 'node_modules|.cache|.turbo|dist' -L 10"
+    "tree": "tree -I 'node_modules|.cache|.turbo|dist' -L 10",
+    "docker:infra:up": "docker compose -f infra/docker/docker-compose.infra.yml up -d",
+    "docker:infra:down": "docker compose -f infra/docker/docker-compose.infra.yml down",
+    "docker:infra:ps": "docker compose -f infra/docker/docker-compose.infra.yml ps",
+    "docker:infra:restart": "docker compose -f infra/docker/docker-compose.infra.yml restart"
   },
   "private": true,
   "devDependencies": {
