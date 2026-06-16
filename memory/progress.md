@@ -70,6 +70,11 @@ changed but this file wasn't updated.
         `format.ts` `?? 'USD'`. Dashboard svelte-check still 0/0/0. Found en
         route → #33: `@pack/design-system` `typecheck` is `tsc` which can't
         check Svelte named exports (needs svelte-check; pre-existing).
+      - Slice 10 (this commit): #12 dashboard `safe-fetch` — `safeFetch` now
+        takes an optional `schema?: ZodType<T>` and runs `schema.parse(body)` at
+        the boundary; `+page.server.ts` passes `StatsSchema` (it was declared
+        but never executed — false confidence). `failure()` reads `res.json()`
+        as `unknown` + narrows (was `any`). Verify: dashboard svelte-check 0/0/0.
 - [x] Ambiente de testes do `apps/api` (bun:test, real-DB, mac-dashboard-style;
       plano em `tasks/done/api-test-environment.md`). Dois tiers: **unit**
       (`bun test test/unit`, sem docker, roda no turbo) + **e2e** (`bun run test:e2e`,
