@@ -8,6 +8,34 @@ changed but this file wasn't updated.
 
 ## In Progress
 
+- [x] **TECHNICAL_ANALYSIS.md §6 implementation** (one commit per slice, each
+      verified before commit). Baseline commit `63896f9` first committed ALL the
+      v2 in-flight work below (observability port + test harness + dockerize +
+      dep update + `@pack/rate-limit` removal + 3 root analysis docs), no
+      co-author — so the "Nada commitado" notes further down are now landed.
+      - Slice 1 `ae7474a`: #2 `secret: env.BETTER_AUTH_SECRET` into `betterAuth`;
+        #3 argon2 `memoryCost` 8129→19456; #4 **kept** e2e `DATABASE_URL =`
+        (NOT `||=`) — Bun auto-loads `packages/db/.env`, so the unconditional
+        override is required; the `||=` recommendation was a misdiagnosis caught
+        by running e2e; #7 email barrel `'send'`→`'./send'` + tsconfig
+        svelte→bun base + `jsx`. Verify: unit 10/10, e2e 7/7, tsc+biome.
+      - Slice 2 `914f0bd`: #5 dashboard vite cold-start — `optimizeDeps` for
+        transitive deps via nested `@pack/design-system > dep` (isolated linker
+        won't resolve them bare), `server.warmup`, `ssr.noExternal` gated to
+        build. ~37s→~20-26s cold on this (slow) box; icon globs HELP (removing
+        them regressed). Prod build verified.
+      - Slice 3 `6659b76`: #6 migrate dashboard `lucide-svelte` (deprecated) →
+        `@lucide/svelte` (4 files, deep imports); catalog + lockfile unified on
+        `@lucide/svelte@1.18.0`. Prod build verified.
+      - Slice 4 (#8a, this commit): `exports` maps on `@pack/db`
+        (`.`/`./schema`/`./pack-env`) + `@pack/tools` (`.`). Verify: tsc
+        (auth/db/tools/api) + runtime import of all subpaths + e2e 7/7.
+        **GOTCHA: never run the e2e in background** — backgrounded docker-compose
+        orchestration hung 331s and failed 0/8; foreground passes 7/7 in ~3s.
+        #8b (`@pack/design-system` exports map) deferred (fiddly subpaths/CSS).
+      Found en route → tracked as #32: dashboard `typecheck` broken
+      (`svelte-check` not a devDep, exit 127) + `bun run lint` red on a few
+      pre-existing files.
 - [x] Ambiente de testes do `apps/api` (bun:test, real-DB, mac-dashboard-style;
       plano em `tasks/done/api-test-environment.md`). Dois tiers: **unit**
       (`bun test test/unit`, sem docker, roda no turbo) + **e2e** (`bun run test:e2e`,

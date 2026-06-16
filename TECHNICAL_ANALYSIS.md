@@ -32,7 +32,7 @@ Three things hold it back, and this analysis adds the two that the prior reports
 | ✅ | ~~Fix the broken `@pack/email` barrel~~ — **done** (relative specifiers + tsconfig base/jsx fix; package now typechecks) | Was broken on import. | done |
 | ✅ | ~~Dashboard `vite.config.ts` perf~~ — **done** (cold render ~37s→~20-26s on a slow box; nested `>` form needed for transitive deps under the isolated linker) | The developer's daily pain. | done |
 | ✅ | ~~Migrate `lucide-svelte` → `@lucide/svelte`~~ — **done** (4 files; lockfile unified on `@lucide/svelte@1.18.0`) | Removed the deprecated package. | done |
-| P1 | Add `exports` maps to `@pack/tools`, `@pack/design-system`, `@pack/db` | Most-imported packages resolve only via Bun's filesystem fallback. | M |
+| ◐ | Add `exports` maps — **`@pack/db` + `@pack/tools` done**; `@pack/design-system` remaining (fiddly subpaths/CSS, §6 #8b) | Most-imported packages resolved only via filesystem fallback. | M |
 | P2 | The remaining items in §3 and §6 | Strict-TS escapes, dead code, `using` adoption, convention drift. | S–L |
 
 ---
@@ -252,7 +252,8 @@ Severity: **Critical** / **High** / Medium / Low. Effort: S (<30 min) / M (hours
 | ~~5~~ | dev perf | `apps/dashboard/vite.config.ts` | ✅ | — | **DONE** — `optimizeDeps.include` (transitive via `@pack/design-system > dep` + `*/icons/*` globs), `server.warmup`, `ssr.noExternal` gated to build. Cold first-render ~37s→~20-26s on a slow box; prod build verified (17.7s). |
 | ~~6~~ | deps | `lucide-svelte` (dashboard) | ✅ | — | **DONE** — 4 files migrated to `@lucide/svelte/icons/*`; dashboard dep + catalog swapped; vite.config updated; lockfile unified on `@lucide/svelte@1.18.0` (lucide-svelte gone). Prod build verified (13.8s). |
 | ~~7~~ | email | `packages/email/index.ts` + `tsconfig.json` | ✅ | — | **DONE** — relative specifiers (`./send`, `./templates/contact`); tsconfig → `bun.json` base + `jsx: react-jsx` + broadened include; package now typechecks. |
-| 8 | module boundaries | `packages/{tools,design-system,db}/package.json` | **High** | M | Add `exports` maps (copy `observability/package.json:10-18`). |
+| ~~8a~~ | module boundaries | `packages/{db,tools}/package.json` | ✅ | — | **DONE** — `exports` maps added (db: `.`/`./schema`/`./pack-env`; tools: `.`). Verified: tsc (auth/db/tools/api) + runtime subpath resolution + e2e 7/7. |
+| 8b | module boundaries | `packages/design-system/package.json` | **High** | M | Add `exports` map — fiddly (many subpaths + `.svelte`/`.css` + wildcards); its own slice. |
 | 9 | ts strictness | `packages/tsconfig/svelte.json:12` | **High** | S | Remove `noUncheckedIndexedAccess:false`; fix the resulting `i18n/index.ts:16,44` `undefined`s. |
 | 10 | dead code | `packages/observability/errors/parse-error.ts` | **High** | S | Delete (0 callers; logger-graph coupling; logs at error per parse). |
 | 11 | type soundness | dashboard `sign-in,sign-up/+page.server.ts` | **High** | S | Replace 5× `data.get(x) as string` with `typeof`-narrow or Zod. |
