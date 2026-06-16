@@ -44,6 +44,14 @@ changed but this file wasn't updated.
         error (`user-avatar.svelte` → `child` snippet only, bits-ui 2.x);
         `biome --write` on `auth-proxy.ts` + `+error.svelte`. Dashboard now
         **typecheck 0/0/0 + biome clean**.
+      - Slice 7 (this commit): #17 `apps/api/src/core/env.ts` — widened via
+        `const nodeEnv: string` (drops `('local' as string)`); #18 `app.ts` —
+        removed the dead `|| ['http://localhost:3000']` CORS fallback
+        (`ORIGIN_ALLOWED` is already required `string[]` via auth pack-env
+        `.transform()`, so the array fallback was unreachable). **Both
+        refactor-only** (TDD nudge on env.ts: the `isProduction/isDevelopment/
+        isLocal` exports pre-existed; only `isLocal`'s impl changed). #16
+        (`toStatusCode` helper) deferred as cosmetic. Verify: api tsc + e2e 7/7.
 - [x] Ambiente de testes do `apps/api` (bun:test, real-DB, mac-dashboard-style;
       plano em `tasks/done/api-test-environment.md`). Dois tiers: **unit**
       (`bun test test/unit`, sem docker, roda no turbo) + **e2e** (`bun run test:e2e`,

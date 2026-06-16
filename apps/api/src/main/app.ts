@@ -25,7 +25,7 @@ export function buildApp() {
   app.use(
     '*',
     cors({
-      origin: env.ORIGIN_ALLOWED || ['http://localhost:3000'],
+      origin: env.ORIGIN_ALLOWED,
       credentials: true,
       allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
       allowHeaders: ['Content-Type', 'Authorization', 'Cookie'],

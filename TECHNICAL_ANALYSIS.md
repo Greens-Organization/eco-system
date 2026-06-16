@@ -263,9 +263,9 @@ Severity: **Critical** / **High** / Medium / Low. Effort: S (<30 min) / M (hours
 | 13c | deps | `@tanstack/svelte-form` 1.28.5 | Low | S | Not bumped in the 2026-06-16 update; ~5 minors behind. Optional minor-bump. |
 | 14 | ES lifecycle | `packages/db/index.ts` + `graceful-shutdown.ts:45` | Medium | M | `Bun.sleep`; add `[Symbol.asyncDispose]`; adopt `await using` in shutdown + e2e containers. |
 | 15 | cache | `packages/cache/*` | Medium | M | Implement with `Bun.redis` (drop `ioredis`); remove the unused hard-required `REDIS_URL`. |
-| 16 | ts | error-handler `67,83,114` + `openapi/utils.ts:54` | Medium | S | One `toStatusCode(n)` helper instead of 4× `as ContentfulStatusCode`. |
-| 17 | ts | `apps/api/src/core/env.ts:27` | Medium | S | Add `'local'` to env enum; drop `('local' as string)`. |
-| 18 | ts | `apps/api/src/main/app.ts:28` | Medium | S | Narrow `ORIGIN_ALLOWED` to `string[]` in pack-env. |
+| 16 | ts | error-handler `67,83,114` + `openapi/utils.ts:54` | ⊘ defer | — | **Deferred (cosmetic)** — the 4 `as ContentfulStatusCode` casts are honest, localized assertions of known-valid status numbers; a `toStatusCode` wrapper just re-casts (no validation) → indirection without safety. Revisit only if `AppError.statusCode` is retyped upstream. |
+| ~~17~~ | ts | `apps/api/src/core/env.ts` | ✅ | — | **DONE** — widened via `const nodeEnv: string` for all three checks; dropped `('local' as string)`. |
+| ~~18~~ | ts | `apps/api/src/main/app.ts` | ✅ | — | **DONE** — premise corrected: `ORIGIN_ALLOWED` is *already* required `string[]` (auth pack-env `.transform()`), so the `|| [...]` fallback was dead (arrays are truthy). Removed it. |
 | 19 | ts | `observability/logger/index.ts:25`, `sentry/index.ts:12-16` | Medium | S | `satisfies` + remove vestigial pretty fields; replace Sentry casts. |
 | 20 | naming | `packages/tools/src/string/m-string.ts:46,109,96` | Medium | S | `capitalize`→`toTitleCase`; drop `valueOf`; `names.at(-1)`. |
 | 21 | ts config | `packages/tsconfig/bun.json` | Medium | S | Add `isolatedModules: true`. |
