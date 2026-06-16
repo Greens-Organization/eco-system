@@ -3,12 +3,6 @@
   "display": "Svelte",
   "extends": "./bun.json",
   "compilerOptions": {
-    "verbatimModuleSyntax": true,
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "noEmit": true,
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
-    "isolatedModules": true,
-    "noUncheckedIndexedAccess": false
+    "lib": ["ESNext", "DOM", "DOM.Iterable"]
   }
 }

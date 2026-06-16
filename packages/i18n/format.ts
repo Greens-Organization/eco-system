@@ -24,7 +24,7 @@ const defaultCurrencyByLocale: Record<Locale, string> = {
 export function formatCurrency(
   value: number,
   locale: Locale,
-  currency: string = defaultCurrencyByLocale[locale]
+  currency: string = defaultCurrencyByLocale[locale] ?? 'USD'
 ): string {
   return new Intl.NumberFormat(locale, {
     style: 'currency',

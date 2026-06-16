@@ -61,6 +61,15 @@ changed but this file wasn't updated.
         #23 (db AppError) + #28 (stringbool DRY) deferred — both would add a
         dep edge to a low-level package for marginal gain. Verify: obs tsc +
         30/30 + tools tsc + biome.
+      - Slice 9 (this commit): #21 `isolatedModules: true` in `bun.json` (all
+        consumers clean — verbatimModuleSyntax already covered it). #9 removed
+        `noUncheckedIndexedAccess:false` from `svelte.json` (+ its redundant
+        re-declarations; now only adds DOM `lib`). Consumers `auth`/`obs`/`i18n`
+        clean after fixing 4 i18n errors — `getDictionary` rewritten to a typed
+        `loadDictionary(locale: Locale)` (also removes the double-fallback) +
+        `format.ts` `?? 'USD'`. Dashboard svelte-check still 0/0/0. Found en
+        route → #33: `@pack/design-system` `typecheck` is `tsc` which can't
+        check Svelte named exports (needs svelte-check; pre-existing).
 - [x] Ambiente de testes do `apps/api` (bun:test, real-DB, mac-dashboard-style;
       plano em `tasks/done/api-test-environment.md`). Dois tiers: **unit**
       (`bun test test/unit`, sem docker, roda no turbo) + **e2e** (`bun run test:e2e`,
