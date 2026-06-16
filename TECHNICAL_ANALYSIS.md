@@ -30,7 +30,7 @@ Three things hold it back, and this analysis adds the two that the prior reports
 | ✅ | ~~Raise argon2 `memoryCost` 8129 → 19456~~ — **done** (OWASP argon2id baseline) | Embedded hash params → no migration. | done |
 | ✅ | ~~e2e `DATABASE_URL`~~ — **reviewed**: kept unconditional `=` + documented; the `||=` recommendation was a misdiagnosis (Bun auto-loads a dev `.env`, so the override is required). | Already safe; guard is defense-in-depth. | done |
 | ✅ | ~~Fix the broken `@pack/email` barrel~~ — **done** (relative specifiers + tsconfig base/jsx fix; package now typechecks) | Was broken on import. | done |
-| P1 | Dashboard `vite.config.ts`: `optimizeDeps.include` + `server.warmup` + fix `ssr.noExternal` | Removes most of the 10–15s dev cold-start (§5). The developer's actual daily pain. | S–M |
+| ✅ | ~~Dashboard `vite.config.ts` perf~~ — **done** (cold render ~37s→~20-26s on a slow box; nested `>` form needed for transitive deps under the isolated linker) | The developer's daily pain. | done |
 | P1 | Migrate `lucide-svelte` (deprecated) → `@lucide/svelte`, deep imports everywhere | Deprecated package baked into every downstream project; also the perf-relevant icon lib. | M |
 | P1 | Add `exports` maps to `@pack/tools`, `@pack/design-system`, `@pack/db` | Most-imported packages resolve only via Bun's filesystem fallback. | M |
 | P2 | The remaining items in §3 and §6 | Strict-TS escapes, dead code, `using` adoption, convention drift. | S–L |
@@ -225,6 +225,8 @@ Plus:
 
 **Measure it:** reproduce with `cd apps/dashboard && rm -rf node_modules/.vite && time bun run dev`, then watch for the `optimized dependencies changed. reloading` line after the first request (confirms #1). Use the existing `bun run debug` (`DEBUG=vite:deps,vite:transform,vite:resolve`) to see the prebundle set and which files dominate the transform; re-run after the fixes to confirm the re-optimize pass disappears.
 
+**Implemented (2026-06-16):** applied in `vite.config.ts`. Two real-world deltas vs the snippet above, found by measuring: (1) under Bun's isolated linker the transitive deps (`bits-ui`, `tailwind-variants`, `@lucide/svelte`, …) do **not** resolve from the dashboard root as bare include entries — they use the nested `@pack/design-system > dep` form (resolve in the parent's context); (2) the `*/icons/*` globs are **kept** — dropping them regressed the cold render (~19s → ~33s in testing). Measured cold first-render on a slow sandbox: baseline ~37s → ~20-26s with the fix. Prod `vite build` verified (17.7s, adapter-node). Sandbox numbers are noisy (~2.5× slower than the dev's box) — validate locally where baseline is ~10-15s.
+
 ### 5d. i18n strategy (boilerplate-level, separate from the perf fix)
 
 The custom dynamic-import-JSON approach is **fine and not the perf cause**, but for a boilerplate it has two real limits: **no message-level tree-shaking** (the whole per-locale dictionary ships even if a page uses 3 keys) and **no compile-time key typing** (a `dict.some.key` typo fails silently). The mainstream alternatives:
@@ -247,7 +249,7 @@ Severity: **Critical** / **High** / Medium / Low. Effort: S (<30 min) / M (hours
 | ~~2~~ | auth | `packages/auth/server.ts` | ✅ | — | ~~Pass `secret`~~ **DONE** — `secret: env.BETTER_AUTH_SECRET` wired; auth e2e green. |
 | ~~3~~ | security | `packages/tools/src/crypto/argon2-adapter.ts:9` | ✅ | — | ~~memoryCost~~ **DONE** — 8129 → 19456 (OWASP argon2id baseline). |
 | ~~4~~ | test safety | `apps/api/test/e2e/setup.ts:8` | ✅ | — | **REVIEWED** — kept unconditional `=` (Bun auto-loads a dev `.env`; override required) + documented; `||=` was a misdiagnosis. Guard is defense-in-depth. |
-| 5 | dev perf | `apps/dashboard/vite.config.ts` | **High** | S | FIX A+B+C (§5c): `optimizeDeps.include` transitive deps, `server.warmup`, gate `ssr.noExternal` to build. |
+| ~~5~~ | dev perf | `apps/dashboard/vite.config.ts` | ✅ | — | **DONE** — `optimizeDeps.include` (transitive via `@pack/design-system > dep` + `*/icons/*` globs), `server.warmup`, `ssr.noExternal` gated to build. Cold first-render ~37s→~20-26s on a slow box; prod build verified (17.7s). |
 | 6 | deps | `lucide-svelte` (dashboard) | **High** | M | Migrate the dashboard off the **deprecated** `lucide-svelte` → `@lucide/svelte`, deep imports (design-system is already on `@lucide/svelte` 1.18.0; deprecated pkg + perf, §5e). |
 | ~~7~~ | email | `packages/email/index.ts` + `tsconfig.json` | ✅ | — | **DONE** — relative specifiers (`./send`, `./templates/contact`); tsconfig → `bun.json` base + `jsx: react-jsx` + broadened include; package now typechecks. |
 | 8 | module boundaries | `packages/{tools,design-system,db}/package.json` | **High** | M | Add `exports` maps (copy `observability/package.json:10-18`). |

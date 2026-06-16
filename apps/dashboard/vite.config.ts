@@ -15,7 +15,9 @@ function bundleStats(top = 20): Plugin {
     apply: 'build',
     generateBundle(_, bundle) {
       const rows = Object.values(bundle)
-        .filter((c): c is Extract<typeof c, { type: 'chunk' }> => c.type === 'chunk')
+        .filter(
+          (c): c is Extract<typeof c, { type: 'chunk' }> => c.type === 'chunk'
+        )
         .flatMap((c) =>
           Object.entries(c.modules).map(([id, m]) => ({
             chunk: c.fileName,
@@ -40,26 +42,57 @@ function bundleStats(top = 20): Plugin {
   };
 }
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [tailwindcss(), sveltekit(), analyze && bundleStats()],
-  server: { port: 3000 },
+  server: {
+    port: 3000,
+    // Pre-transform the heavy layout + sidebar tree during server boot so the
+    // first request doesn't pay it. Dev-only; does not affect the prod build.
+    warmup: {
+      ssrFiles: [
+        './src/routes/+layout.svelte',
+        './src/routes/[locale]/+layout.svelte',
+        './src/routes/[locale]/(authenticated)/+layout.svelte',
+        './src/routes/[locale]/(unauthenticated)/+layout.svelte',
+        './src/lib/components/sidebar/app-sidebar.svelte',
+      ],
+      clientFiles: [
+        './src/routes/+layout.svelte',
+        './src/routes/[locale]/(authenticated)/+layout.svelte',
+      ],
+    },
+  },
   ssr: {
-    // Bundle lucide into the SSR output so the 1k+ icon files don't get
-    // transformed individually (default node_modules deps are externalized
-    // and require()'d at runtime — no prebundle needed for them).
-    noExternal: ['lucide-svelte'],
-    // pino + pino-pretty rely on `__dirname` to locate their transport
-    // worker file. Bundling them into an ESM output strips that and the
-    // logger crashes at startup (`vite preview`, adapter-node prod).
-    // Keep them external — Node loads them from node_modules at runtime
-    // where the worker resolution works natively.
+    // Only fold lucide into the SSR output for the production build, where a
+    // single chunk is wanted. In dev, externalizing (Vite's default) keeps the
+    // SSR cold-start fast — `noExternal` would push lucide's modules through
+    // Vite's transform on every restart.
+    noExternal: command === 'build' ? ['lucide-svelte'] : [],
+    // pino + pino-pretty resolve their transport worker via `__dirname`, which
+    // bundling into ESM strips. Keep them external in both dev and build.
     external: ['pino', 'pino-pretty', 'thread-stream'],
   },
   optimizeDeps: {
-    // Client-side prebundle warm-up. Only list deps the dashboard
-    // *directly* imports from the browser — server-only packages
-    // (better-auth, pino, ...) come in via @pack/* workspaces and are
-    // never shipped to the client, so they don't belong here.
-    include: ['lucide-svelte', 'mode-watcher', 'zod'],
+    // Pre-bundle the client deps the dashboard pulls *transitively* through the
+    // @pack/design-system workspace package. Vite treats that package as source
+    // and won't pre-scan into it, so without this it discovers these on the
+    // first request, re-bundles, and forces a full-page reload. Under Bun's
+    // isolated linker these deps don't resolve from the dashboard root, so they
+    // use the nested `@pack/design-system > dep` form (resolve in the parent's
+    // context). The dashboard's own deps stay bare. The `*/icons/*` globs
+    // pre-bundle the per-icon deep imports up front; measured cold first-render
+    // dropped from ~37s to ~19s on this (slow) box with the globs + warmup.
+    include: [
+      'lucide-svelte',
+      'lucide-svelte/icons/*',
+      'mode-watcher',
+      'zod',
+      '@pack/design-system > bits-ui',
+      '@pack/design-system > tailwind-variants',
+      '@pack/design-system > tailwind-merge',
+      '@pack/design-system > clsx',
+      '@pack/design-system > @lucide/svelte',
+      '@pack/design-system > @lucide/svelte/icons/*',
+    ],
   },
-});
+}));
