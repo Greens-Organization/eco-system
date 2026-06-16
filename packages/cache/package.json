@@ -2,17 +2,21 @@
   "name": "@pack/cache",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./pack-env": "./pack-env.ts"
+  },
   "scripts": {
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "zod": "catalog:",
-    "bullmq": "5.78.1",
-    "ioredis": "5.11.1"
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@pack/tsconfig": "workspace:*",
+    "@types/bun": "1.3.14",
     "@types/node": "catalog:dev"
   }
 }

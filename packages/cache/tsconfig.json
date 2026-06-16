@@ -1,0 +1,6 @@
+{
+  "extends": "@pack/tsconfig/bun.json",
+  "compilerOptions": {},
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules"]
+}

@@ -75,6 +75,13 @@ changed but this file wasn't updated.
         the boundary; `+page.server.ts` passes `StatsSchema` (it was declared
         but never executed — false confidence). `failure()` reads `res.json()`
         as `unknown` + narrows (was `any`). Verify: dashboard svelte-check 0/0/0.
+      - Slice 11 (this commit, #15): implemented `@pack/cache` with native
+        `Bun.RedisClient` (Bun 1.3.x — verified the API via web research vs the
+        official docs + bun-types). Dropped `bullmq`/`ioredis`. Exports: `cache`
+        (client) + typed `cacheGet/Set/Del/Has/Remember` (TTL via `SET EX`) +
+        `disconnectCache()`. Added exports map + tsconfig (had neither).
+        `REDIS_URL` kept required. **No test** — meaningful tests need a real
+        Redis (deferred like the e2e DB tier); the API usage is tsc-verified.
 - [x] Ambiente de testes do `apps/api` (bun:test, real-DB, mac-dashboard-style;
       plano em `tasks/done/api-test-environment.md`). Dois tiers: **unit**
       (`bun test test/unit`, sem docker, roda no turbo) + **e2e** (`bun run test:e2e`,
