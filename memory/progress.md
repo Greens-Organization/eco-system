@@ -82,6 +82,14 @@ changed but this file wasn't updated.
         `disconnectCache()`. Added exports map + tsconfig (had neither).
         `REDIS_URL` kept required. **No test** — meaningful tests need a real
         Redis (deferred like the e2e DB tier); the API usage is tsc-verified.
+      - Slice 12 (this commit, #25): replaced `@pack/storage`'s `@vercel/blob`
+        passthrough with native `Bun.s3` (Bun 1.3.x — API verified via web
+        research vs official docs + bun-types). Works with AWS S3 + any
+        S3-compatible provider (R2/MinIO/Spaces) via `S3_ENDPOINT`. Exports:
+        `storage` (S3Client) + `put`/`getText/Json/Bytes`/`remove`/`exists`/
+        `stat` + `presignDownload`/`presignUpload`. pack-env swapped to `S3_*`;
+        removed the dead `BLOB_READ_WRITE_TOKEN` + the `./client` subpath; added
+        exports map. **No test** — needs an S3 backend (deferred); tsc-verified.
 - [x] Ambiente de testes do `apps/api` (bun:test, real-DB, mac-dashboard-style;
       plano em `tasks/done/api-test-environment.md`). Dois tiers: **unit**
       (`bun test test/unit`, sem docker, roda no turbo) + **e2e** (`bun run test:e2e`,

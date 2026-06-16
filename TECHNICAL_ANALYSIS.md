@@ -65,8 +65,8 @@ A Bun-native, Turbo-orchestrated monorepo: a **Hono API on Bun** (`apps/api`) an
 | `email` | **Implemented** | ❌ (broken barrel) | ❌ | nodemailer + react-email. Barrel throws on import. |
 | `tools` | **Implemented** | ❌ | ❌ | argon2 adapter, uuid-tail, string utils. No `exports`/`main`. |
 | `seo` | **Implemented (orphaned)** | ✅ | ❌ | Metadata + JSON-LD. **Zero importers.** |
-| `storage` | **Thin wrapper** | ❌ | ❌ | Passthrough of `@vercel/blob`; `BLOB_READ_WRITE_TOKEN` declared-but-unused. |
-| `cache` | **Placeholder** | ❌ | ❌ | No `index.ts`. Only `pack-env` (hard-requires `REDIS_URL`) + deps. |
+| `storage` | **Implemented** | ✅ | ❌ | Native `Bun.s3` (S3/R2/MinIO/Spaces): put/get/del/exists/stat + presigned URLs. Tests need an S3 backend. |
+| `cache` | **Implemented** | ✅ | ❌ | Native `Bun.RedisClient` (Bun 1.3): typed JSON helpers + TTL. Tests need Redis. |
 | `payments` | **Placeholder** | ❌ | ❌ | Only `package.json` + `tsconfig`. |
 | `tsconfig` | **Mature** | n/a | n/a | `bun.json` + `svelte.json`. `svelte.json` weakens `noUncheckedIndexedAccess`. |
 
@@ -273,7 +273,7 @@ Severity: **Critical** / **High** / Medium / Low. Effort: S (<30 min) / M (hours
 | 22 | i18n (boilerplate) | `@pack/i18n` + dashboard | Medium | L | Evaluate Paraglide JS / typesafe-i18n; ensure `<html lang>`, hreflang, dictionary-via-`load` (§5d). |
 | 23 | convention | `packages/db/index.ts:36` | ⊘ defer | — | **Deferred** — premise weak: `@pack/db` doesn't depend on `@pack/observability` (nor do `auth`/`tools`/`email`), so "match other packages" overstates. Adding the dep just to throw `AppError` in one disconnect path is coupling for marginal gain; bare `Error` + `{ cause }` is fine here. |
 | 24 | tests | `packages/{db,auth}/package.json` | Low | M | Add `"test"` script + unit tests (argon2 adapter, db guard). |
-| 25 | storage | `packages/storage/*` | Low | M | Evaluate `Bun.s3` vs `@vercel/blob`; delete unused `BLOB_READ_WRITE_TOKEN`. |
+| ~~25~~ | storage | `packages/storage/*` | ✅ | — | **DONE** — replaced `@vercel/blob` with native `Bun.s3` (S3/R2/MinIO/Spaces via `S3_ENDPOINT`): `put`/`getText/Json/Bytes`/`remove`/`exists`/`stat` + presigned upload/download URLs. Dropped the dead `BLOB_READ_WRITE_TOKEN` + the `./client` subpath; added exports map. Verified: tsc. Runtime tests need an S3 backend (deferred). |
 | 26 | dead code | `packages/seo/*` | Low | M | Wire into dashboard or remove from build; drop the cast-enabling index signature. |
 | 27 | dead code | `apps/api/src/main/setup.ts:6` | Low | S | Implement `timezone()` or remove the no-op stub. |
 | 28 | DRY | `observability/pack-env.ts` + `db/pack-env.ts` | ⊘ defer | — | **Deferred** — the duplication is a one-line `stringbool({truthy,falsy})` config literal; hoisting it to a shared helper means adding a `@pack/tools` (+ zod) dep edge to `observability`/`db` for marginal DRY. Not worth the coupling. |
