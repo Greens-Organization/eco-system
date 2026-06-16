@@ -1,0 +1,24 @@
+# Postgres efêmero pros testes e2e do apps/api. Dados em tmpfs (RAM) — some no
+# `down`. Porta 5436 pra não colidir com o dev (5432). Subido/derrubado pelo
+# runner `apps/api/test/e2e/run.ts`.
+name: eco-api-test
+
+services:
+  pg-test:
+    image: postgres:18-alpine
+    container_name: eco-api-pg-test
+    ports:
+      - '5436:5432'
+    environment:
+      POSTGRES_USER: eco_user
+      POSTGRES_PASSWORD: eco_password
+      POSTGRES_DB: eco_test
+      PGDATA: /var/lib/postgresql/data
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U eco_user -d eco_test']
+      interval: 2s
+      timeout: 3s
+      retries: 15
+      start_period: 3s

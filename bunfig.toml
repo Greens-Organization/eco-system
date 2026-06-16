@@ -32,3 +32,9 @@ dryRun = false
 
 # equivalent to 'save-exact=true' on .npmrc
 exact = true
+
+# NOTE: bun test does not walk up to a parent bunfig from a sub-package cwd, so a
+# root [test].preload would not apply to `turbo test` (which runs `bun test` per
+# package). Each package wires the shared preload in its own test script instead:
+#   "test": "bun test --preload @pack/testing/preload"   (consumers)
+#   "test": "bun test --preload ./preload.ts"             (the @pack/testing package)

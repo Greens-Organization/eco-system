@@ -15,7 +15,7 @@
   "dependencies": {
     "@pack/db": "workspace:*",
     "@pack/tools": "workspace:*",
-    "better-auth": "1.6.9",
+    "better-auth": "1.6.19",
     "zod": "catalog:"
   },
   "devDependencies": {

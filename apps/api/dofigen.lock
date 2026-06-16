@@ -1,0 +1,139 @@
+effective: |
+  ignore:
+  - node_modules
+  - /apps/api/.env*
+  builders:
+    build:
+      fromImage:
+        path: oven/bun
+        digest: sha256:8956c7667fa17beb6e3c664115e66bdacfe502da5d99603626e74c197bdef160
+      workdir: /app/apps/api
+      copy:
+      - paths:
+        - .
+        target: /app/
+      - fromBuilder: install
+        paths:
+        - /app/node_modules
+        target: /app/node_modules
+      run:
+      - bun build --compile src/server.ts --outfile=api
+    install:
+      fromImage:
+        path: oven/bun
+        digest: sha256:8956c7667fa17beb6e3c664115e66bdacfe502da5d99603626e74c197bdef160
+      workdir: /app/
+      run:
+      - bun install --production --frozen-lockfile --verbose
+      cache:
+      - target: /root/.bun/install/cache
+      bind:
+      - target: bunfig.toml
+        source: bunfig.toml
+      - target: package.json
+        source: package.json
+      - target: apps/api/package.json
+        source: apps/api/package.json
+      - target: packages/analytics/package.json
+        source: packages/analytics/package.json
+      - target: packages/auth/package.json
+        source: packages/auth/package.json
+      - target: packages/cache/package.json
+        source: packages/cache/package.json
+      - target: packages/db/package.json
+        source: packages/db/package.json
+      - target: packages/design-system/package.json
+        source: packages/design-system/package.json
+      - target: packages/email/package.json
+        source: packages/email/package.json
+      - target: packages/observability/package.json
+        source: packages/observability/package.json
+      - target: packages/payments/package.json
+        source: packages/payments/package.json
+      - target: packages/storage/package.json
+        source: packages/storage/package.json
+      - target: packages/tsconfig/package.json
+        source: packages/tsconfig/package.json
+  fromImage:
+    path: oven/bun
+    digest: sha256:8956c7667fa17beb6e3c664115e66bdacfe502da5d99603626e74c197bdef160
+  workdir: /home/bun/app
+  entrypoint:
+  - /home/bun/app/api
+  expose:
+  - port: 3002
+  healthcheck:
+    cmd: curl -f http://localhost:3002/status || exit 1
+    interval: 30s
+    timeout: 10s
+    start: 30s
+    retries: 3
+images:
+  registry.hub.docker.com:443:
+    oven:
+      bun:
+        1.3.12:
+          digest: sha256:8956c7667fa17beb6e3c664115e66bdacfe502da5d99603626e74c197bdef160
+resources:
+  dofigen.yml:
+    hash: 528305479caf3666c42a5bca8893f6c445a0bb6756c21de9a0edb58f2929c5e7
+    content: |
+      ignore:
+        - node_modules
+        - /apps/api/.env*
+
+      builders:
+        install:
+          fromImage: oven/bun:1.3.12
+          workdir: /app/
+          labels:
+            org.opencontainers.image.stage: install
+          bind:
+            - bunfig.toml
+            - package.json
+            - apps/api/package.json
+            - packages/analytics/package.json
+            - packages/auth/package.json
+            - packages/cache/package.json
+            - packages/db/package.json
+            - packages/design-system/package.json
+            - packages/email/package.json
+            - packages/observability/package.json
+            - packages/payments/package.json
+            - packages/storage/package.json
+            - packages/tsconfig/package.json
+          run: bun install --production --frozen-lockfile --verbose
+          cache:
+            - /root/.bun/install/cache
+
+        build:
+          fromImage: oven/bun:1.3.12
+          workdir: /app/apps/api
+          labels:
+            org.opencontainers.image.stage: build
+          copy:
+            - . /app/
+            - fromBuilder: install
+              source: /app/node_modules
+              target: /app/node_modules
+          run: bun build --compile src/server.ts --outfile=api
+
+      fromImage: oven/bun:1.3.12
+
+      labels:
+        org.opencontainers.image.title: Eco System API
+        org.opencontainers.image.description: REST API server with Hono framework for Eco System
+        org.opencontainers.image.vendor: Eco System
+
+      workdir: /home/bun/app
+
+      expose: "3002"
+
+      healthcheck:
+        interval: 30s
+        timeout: 10s
+        start: 30s
+        retries: 3
+        cmd: curl -f http://localhost:3002/status || exit 1
+
+      entrypoint: /home/bun/app/api

@@ -20,6 +20,8 @@ export function statusToCode(status: number): ErrorCode {
       return 'CONFLICT';
     case 422:
       return 'UNPROCESSABLE_ENTITY';
+    case 429:
+      return 'TOO_MANY_REQUESTS';
     case 500:
       return 'INTERNAL_SERVER_ERROR';
     default:
@@ -45,6 +47,8 @@ export function codeToStatus(code: ErrorCode) {
       return 409;
     case 'UNPROCESSABLE_ENTITY':
       return 422;
+    case 'TOO_MANY_REQUESTS':
+      return 429;
     case 'INTERNAL_SERVER_ERROR':
       return 500;
     default:
@@ -65,9 +69,4 @@ export function parseZodErrorIssues(issues: ZodIssue[]): string {
           : `${i.path.length ? `${i.code} in '${i.path}': ` : ''}${i.message}`
     )
     .join('; ');
-}
-
-export function redactError<TError extends Error | unknown>(err: TError) {
-  if (!(err instanceof Error)) return err;
-  console.error(`Type of Error: ${err.constructor}`);
 }

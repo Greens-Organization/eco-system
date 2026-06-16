@@ -1,4 +1,5 @@
 import { disconnectDatabase } from '@pack/db';
+import { shutdownObservability } from '@pack/observability/instrumentation';
 import { log } from '@pack/observability/logger';
 import type { Server } from 'bun';
 
@@ -6,6 +7,19 @@ let isShuttingDown = false;
 
 export function isServerShuttingDown(): boolean {
   return isShuttingDown;
+}
+
+/**
+ * Whether to register the graceful-shutdown handlers. Runs in ALL environments
+ * unless explicitly opted out via SKIP_GRACEFUL — the prod-safe default.
+ *
+ * Prior bug: only registered when `(isLocal || isDevelopment) && SKIP_GRACEFUL`,
+ * so production never drained on SIGTERM. See tasks/todo/observability.md D5.
+ */
+export function shouldRegisterGracefulShutdown(opts: {
+  skip: boolean;
+}): boolean {
+  return !opts.skip;
 }
 
 export function createGracefulShutdown(
@@ -39,6 +53,9 @@ export function createGracefulShutdown(
       log.info('Closing database...');
       await disconnectDatabase();
       log.info('Database closed');
+
+      log.info('Flushing observability...');
+      await shutdownObservability();
 
       clearTimeout(timeout);
       log.info('Graceful shutdown completed');

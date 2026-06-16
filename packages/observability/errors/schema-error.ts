@@ -1,30 +1,25 @@
 import type { ZodError } from 'zod';
-
-import { BaseError } from './base-error';
-import type { ErrorCode } from './error-code';
+import { AppError } from './app-error';
 import { parseZodErrorIssues } from './utils';
 
-type Context = { raw: unknown };
+/**
+ * Validation error from Zod / schema parsing. Always BAD_REQUEST (400) with
+ * classification `validation_error` (never routed to Sentry).
+ */
+export class SchemaError extends AppError {
+  public override readonly name = 'SchemaError';
 
-export class SchemaError extends BaseError<Context> {
-  public readonly name = SchemaError.name;
-  public readonly code: ErrorCode;
-
-  constructor(opts: {
-    code: ErrorCode;
-    message: string;
-    cause?: BaseError;
-    context?: Context;
-  }) {
-    super(opts);
-    this.code = opts.code;
+  constructor(message: string, context?: Record<string, unknown>) {
+    super('BAD_REQUEST', message, {
+      classification: 'validation_error',
+      context,
+    });
   }
 
-  static fromZod<T>(e: ZodError<T>, raw: unknown): SchemaError {
-    return new SchemaError({
-      code: 'UNPROCESSABLE_ENTITY',
-      message: parseZodErrorIssues(e.issues),
-      context: { raw: JSON.stringify(raw) },
-    });
+  static fromZod<T>(error: ZodError<T>, raw?: unknown): SchemaError {
+    return new SchemaError(
+      parseZodErrorIssues(error.issues),
+      raw === undefined ? undefined : { raw: JSON.stringify(raw) }
+    );
   }
 }

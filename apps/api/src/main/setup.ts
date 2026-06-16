@@ -12,7 +12,7 @@ export const setup = {
     );
 
     log.info(
-      `❤️  Verify the health route at http://localhost:${env.PORT}${CONSTANTS.API_HEALTH_ENDPOINT}`
+      `❤️  Liveness http://localhost:${env.PORT}${CONSTANTS.API_STATUS_ENDPOINT} · Readiness ${CONSTANTS.API_READY_ENDPOINT}`
     );
   },
 };

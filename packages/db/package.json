@@ -16,7 +16,7 @@
     "drizzle-orm": "0.45.2",
     "drizzle-seed": "0.3.1",
     "postgres": "3.4.9",
-    "ws": "8.20.0",
+    "ws": "8.21.0",
     "zod": "catalog:"
   },
   "devDependencies": {

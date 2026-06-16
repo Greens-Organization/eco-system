@@ -1,6 +1,6 @@
-import { log } from './log';
+import { log } from '../logger';
 
-export const parseError = (error: unknown): string => {
+export function parseError(error: unknown): string {
   let message = 'An error occurred';
 
   if (error instanceof Error) {
@@ -18,4 +18,4 @@ export const parseError = (error: unknown): string => {
   }
 
   return message;
-};
+}

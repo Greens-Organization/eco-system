@@ -2,13 +2,19 @@
   "name": "@pack/testing",
   "version": "0.0.0",
   "private": true,
-  "main": "./index.js",
   "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./preload": "./preload.ts"
+  },
   "scripts": {
     "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "test": "bun test --preload ./preload.ts"
   },
   "devDependencies": {
-    "vitest": "catalog:testing"
+    "@pack/tsconfig": "workspace:*",
+    "@types/bun": "1.3.14",
+    "@types/node": "catalog:dev"
   }
 }

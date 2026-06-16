@@ -13,6 +13,7 @@ export const ErrorCodes = [
   'UNAUTHORIZED',
   'METHOD_NOT_ALLOWED',
   'UNPROCESSABLE_ENTITY',
+  'TOO_MANY_REQUESTS',
 ] as const;
 
 export const ErrorCodeEnum = z.enum(ErrorCodes);

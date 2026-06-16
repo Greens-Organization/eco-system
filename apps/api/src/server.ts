@@ -1,7 +1,12 @@
+// First import: boots the observability SDKs (Sentry/OTel) before the app.
+import '@pack/observability/instrumentation';
 import { log } from '@pack/observability/logger';
-import { env, isDevelopment, isLocal } from '@/core/env';
+import { env } from '@/core/env';
 import app from '@/main/app';
-import { createGracefulShutdown } from '@/main/infra/graceful-shutdown';
+import {
+  createGracefulShutdown,
+  shouldRegisterGracefulShutdown,
+} from '@/main/infra/graceful-shutdown';
 import { setup } from '@/main/setup';
 
 async function main() {
@@ -15,7 +20,9 @@ async function main() {
       fetch: app.fetch,
     });
 
-    if ((isLocal || isDevelopment) && env.SKIP_GRACEFUL) {
+    // Runs in ALL environments (essential in prod/k8s to drain on SIGTERM);
+    // opt out only via SKIP_GRACEFUL. (Fix for the prod registration bug, D5.)
+    if (shouldRegisterGracefulShutdown({ skip: env.SKIP_GRACEFUL })) {
       createGracefulShutdown(server);
     }
 

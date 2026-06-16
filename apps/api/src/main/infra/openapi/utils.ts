@@ -1,6 +1,7 @@
 // Props to Unkey: https://github.com/unkeyed/unkey/blob/main/apps/api/src/pkg/errors/http.ts
 
 import { z } from '@hono/zod-openapi';
+import { getContext } from '@pack/observability/context';
 import {
   codeToStatus,
   type ErrorCode,
@@ -9,6 +10,7 @@ import {
 } from '@pack/observability/errors';
 import type { Context } from 'hono';
 import { HTTPException } from 'hono/http-exception';
+import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import type { ZodError } from 'zod';
 
 export class OpenStatusApiError extends HTTPException {
@@ -40,14 +42,16 @@ export function handleZodError(
   c: Context
 ) {
   if (!result.success) {
-    const error = SchemaError.fromZod(result.error, c);
+    const error = SchemaError.fromZod(result.error);
+    const supportId = getContext()?.support_id;
     return c.json<z.infer<ReturnType<typeof createErrorSchema>>>(
       {
-        code: 'BAD_REQUEST',
+        code: error.code,
         message: error.message,
         requestId: c.get('requestId'),
+        ...(supportId ? { support_id: supportId } : {}),
       },
-      { status: 400 }
+      error.statusCode as ContentfulStatusCode
     );
   }
 }
@@ -66,6 +70,11 @@ export function createErrorSchema(code: ErrorCode) {
       description:
         'The request id to be used for debugging and error reporting.',
       example: '<uuid>',
+    }),
+    support_id: z.string().optional().openapi({
+      description:
+        'Support id shown to the user and sent to Sentry for this error.',
+      example: 'SUP-AB12CD34EF56',
     }),
   });
 }

@@ -36,3 +36,11 @@ export async function disconnectDatabase() {
     throw new Error('Failed to disconnect database', { cause: error });
   }
 }
+
+/**
+ * Liveness ping for the readiness probe. Reuses the shared pool (no new
+ * connection). Throws if the database is unreachable.
+ */
+export async function pingDatabase(): Promise<void> {
+  await db.$client`select 1`;
+}

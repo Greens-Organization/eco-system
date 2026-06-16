@@ -1,79 +1,78 @@
-import fs from 'node:fs';
+import os from 'node:os';
+import { type Span, trace } from '@opentelemetry/api';
 import pino, { type Logger, type TransportTargetOptions } from 'pino';
+import { getContext } from '../context';
 import { env } from '../pack-env';
 
 export type { Logger };
 
-const level = env.LOG_LEVEL;
-
-const transports: TransportTargetOptions[] = [];
-
-transports.push({
-  level: 'info',
-  target: 'pino-pretty',
-  options: {
-    colorize: true,
-    translateTime: 'HH:MM:ss',
-    // Hide fields that are inlined into messageFormat below, plus the
-    // usual noise. Anything else still gets printed as JSON next to the
-    // line (singleLine collapses it).
-    ignore: 'pid,hostname,requestId,path',
-    // Inline reqId + path before the message so each line is greppable
-    // by request without expanding the JSON blob:
-    //   12:34:56 INFO  [a3b1c2d4] POST /en/sign-in signin:attempt
-    messageFormat:
-      '{if requestId}[{requestId}] {end}{if path}{path} {end}{msg}',
-    singleLine: true,
-    levelFirst: true,
-  },
-});
-
-if (env.FILE_LOG) {
-  const logDirectory = './logs';
-
-  if (!fs.existsSync(logDirectory)) {
-    fs.mkdirSync(logDirectory);
-  }
-
-  transports.push({
-    target: 'pino/file',
-    options: {
-      destination: `${logDirectory}/app.log`,
-      mkdir: true,
-    },
-  });
+/** trace_id/span_id from an active OTel span (empty when none / OTel off). */
+export function spanToFields(span: Span | undefined): Record<string, string> {
+  if (!span) return {};
+  const { traceId, spanId } = span.spanContext();
+  return { trace_id: traceId, span_id: spanId };
 }
 
-// Pretty when stdout is an interactive terminal (dev), JSON otherwise (CI,
-// containers, prod). `LOG_PRETTY` env var, when explicitly set, overrides
-// the heuristic — handy for forcing JSON in a TTY or pretty in CI.
-const usePretty = env.LOG_PRETTY ?? Boolean(process.stdout?.isTTY);
-
 /**
- * Examples:
- * ```ts
- * log.error('This is a error log.');
- * ```
- * ```ts
- * log.debug('This is a debug log.');
- * ```
- * ```ts
- * log.warn('This is a warn log.');
- * ```
- * ```ts
- * log.info({ user: 'john_doe', action: 'login_attempt' }, 'User action.');
- * ```
+ * Pino options WITHOUT transport — the structured-log contract:
+ *   - `base`: per-process fields (service/environment/instance/version/region)
+ *   - `mixin`: per-request fields pulled from the ALS context (see ../context)
+ *
+ * `trace_id`/`span_id` are injected by the OTel span in Fase 2. Exported so
+ * tests can build a logger over a capture stream (transport can't coexist
+ * with a passed destination).
  */
-export const log = pino({
-  level,
+export const loggerOptions = {
+  level: env.VERBOSE ? 'debug' : env.LOG_LEVEL,
+  base: {
+    service: env.SERVICE_NAME,
+    environment: env.DEPLOYMENT_ENV ?? process.env.NODE_ENV,
+    instance: env.HOSTNAME ?? os.hostname(),
+    version: env.SERVICE_VERSION,
+    ...(env.REGION ? { region: env.REGION } : {}),
+  },
+  mixin() {
+    return { ...(getContext() ?? {}), ...spanToFields(trace.getActiveSpan()) };
+  },
   serializers: {
     req: pino.stdSerializers.req,
     res: pino.stdSerializers.res,
     err: pino.stdSerializers.err,
   },
-  ...(usePretty && {
-    transport: {
-      targets: transports,
+};
+
+/**
+ * Dev pretty-printing via in-process transport (worker thread). The API opts
+ * out (`LOG_PRETTY=false`) and pipes `| pino-pretty` to dodge the worker×OTel
+ * conflict (Fase 2); the dashboard keeps this path (no OTel). See D6/D11.
+ */
+const usePretty = env.LOG_PRETTY ?? Boolean(process.stdout?.isTTY);
+
+const transports: TransportTargetOptions[] = [
+  {
+    level: 'info',
+    target: 'pino-pretty',
+    options: {
+      colorize: true,
+      translateTime: 'HH:MM:ss',
+      ignore: 'pid,hostname,request_id,requestId,route,path',
+      messageFormat:
+        '{if request_id}[{request_id}] {end}{if requestId}[{requestId}] {end}{if route}{route} {end}{if path}{path} {end}{msg}',
+      singleLine: true,
+      levelFirst: true,
     },
-  }),
-});
+  },
+];
+
+if (env.FILE_LOG) {
+  transports.push({
+    target: 'pino/file',
+    options: { destination: './logs/app.log', mkdir: true },
+  });
+}
+
+export const log = pino(
+  usePretty
+    ? { ...loggerOptions, transport: { targets: transports } }
+    : loggerOptions
+);

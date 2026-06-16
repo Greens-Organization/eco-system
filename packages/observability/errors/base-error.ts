@@ -28,12 +28,9 @@ export abstract class BaseError<
     super(opts.message);
     this.cause = opts.cause;
     this.context = opts.context;
-
-    // TODO: add logger here!
   }
 
-  // Using util from node instead bun, because bun does not support vitest esbuild yet.
-  // https://github.com/oven-sh/bun/issues/4145
+  // Custom inspection: logs/REPL show `name(code): message` + context + cause.
   [util.inspect.custom]() {
     let result = `${this.name}(${this.code}): ${this.message}`;
 

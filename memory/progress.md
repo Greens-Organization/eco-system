@@ -8,6 +8,116 @@ changed but this file wasn't updated.
 
 ## In Progress
 
+- [x] Ambiente de testes do `apps/api` (bun:test, real-DB, mac-dashboard-style;
+      plano em `tasks/done/api-test-environment.md`). Dois tiers: **unit**
+      (`bun test test/unit`, sem docker, roda no turbo) + **e2e** (`bun run test:e2e`,
+      gated `E2E=1`, Postgres efêmero via `infra/docker/docker-compose.test.yml`).
+      `test/e2e/`: `run.ts` (compose up→test→down), `setup.ts` (preload: env de teste
+      + migrate programático + truncate-per-test + disconnect, gated E2E=1),
+      helpers `{containers,reset,app,auth}`, `factories/` (makeUser), rotas
+      (status/ready/stats/auth) + smoke. `test/helpers/mock-db.ts`. Os 3 testes
+      co-localizados migraram pra `test/unit/`. `app.ts` refatorado pra `buildApp()`
+      factory (+ default p/ server.ts) — **refactor-only** (TDD nudge: a factory só
+      embrulha a construção existente). +drizzle-orm/postgres como devDeps do api
+      (test harness importa direto, igual mac). Auth helper usa rotas reais
+      `/auth/sign-up|sign-in/email` (better-auth) → cookie. Verify: **unit 10/10**
+      (sem docker) + **e2e 7/7** (Postgres real: migrate, truncate, sessão,
+      stats 401→200) + tsc api exit 0 + biome limpo. Nada commitado.
+- [x] Reorg estrutural `@pack/observability` (refactor-only, behavior-preserving;
+      plano em `tasks/done/observability-structure.md`, via `/plan-eng-review`).
+      Layout consistente com o monorepo (espelha design-system: pastas-de-domínio
+      na raiz, sem `src/`): nova pasta `sentry/` (index=capture + scrub.ts);
+      `context.ts`→`context/index.ts`; `error.ts`/`parseError`→`errors/parse-error.ts`
+      (exportado pelo barrel, arrow→function); barrel raiz `index.ts`
+      (errors+logger+context+sentry, NÃO instrumentation/pack-env); `exports` map
+      no package.json (estilo `auth`, subpaths estáveis → 0 edição nos consumidores);
+      testes centralizados em `tests/`. Deletado `redactError` (morto+bugado, 0 callers).
+      NÃO mexido: pino-pretty `requestId`/`path` (bridge VIVO do dashboard,
+      `hooks.server.ts:39`); `pack-env.ts`/`instrumentation.ts` flat (convenção repo).
+      TDD: refactor puro, "exports novos" são arquivos movidos / re-exports.
+      Verify: 30/30 testes (bun) + tsc observability/api exit 0 + biome limpo +
+      `@pack/observability/logger` resolve no dashboard (bundler+exports map).
+      Nada commitado.
+- [x] Observabilidade Fase 2b/2c — OTel traces/métricas + wiring (D12 desacoplado):
+      `instrumentation.ts` + NodeTracerProvider(BatchSpanProcessor→OTLP) +
+      MeterProvider(PeriodicExportingMetricReader→OTLP) + HostMetrics, gated
+      OTEL_EXPORTER_OTLP_ENDPOINT (OTel SDK 2.x, sdk-trace-node/metrics 2.7.1).
+      `@hono/otel@1.1.2` (httpInstrumentationMiddleware) no app.ts envolvendo
+      observability. logger mixin: `spanToFields(trace.getActiveSpan())` →
+      trace_id/span_id. pack-env +OTEL_*. LGTM compose + docker:obs:up/down (D7).
+      Opt-out logger api (D11): LOG_PRETTY=false + `| pino-pretty` no dev +
+      pino-pretty devDep; .env/.env.example com vars default-off. shutdownObservability
+      flusha provider+meter+Sentry. Verify: 43 testes turbo + smoke runtime Bun
+      (getActiveSpan ok, shutdown ok) + smoke app real (OTEL on → trace_id no
+      access log; off → sem trace_id) + compose válido. FASE 2 COMPLETA.
+      Falta só verificação manual: docker:obs:up + tráfego + ver trace no Grafana.
+- [x] Observabilidade Fase 2a — Sentry (erros), topologia DESACOPLADA (D12):
+      `@sentry/bun@10.56.0`; `sentry-scrub.ts` (scrubPii beforeSend + allowlist
+      PII), `sentry.ts` (`captureError`/`sentryCaptureOptions` — encapsula Sentry
+      no @pack/observability, api não importa @sentry/bun direto), `instrumentation.ts`
+      (Sentry.init gated SENTRY_DSN, skipOpenTelemetrySetup+tracesSampleRate:0,
+      beforeSend scrub; export shutdownObservability). handleError usa captureError.
+      server.ts 1º import instrumentation; graceful flush wired. pack-env +SENTRY_DSN.
+      Verify: 28 obs + 10 api testes + runtime Bun (no-DSN no-op / DSN init sem throw).
+- [x] Observabilidade Fase 1 / Fatia 5 — health split + fix graceful (D5):
+      `/status` (liveness, sempre 200) + `/ready` (readiness via DI:
+      `createReadyRoute({ping,isShuttingDown})`, 503 no drain / 503 db-down /
+      200 ok); `pingDatabase()` add no @pack/db (`db.$client\`select 1\``);
+      `/health` removido, constants/setup/dofigen healthcheck → `/status`. Fix
+      do bug: `shouldRegisterGracefulShutdown({skip})` = `!skip` (roda em TODO
+      ambiente salvo SKIP_GRACEFUL) substitui `(isLocal||isDevelopment)&&SKIP`;
+      server.ts usa o predicado. Testes: health.test (4) + graceful regression
+      (1). Verify: 10 api tests + app real /status 200 e /ready 503(db down).
+      **FASE 1 COMPLETA** (35 testes turbo). Flush de observ. no graceful = Fase 2.
+- [x] Observabilidade Fase 1 / Fatia 4 — wiring no apps/api: novo
+      `middleware/observability.ts` (ALS via `runWithContext` + `c.set('obsContext')`
+      pro onError fora do escopo ALS + access log com QUIET_PATHS) substitui
+      `request-logger.ts` (removido). `handleError` reescrito: classifica → loga
+      estruturado → roteia Sentry (no-op stub Fase 2) → `support_id` no corpo;
+      **5xx não vaza message interna** (bug pego pelo e2e). `createErrorSchema`
+      +support_id; `handleZodError` usa SchemaError + support_id. Casts
+      `ContentfulStatusCode` no `c.json`. `observability.test.ts` (5 e2e via
+      app.request). Verify: typecheck 0 + e2e 5/5 + biome + app real carrega e
+      middleware roda com contexto completo (base+support_id+request_id no access
+      log) + /health 200 quiet. Total turbo: 30 testes.
+- [x] Observabilidade Fase 1 / Fatia 3 — logger base/mixin
+      (`@pack/observability/logger`): `loggerOptions` (export testável, sem
+      transport) com `base` (service/environment/instance/version/region) +
+      `mixin()` lendo o ALS (`getContext`). pack-env ganhou SERVICE_NAME/
+      SERVICE_VERSION/DEPLOYMENT_ENV/REGION/HOSTNAME/VERBOSE (todas
+      default/optional). Worker pino-pretty MANTIDO (D11=A: dashboard intacto;
+      API opta por sair com LOG_PRETTY=false+pipe na Fase 2/wiring). Mixin é
+      no-op até o middleware popular o contexto (Fatia 4). `logger.test.ts`
+      (4 testes, captura o stream do pino). Verify: 25/25 turbo + typecheck
+      observability/api exit 0 + biome + dashboard import (`log`/`Logger`) intacto.
+      PACOTE @pack/observability COMPLETO (errors+context+logger).
+- [x] Observabilidade Fase 1 / Fatia 2 — `context.ts` (AsyncLocalStorage):
+      `RequestContext` + `getContext`/`setContext`/`runWithContext`/
+      `generateSupportId`(SUP-+12hex)/`parseCfRay`. Adaptação vs fonte Fastify:
+      `runWithContext` usa `storage.run(ctx, next)` (scoped, sem leak) porque o
+      middleware Hono embrulha o `next()`; a fonte usava `enterWith`. 9 testes
+      (`context.test.ts`). Verify: 18/18 (errors+context) + typecheck + biome.
+- [x] Observabilidade Fase 1 / Fatia 1 — contrato de erro enriquecido
+      (`@pack/observability/errors`): novo `AppError` (code/statusCode/errorCode/
+      classification/eventCategory/userMessage) sobre o `BaseError`; nova
+      `classification.ts` (`ErrorClassification`, `shouldReportToSentry`,
+      `defaultClassification`); `SchemaError` rebasado em `AppError`
+      (BAD_REQUEST/400 + validation_error, `fromZod(err, raw?)` compatível);
+      `+TOO_MANY_REQUESTS`(429) em error-code/utils; removido `log.ts` (console),
+      `error.ts` aponta pro Pino; `errors.test.ts` (9 testes, bun:test). api segue
+      compilando (fromZod raw opcional). Verify: turbo test 9/9 + typecheck
+      observability/api exit 0 + biome limpo. handleError (T5) consome isso na Fatia 4.
+- [x] Observabilidade Fase 0 — test runner Vitest → `bun:test` (plano em
+      `tasks/done/observability.md` D9/D10). Removido vitest (devDep root +
+      `catalogs.testing` + dep `apps/api`); `@pack/testing` reescrito de factory
+      Vitest React/jsdom (`index.js`) pra helpers `bun:test` (`index.ts`
+      `setTestEnv()` + `preload.ts` + `runner.test.ts` smoke). Wiring: preload
+      é POR-PACOTE via `--preload` (bun não sobe ao bunfig da raiz a partir de
+      subpacote); `linker=isolated` exige `types:[bun,node]` no tsconfig;
+      `bun test` sai 1 sem testes (só dar script `test` a pacote com suite);
+      canônico é `bun run test` (turbo), nunca `bun test` da raiz (pega
+      `study/`). Verify: turbo test 3/3 verde + typecheck ok. Novos exports em
+      `@pack/testing/index.ts` cobertos por `runner.test.ts`.
 - [ ] Migration debt cleanup before re-enabling verify gate
 - [x] Revert c44f310 (`getSession` middleware on `/auth/*`) — reintroduced
       the sign-in hang the PRD §5 had already fixed. Refactor-only, no new
