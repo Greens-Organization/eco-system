@@ -266,16 +266,16 @@ Severity: **Critical** / **High** / Medium / Low. Effort: S (<30 min) / M (hours
 | 16 | ts | error-handler `67,83,114` + `openapi/utils.ts:54` | ⊘ defer | — | **Deferred (cosmetic)** — the 4 `as ContentfulStatusCode` casts are honest, localized assertions of known-valid status numbers; a `toStatusCode` wrapper just re-casts (no validation) → indirection without safety. Revisit only if `AppError.statusCode` is retyped upstream. |
 | ~~17~~ | ts | `apps/api/src/core/env.ts` | ✅ | — | **DONE** — widened via `const nodeEnv: string` for all three checks; dropped `('local' as string)`. |
 | ~~18~~ | ts | `apps/api/src/main/app.ts` | ✅ | — | **DONE** — premise corrected: `ORIGIN_ALLOWED` is *already* required `string[]` (auth pack-env `.transform()`), so the `|| [...]` fallback was dead (arrays are truthy). Removed it. |
-| 19 | ts | `observability/logger/index.ts:25`, `sentry/index.ts:12-16` | Medium | S | `satisfies` + remove vestigial pretty fields; replace Sentry casts. |
-| 20 | naming | `packages/tools/src/string/m-string.ts:46,109,96` | Medium | S | `capitalize`→`toTitleCase`; drop `valueOf`; `names.at(-1)`. |
+| ~~19~~ | ts | `observability/logger/index.ts`, `sentry/index.ts` | ✅ | — | **DONE** — `loggerOptions … satisfies LoggerOptions`; Sentry casts → `asTag()` narrowing helper. **Did NOT** remove the pretty `requestId`/`path` fields — they are the **live dashboard logging bridge** (`hooks.server.ts`), not vestigial (analysis was wrong on that). |
+| ~~20~~ | naming | `packages/tools/src/string/m-string.ts` | ✅ | — | **DONE** — `capitalize`→`toTitleCase`, dropped `valueOf` (coercion footgun), `names.at(-1)`, PT→EN comments. Safe: zero callers (the string util is unused). |
 | 21 | ts config | `packages/tsconfig/bun.json` | Medium | S | Add `isolatedModules: true`. |
 | 22 | i18n (boilerplate) | `@pack/i18n` + dashboard | Medium | L | Evaluate Paraglide JS / typesafe-i18n; ensure `<html lang>`, hreflang, dictionary-via-`load` (§5d). |
-| 23 | convention | `packages/db/index.ts:36` | Low | S | Throw `AppError`/`BaseError` (keep `{ cause }`). |
+| 23 | convention | `packages/db/index.ts:36` | ⊘ defer | — | **Deferred** — premise weak: `@pack/db` doesn't depend on `@pack/observability` (nor do `auth`/`tools`/`email`), so "match other packages" overstates. Adding the dep just to throw `AppError` in one disconnect path is coupling for marginal gain; bare `Error` + `{ cause }` is fine here. |
 | 24 | tests | `packages/{db,auth}/package.json` | Low | M | Add `"test"` script + unit tests (argon2 adapter, db guard). |
 | 25 | storage | `packages/storage/*` | Low | M | Evaluate `Bun.s3` vs `@vercel/blob`; delete unused `BLOB_READ_WRITE_TOKEN`. |
 | 26 | dead code | `packages/seo/*` | Low | M | Wire into dashboard or remove from build; drop the cast-enabling index signature. |
 | 27 | dead code | `apps/api/src/main/setup.ts:6` | Low | S | Implement `timezone()` or remove the no-op stub. |
-| 28 | DRY | `observability/pack-env.ts` + `db/pack-env.ts` | Low | S | Hoist duplicated `stringbool({truthy,falsy})` to `@pack/tools`. |
+| 28 | DRY | `observability/pack-env.ts` + `db/pack-env.ts` | ⊘ defer | — | **Deferred** — the duplication is a one-line `stringbool({truthy,falsy})` config literal; hoisting it to a shared helper means adding a `@pack/tools` (+ zod) dep edge to `observability`/`db` for marginal DRY. Not worth the coupling. |
 | 29 | style | `packages/design-system/**` | Low | M | Configure Biome to format/quarantine generated dirs. |
 | 30 | perf | `packages/db/index.ts:16` | Low | S | Benchmark `prepare: true` for the long-running API. |
 | 31 | infra | `apps/api/dofigen.yml` | Low | S | Remove the phantom `packages/analytics` bind; fix the `curl` healthcheck; populate/delete empty docker artifacts. |

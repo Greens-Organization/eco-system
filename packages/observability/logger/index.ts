@@ -1,6 +1,10 @@
 import os from 'node:os';
 import { type Span, trace } from '@opentelemetry/api';
-import pino, { type Logger, type TransportTargetOptions } from 'pino';
+import pino, {
+  type Logger,
+  type LoggerOptions,
+  type TransportTargetOptions,
+} from 'pino';
 import { getContext } from '../context';
 import { env } from '../pack-env';
 
@@ -39,7 +43,7 @@ export const loggerOptions = {
     res: pino.stdSerializers.res,
     err: pino.stdSerializers.err,
   },
-};
+} satisfies LoggerOptions;
 
 /**
  * Dev pretty-printing via in-process transport (worker thread). The API opts

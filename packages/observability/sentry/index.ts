@@ -7,12 +7,15 @@ export * from './scrub';
  * Build Sentry `captureException` options from context fields, with the PII
  * allowlist applied to `extra`. Pure — easy to unit-test without a client.
  */
+const asTag = (value: unknown): string | undefined =>
+  typeof value === 'string' ? value : undefined;
+
 export function sentryCaptureOptions(fields: Record<string, unknown>) {
   return {
     tags: {
-      support_id: fields.support_id as string | undefined,
-      error_code: fields.error_code as string | undefined,
-      classification: fields.classification as string | undefined,
+      support_id: asTag(fields.support_id),
+      error_code: asTag(fields.error_code),
+      classification: asTag(fields.classification),
     },
     extra: sentryContextAllowlist(fields),
   };

@@ -41,9 +41,10 @@ class MString {
     this._value = value ?? '';
   }
 
-  // --- Funções customizadas ---
+  // --- Custom ---
 
-  capitalize(): MString {
+  /** Title-case each word, skipping the small-word exceptions (except first). */
+  toTitleCase(): MString {
     this._value = this._value
       .toLowerCase()
       .split(' ')
@@ -60,7 +61,7 @@ class MString {
     return this;
   }
 
-  // --- Wrappers es-toolkit ---
+  // --- es-toolkit wrappers ---
 
   deburr(): MString {
     this._value = deburr(this._value);
@@ -87,26 +88,22 @@ class MString {
     return this;
   }
 
-  // --- Métodos terminais (retornam string) ---
+  // --- Terminal methods (return string) ---
 
   getInitials(): string {
     const names = this._value.trim().split(' ').filter(Boolean);
     const first = names[0]?.[0]?.toUpperCase() ?? '';
     if (names.length <= 1) return first;
-    return first + (names[names.length - 1]?.[0]?.toUpperCase() ?? '');
+    return first + (names.at(-1)?.[0]?.toUpperCase() ?? '');
   }
 
-  // --- Saída ---
+  // --- Output ---
 
   get value(): string {
     return this._value;
   }
 
   toString(): string {
-    return this._value;
-  }
-
-  valueOf(): string {
     return this._value;
   }
 }

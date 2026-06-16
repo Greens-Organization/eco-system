@@ -52,6 +52,15 @@ changed but this file wasn't updated.
         refactor-only** (TDD nudge on env.ts: the `isProduction/isDevelopment/
         isLocal` exports pre-existed; only `isLocal`'s impl changed). #16
         (`toStatusCode` helper) deferred as cosmetic. Verify: api tsc + e2e 7/7.
+      - Slice 8 (this commit): #19 observability — `loggerOptions … satisfies
+        LoggerOptions`; Sentry `as string|undefined` casts → an `asTag()`
+        narrowing helper. **Kept** the pretty `requestId`/`path` fields (LIVE
+        dashboard bridge, NOT vestigial — analysis #19 was wrong on that).
+        #20 tools `m-string` — `capitalize`→`toTitleCase`, dropped `valueOf`,
+        `names.at(-1)`, PT→EN comments (zero callers, the util is unused).
+        #23 (db AppError) + #28 (stringbool DRY) deferred — both would add a
+        dep edge to a low-level package for marginal gain. Verify: obs tsc +
+        30/30 + tools tsc + biome.
 - [x] Ambiente de testes do `apps/api` (bun:test, real-DB, mac-dashboard-style;
       plano em `tasks/done/api-test-environment.md`). Dois tiers: **unit**
       (`bun test test/unit`, sem docker, roda no turbo) + **e2e** (`bun run test:e2e`,
