@@ -1,6 +1,6 @@
 <script lang="ts">
+import Trees from '@lucide/svelte/icons/trees';
 import { ModeToggle } from '@pack/design-system/components/toggle';
-import Trees from 'lucide-svelte/icons/trees';
 import type { Snippet } from 'svelte';
 
 interface Props {

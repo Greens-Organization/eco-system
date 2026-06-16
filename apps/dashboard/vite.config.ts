@@ -67,7 +67,7 @@ export default defineConfig(({ command }) => ({
     // single chunk is wanted. In dev, externalizing (Vite's default) keeps the
     // SSR cold-start fast — `noExternal` would push lucide's modules through
     // Vite's transform on every restart.
-    noExternal: command === 'build' ? ['lucide-svelte'] : [],
+    noExternal: command === 'build' ? ['@lucide/svelte'] : [],
     // pino + pino-pretty resolve their transport worker via `__dirname`, which
     // bundling into ESM strips. Keep them external in both dev and build.
     external: ['pino', 'pino-pretty', 'thread-stream'],
@@ -83,16 +83,14 @@ export default defineConfig(({ command }) => ({
     // pre-bundle the per-icon deep imports up front; measured cold first-render
     // dropped from ~37s to ~19s on this (slow) box with the globs + warmup.
     include: [
-      'lucide-svelte',
-      'lucide-svelte/icons/*',
+      '@lucide/svelte',
+      '@lucide/svelte/icons/*',
       'mode-watcher',
       'zod',
       '@pack/design-system > bits-ui',
       '@pack/design-system > tailwind-variants',
       '@pack/design-system > tailwind-merge',
       '@pack/design-system > clsx',
-      '@pack/design-system > @lucide/svelte',
-      '@pack/design-system > @lucide/svelte/icons/*',
     ],
   },
 }));

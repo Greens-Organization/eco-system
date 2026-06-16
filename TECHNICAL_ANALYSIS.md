@@ -31,7 +31,7 @@ Three things hold it back, and this analysis adds the two that the prior reports
 | ✅ | ~~e2e `DATABASE_URL`~~ — **reviewed**: kept unconditional `=` + documented; the `||=` recommendation was a misdiagnosis (Bun auto-loads a dev `.env`, so the override is required). | Already safe; guard is defense-in-depth. | done |
 | ✅ | ~~Fix the broken `@pack/email` barrel~~ — **done** (relative specifiers + tsconfig base/jsx fix; package now typechecks) | Was broken on import. | done |
 | ✅ | ~~Dashboard `vite.config.ts` perf~~ — **done** (cold render ~37s→~20-26s on a slow box; nested `>` form needed for transitive deps under the isolated linker) | The developer's daily pain. | done |
-| P1 | Migrate `lucide-svelte` (deprecated) → `@lucide/svelte`, deep imports everywhere | Deprecated package baked into every downstream project; also the perf-relevant icon lib. | M |
+| ✅ | ~~Migrate `lucide-svelte` → `@lucide/svelte`~~ — **done** (4 files; lockfile unified on `@lucide/svelte@1.18.0`) | Removed the deprecated package. | done |
 | P1 | Add `exports` maps to `@pack/tools`, `@pack/design-system`, `@pack/db` | Most-imported packages resolve only via Bun's filesystem fallback. | M |
 | P2 | The remaining items in §3 and §6 | Strict-TS escapes, dead code, `using` adoption, convention drift. | S–L |
 
@@ -250,7 +250,7 @@ Severity: **Critical** / **High** / Medium / Low. Effort: S (<30 min) / M (hours
 | ~~3~~ | security | `packages/tools/src/crypto/argon2-adapter.ts:9` | ✅ | — | ~~memoryCost~~ **DONE** — 8129 → 19456 (OWASP argon2id baseline). |
 | ~~4~~ | test safety | `apps/api/test/e2e/setup.ts:8` | ✅ | — | **REVIEWED** — kept unconditional `=` (Bun auto-loads a dev `.env`; override required) + documented; `||=` was a misdiagnosis. Guard is defense-in-depth. |
 | ~~5~~ | dev perf | `apps/dashboard/vite.config.ts` | ✅ | — | **DONE** — `optimizeDeps.include` (transitive via `@pack/design-system > dep` + `*/icons/*` globs), `server.warmup`, `ssr.noExternal` gated to build. Cold first-render ~37s→~20-26s on a slow box; prod build verified (17.7s). |
-| 6 | deps | `lucide-svelte` (dashboard) | **High** | M | Migrate the dashboard off the **deprecated** `lucide-svelte` → `@lucide/svelte`, deep imports (design-system is already on `@lucide/svelte` 1.18.0; deprecated pkg + perf, §5e). |
+| ~~6~~ | deps | `lucide-svelte` (dashboard) | ✅ | — | **DONE** — 4 files migrated to `@lucide/svelte/icons/*`; dashboard dep + catalog swapped; vite.config updated; lockfile unified on `@lucide/svelte@1.18.0` (lucide-svelte gone). Prod build verified (13.8s). |
 | ~~7~~ | email | `packages/email/index.ts` + `tsconfig.json` | ✅ | — | **DONE** — relative specifiers (`./send`, `./templates/contact`); tsconfig → `bun.json` base + `jsx: react-jsx` + broadened include; package now typechecks. |
 | 8 | module boundaries | `packages/{tools,design-system,db}/package.json` | **High** | M | Add `exports` maps (copy `observability/package.json:10-18`). |
 | 9 | ts strictness | `packages/tsconfig/svelte.json:12` | **High** | S | Remove `noUncheckedIndexedAccess:false`; fix the resulting `i18n/index.ts:16,44` `undefined`s. |
@@ -278,6 +278,7 @@ Severity: **Critical** / **High** / Medium / Low. Effort: S (<30 min) / M (hours
 | 29 | style | `packages/design-system/**` | Low | M | Configure Biome to format/quarantine generated dirs. |
 | 30 | perf | `packages/db/index.ts:16` | Low | S | Benchmark `prepare: true` for the long-running API. |
 | 31 | infra | `apps/api/dofigen.yml` | Low | S | Remove the phantom `packages/analytics` bind; fix the `curl` healthcheck; populate/delete empty docker artifacts. |
+| 32 | tooling | `apps/dashboard` | Medium | S | **Found during #6** — `typecheck` script is broken (`svelte-check` not in devDeps → exit 127), and `bun run lint` is red on pre-existing files (`auth-proxy.ts` + `+error.svelte` format; `sign-in`/`sign-up` `+page.server.ts` import-sort). Add `svelte-check` devDep + `biome check --write`. |
 
 ---
 
