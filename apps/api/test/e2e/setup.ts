@@ -5,6 +5,9 @@ import { resolve } from 'node:path';
 // (preload roda antes dos arquivos de teste). Override do DATABASE_URL do .env
 // pro DB de teste; vars obrigatórias do better-auth/email; observabilidade OFF.
 process.env.NODE_ENV = 'test';
+// Override INCONDICIONAL (NÃO usar ||=): o Bun auto-carrega packages/db/.env, que
+// seta DATABASE_URL pro DB de dev. Precisamos forçar o DB de teste pra que o e2e
+// nunca toque o dev. O guard em runMigrations() é defesa-em-profundidade.
 process.env.DATABASE_URL =
   'postgresql://eco_user:eco_password@localhost:5436/eco_test';
 process.env.BETTER_AUTH_SECRET ||= 'test-secret-not-for-prod-0123456789';

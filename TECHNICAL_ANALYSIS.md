@@ -26,12 +26,12 @@ Three things hold it back, and this analysis adds the two that the prior reports
 | # | Priority | Why | Effort |
 |---|---|---|---|
 | ✅ | ~~Bump `better-auth` & `hono` past their CVE fixes~~ — **applied 2026-06-16** (now 1.6.19 / 4.12.25, §4) | Both CVEs patched. | done |
-| P0 | Wire `BETTER_AUTH_SECRET` into `betterAuth({ secret })` | Validated then discarded; works only via better-auth's silent `process.env` fallback. | S |
-| P0 | Fix the e2e `DATABASE_URL` guard (`=` → `||=`) | The `eco_test` safety guard is currently decorative — a real wipe-the-wrong-DB hazard. | S |
-| P0 | Raise argon2 `memoryCost` 8129 → 19456 | Below OWASP argon2id baseline; non-power-of-two typo. | S |
+| ✅ | ~~Wire `BETTER_AUTH_SECRET` into `betterAuth({ secret })`~~ — **done** (auth e2e green) | Was validated then discarded. | done |
+| ✅ | ~~Raise argon2 `memoryCost` 8129 → 19456~~ — **done** (OWASP argon2id baseline) | Embedded hash params → no migration. | done |
+| ✅ | ~~e2e `DATABASE_URL`~~ — **reviewed**: kept unconditional `=` + documented; the `||=` recommendation was a misdiagnosis (Bun auto-loads a dev `.env`, so the override is required). | Already safe; guard is defense-in-depth. | done |
+| ✅ | ~~Fix the broken `@pack/email` barrel~~ — **done** (relative specifiers + tsconfig base/jsx fix; package now typechecks) | Was broken on import. | done |
 | P1 | Dashboard `vite.config.ts`: `optimizeDeps.include` + `server.warmup` + fix `ssr.noExternal` | Removes most of the 10–15s dev cold-start (§5). The developer's actual daily pain. | S–M |
 | P1 | Migrate `lucide-svelte` (deprecated) → `@lucide/svelte`, deep imports everywhere | Deprecated package baked into every downstream project; also the perf-relevant icon lib. | M |
-| P1 | Fix the broken `@pack/email` barrel | `export * from 'send'` + phantom `templates/contact` → throws on import. | S |
 | P1 | Add `exports` maps to `@pack/tools`, `@pack/design-system`, `@pack/db` | Most-imported packages resolve only via Bun's filesystem fallback. | M |
 | P2 | The remaining items in §3 and §6 | Strict-TS escapes, dead code, `using` adoption, convention drift. | S–L |
 
@@ -81,7 +81,7 @@ A Bun-native, Turbo-orchestrated monorepo: a **Hono API on Bun** (`apps/api`) an
 ### 3a. ECMAScript (ES2023+)
 
 - **`using` / `await using` + `Symbol.asyncDispose` — the biggest ES win.** The DB pool (`packages/db/index.ts` `disconnectDatabase`), OTel shutdown, and the e2e containers (`run.ts` try/finally) are textbook disposable lifecycles. Give `db` a `[Symbol.asyncDispose]` and let `await using` enforce teardown.
-- **`||=` consistency** — `apps/api/test/e2e/setup.ts:8` uses plain `=` for `DATABASE_URL` while the next lines use `||=`; that single inconsistency neuters the `eco_test` guard (P0).
+- **e2e `DATABASE_URL` override (resolved, not a bug)** — `apps/api/test/e2e/setup.ts:8` intentionally uses unconditional `=` (NOT `||=`): Bun auto-loads `packages/db/.env`, so the override is **required** to force the test DB; `||=` lets the dev value win and points e2e at the wrong DB. The `eco_test` check in `runMigrations()` is defense-in-depth. (The prior "use `||=`" recommendation was a misdiagnosis, caught by running the e2e suite.)
 - **`??` vs `||` type-shape bug** — `apps/api/src/main/app.ts:28` `env.ORIGIN_ALLOWED || ['http://localhost:3000']` mixes a `string` LHS with a `string[]` fallback. Narrow `ORIGIN_ALLOWED` to an array in `pack-env`.
 - **`Bun.sleep`** over the hand-rolled `new Promise(setTimeout)` in `graceful-shutdown.ts:45`.
 - **`Array.at(-1)`** in `packages/tools/src/string/m-string.ts:96`.
@@ -244,19 +244,19 @@ Severity: **Critical** / **High** / Medium / Low. Effort: S (<30 min) / M (hours
 |---|---|---|---|---|---|
 | — | packages | `packages/rate-limit/` | — | — | ~~Remove the package~~ **DONE** — directory deleted, lockfile refreshed. |
 | ~~1~~ | security | `better-auth`, `hono` | ✅ | — | ~~Bump past CVE fixes~~ **DONE 2026-06-16** — better-auth 1.6.19, hono 4.12.25. |
-| 2 | auth | `packages/auth/server.ts:7` | **Critical** | S | Pass `secret: env.BETTER_AUTH_SECRET` into `betterAuth({...})`. |
-| 3 | security | `packages/tools/src/crypto/argon2-adapter.ts:9` | **Critical** | S | `memoryCost: 8129` → `19456`. |
-| 4 | test safety | `apps/api/test/e2e/setup.ts:8` | **Critical** | S | `DATABASE_URL ||= '...eco_test'` so the line-45 guard works. |
+| ~~2~~ | auth | `packages/auth/server.ts` | ✅ | — | ~~Pass `secret`~~ **DONE** — `secret: env.BETTER_AUTH_SECRET` wired; auth e2e green. |
+| ~~3~~ | security | `packages/tools/src/crypto/argon2-adapter.ts:9` | ✅ | — | ~~memoryCost~~ **DONE** — 8129 → 19456 (OWASP argon2id baseline). |
+| ~~4~~ | test safety | `apps/api/test/e2e/setup.ts:8` | ✅ | — | **REVIEWED** — kept unconditional `=` (Bun auto-loads a dev `.env`; override required) + documented; `||=` was a misdiagnosis. Guard is defense-in-depth. |
 | 5 | dev perf | `apps/dashboard/vite.config.ts` | **High** | S | FIX A+B+C (§5c): `optimizeDeps.include` transitive deps, `server.warmup`, gate `ssr.noExternal` to build. |
 | 6 | deps | `lucide-svelte` (dashboard) | **High** | M | Migrate the dashboard off the **deprecated** `lucide-svelte` → `@lucide/svelte`, deep imports (design-system is already on `@lucide/svelte` 1.18.0; deprecated pkg + perf, §5e). |
-| 7 | email | `packages/email/index.ts:1-2` | **High** | S | `'send'`→`'./send'`; remove/create phantom `'templates/contact'`. |
+| ~~7~~ | email | `packages/email/index.ts` + `tsconfig.json` | ✅ | — | **DONE** — relative specifiers (`./send`, `./templates/contact`); tsconfig → `bun.json` base + `jsx: react-jsx` + broadened include; package now typechecks. |
 | 8 | module boundaries | `packages/{tools,design-system,db}/package.json` | **High** | M | Add `exports` maps (copy `observability/package.json:10-18`). |
 | 9 | ts strictness | `packages/tsconfig/svelte.json:12` | **High** | S | Remove `noUncheckedIndexedAccess:false`; fix the resulting `i18n/index.ts:16,44` `undefined`s. |
 | 10 | dead code | `packages/observability/errors/parse-error.ts` | **High** | S | Delete (0 callers; logger-graph coupling; logs at error per parse). |
 | 11 | type soundness | dashboard `sign-in,sign-up/+page.server.ts` | **High** | S | Replace 5× `data.get(x) as string` with `typeof`-narrow or Zod. |
 | 12 | type soundness | `apps/dashboard/src/lib/api/safe-fetch.ts` | **High** | M | Type `res.json()` as `unknown`; run the existing Zod schema (or drop its false confidence). |
 | ~~13~~ | deps | `@sveltejs/kit`, `vite` | ✅ | — | ~~Bump~~ **DONE 2026-06-16** — kit 2.65.1, vite 8.0.16. |
-| 13b | deps | `nodemailer` 9.0.0 (`packages/email`) | Medium | S | Major bump (8→9) just applied — verify `@pack/email` compat (Node baseline + API) once the broken barrel (#7) is fixed. |
+| 13b | deps | `nodemailer` 9.0.0 (`packages/email`) | ✅ (type) | — | Type-compat verified — `@pack/email` typechecks against nodemailer 9 (`createTransport`/`sendMail`). Runtime send not exercised (no SMTP in tests; `shouldSendEmail` is false outside prod/dev). |
 | 13c | deps | `@tanstack/svelte-form` 1.28.5 | Low | S | Not bumped in the 2026-06-16 update; ~5 minors behind. Optional minor-bump. |
 | 14 | ES lifecycle | `packages/db/index.ts` + `graceful-shutdown.ts:45` | Medium | M | `Bun.sleep`; add `[Symbol.asyncDispose]`; adopt `await using` in shutdown + e2e containers. |
 | 15 | cache | `packages/cache/*` | Medium | M | Implement with `Bun.redis` (drop `ioredis`); remove the unused hard-required `REDIS_URL`. |

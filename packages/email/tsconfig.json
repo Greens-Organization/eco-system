@@ -1,6 +1,9 @@
 {
-  "extends": "@pack/tsconfig/svelte.json",
-  "compilerOptions": {},
-  "include": ["./*.ts", "./*.tsx"],
+  "extends": "@pack/tsconfig/bun.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"]
+  },
+  "include": ["./**/*.ts", "./**/*.tsx"],
   "exclude": ["node_modules"]
 }

@@ -6,7 +6,7 @@ export class Argon2Adapter {
   async hash(plaintext: string): Promise<string> {
     return hash(plaintext, {
       algorithm: 'argon2id',
-      memoryCost: 8129,
+      memoryCost: 19456,
       timeCost: 2,
     });
   }
