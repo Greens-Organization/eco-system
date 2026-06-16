@@ -255,8 +255,8 @@ Severity: **Critical** / **High** / Medium / Low. Effort: S (<30 min) / M (hours
 | ~~8a~~ | module boundaries | `packages/{db,tools}/package.json` | ✅ | — | **DONE** — `exports` maps added (db: `.`/`./schema`/`./pack-env`; tools: `.`). Verified: tsc (auth/db/tools/api) + runtime subpath resolution + e2e 7/7. |
 | 8b | module boundaries | `packages/design-system/package.json` | **High** | M | Add `exports` map — fiddly (many subpaths + `.svelte`/`.css` + wildcards); its own slice. |
 | 9 | ts strictness | `packages/tsconfig/svelte.json:12` | **High** | S | Remove `noUncheckedIndexedAccess:false`; fix the resulting `i18n/index.ts:16,44` `undefined`s. |
-| 10 | dead code | `packages/observability/errors/parse-error.ts` | **High** | S | Delete (0 callers; logger-graph coupling; logs at error per parse). |
-| 11 | type soundness | dashboard `sign-in,sign-up/+page.server.ts` | **High** | S | Replace 5× `data.get(x) as string` with `typeof`-narrow or Zod. |
+| ~~10~~ | dead code | `packages/observability/errors/parse-error.ts` | ✅ | — | **DONE** — deleted + removed from barrel (0 callers confirmed). Verified: obs tsc + 30/30 tests + api tsc. |
+| ~~11~~ | type soundness | dashboard `sign-in,sign-up/+page.server.ts` | ✅ | — | **DONE** — 5× `data.get(x) as string` → `typeof`-narrowing (rejects `File`/null, not just empty). Verified: svelte-check 0 errors in both files. |
 | 12 | type soundness | `apps/dashboard/src/lib/api/safe-fetch.ts` | **High** | M | Type `res.json()` as `unknown`; run the existing Zod schema (or drop its false confidence). |
 | ~~13~~ | deps | `@sveltejs/kit`, `vite` | ✅ | — | ~~Bump~~ **DONE 2026-06-16** — kit 2.65.1, vite 8.0.16. |
 | 13b | deps | `nodemailer` 9.0.0 (`packages/email`) | ✅ (type) | — | Type-compat verified — `@pack/email` typechecks against nodemailer 9 (`createTransport`/`sendMail`). Runtime send not exercised (no SMTP in tests; `shouldSendEmail` is false outside prod/dev). |
@@ -279,7 +279,7 @@ Severity: **Critical** / **High** / Medium / Low. Effort: S (<30 min) / M (hours
 | 29 | style | `packages/design-system/**` | Low | M | Configure Biome to format/quarantine generated dirs. |
 | 30 | perf | `packages/db/index.ts:16` | Low | S | Benchmark `prepare: true` for the long-running API. |
 | 31 | infra | `apps/api/dofigen.yml` | Low | S | Remove the phantom `packages/analytics` bind; fix the `curl` healthcheck; populate/delete empty docker artifacts. |
-| 32 | tooling | `apps/dashboard` | Medium | S | **Found during #6** — `typecheck` script is broken (`svelte-check` not in devDeps → exit 127), and `bun run lint` is red on pre-existing files (`auth-proxy.ts` + `+error.svelte` format; `sign-in`/`sign-up` `+page.server.ts` import-sort). Add `svelte-check` devDep + `biome check --write`. |
+| 32 | tooling | `apps/dashboard` | Medium | S | Add `svelte-check` devDep (`typecheck` script exits 127 without it). svelte-check (run via `bunx`) surfaces a **real pre-existing type error**: `user-avatar.svelte:86` invalid `asChild` prop on `DropdownMenu.Item` (bits-ui 2.x uses the `child` snippet, no `asChild`). Also `bun run lint` still red on `auth-proxy.ts` + `+error.svelte` (format). [sign-in/sign-up import-sort already fixed in slice 5.] |
 
 ---
 

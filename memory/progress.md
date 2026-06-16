@@ -27,12 +27,18 @@ changed but this file wasn't updated.
       - Slice 3 `6659b76`: #6 migrate dashboard `lucide-svelte` (deprecated) →
         `@lucide/svelte` (4 files, deep imports); catalog + lockfile unified on
         `@lucide/svelte@1.18.0`. Prod build verified.
-      - Slice 4 (#8a, this commit): `exports` maps on `@pack/db`
+      - Slice 4 `6f1d34e` (#8a): `exports` maps on `@pack/db`
         (`.`/`./schema`/`./pack-env`) + `@pack/tools` (`.`). Verify: tsc
         (auth/db/tools/api) + runtime import of all subpaths + e2e 7/7.
         **GOTCHA: never run the e2e in background** — backgrounded docker-compose
         orchestration hung 331s and failed 0/8; foreground passes 7/7 in ~3s.
         #8b (`@pack/design-system` exports map) deferred (fiddly subpaths/CSS).
+      - Slice 5 (this commit): #10 delete dead `parse-error.ts` (0 callers; was
+        dragging the pino/OTel graph into the `errors` subpath) + barrel entry;
+        #11 dashboard sign-in/sign-up FormData `as string` → `typeof`-narrowing
+        (rejects `File`/null). Verify: obs tsc + 30/30 + api tsc; svelte-check
+        0 errors in both server files (it also surfaced a pre-existing `asChild`
+        type error in `user-avatar.svelte` → #32).
       Found en route → tracked as #32: dashboard `typecheck` broken
       (`svelte-check` not a devDep, exit 127) + `bun run lint` red on a few
       pre-existing files.

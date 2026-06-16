@@ -1,7 +1,6 @@
 import { parseSetCookieHeader, toCookieOptions } from '@pack/auth/cookies';
 import { defaultLocale } from '@pack/i18n';
 import { fail, redirect } from '@sveltejs/kit';
-import { env } from '$lib/env';
 import {
   authFetch,
   localizeAuthError,
@@ -9,6 +8,7 @@ import {
   redactEmail,
   userMessageFor,
 } from '$lib/auth-proxy';
+import { env } from '$lib/env';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -20,12 +20,17 @@ export const load: PageServerLoad = async ({ locals }) => {
 export const actions: Actions = {
   default: async ({ request, locals, cookies, url }) => {
     const data = await request.formData();
-    const email = data.get('email') as string;
-    const password = data.get('password') as string;
+    const email = data.get('email');
+    const password = data.get('password');
 
     const errors = locals.dictionary.app.errors;
 
-    if (!email || !password) {
+    if (
+      typeof email !== 'string' ||
+      typeof password !== 'string' ||
+      !email ||
+      !password
+    ) {
       return fail(400, {
         error: errors.missingFields,
         requestId: locals.requestId,
