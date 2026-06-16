@@ -279,7 +279,7 @@ Severity: **Critical** / **High** / Medium / Low. Effort: S (<30 min) / M (hours
 | 29 | style | `packages/design-system/**` | Low | M | Configure Biome to format/quarantine generated dirs. |
 | 30 | perf | `packages/db/index.ts:16` | Low | S | Benchmark `prepare: true` for the long-running API. |
 | 31 | infra | `apps/api/dofigen.yml` | Low | S | Remove the phantom `packages/analytics` bind; fix the `curl` healthcheck; populate/delete empty docker artifacts. |
-| 32 | tooling | `apps/dashboard` | Medium | S | Add `svelte-check` devDep (`typecheck` script exits 127 without it). svelte-check (run via `bunx`) surfaces a **real pre-existing type error**: `user-avatar.svelte:86` invalid `asChild` prop on `DropdownMenu.Item` (bits-ui 2.x uses the `child` snippet, no `asChild`). Also `bun run lint` still red on `auth-proxy.ts` + `+error.svelte` (format). [sign-in/sign-up import-sort already fixed in slice 5.] |
+| ~~32~~ | tooling | `apps/dashboard` | ✅ | — | **DONE** — added `svelte-check@4.6.0` devDep (typecheck script was exit 127); fixed the real `asChild` type error in `user-avatar.svelte` (→ `child` snippet only, bits-ui 2.x); `biome --write` on `auth-proxy.ts` + `+error.svelte`. Dashboard now **typecheck 0/0/0 + biome clean**. |
 
 ---
 

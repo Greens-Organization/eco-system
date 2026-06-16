@@ -28,7 +28,10 @@ const copy = $derived.by(() => {
     return { title: errors.notFound, description: errors.notFoundDescription };
   }
   if (status === 401 || status === 403) {
-    return { title: errors.unauthorized, description: page.error?.message ?? '' };
+    return {
+      title: errors.unauthorized,
+      description: page.error?.message ?? '',
+    };
   }
   return {
     title: errors.serverError,

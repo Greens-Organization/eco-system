@@ -33,15 +33,17 @@ changed but this file wasn't updated.
         **GOTCHA: never run the e2e in background** — backgrounded docker-compose
         orchestration hung 331s and failed 0/8; foreground passes 7/7 in ~3s.
         #8b (`@pack/design-system` exports map) deferred (fiddly subpaths/CSS).
-      - Slice 5 (this commit): #10 delete dead `parse-error.ts` (0 callers; was
+      - Slice 5 `15c6eb2`: #10 delete dead `parse-error.ts` (0 callers; was
         dragging the pino/OTel graph into the `errors` subpath) + barrel entry;
         #11 dashboard sign-in/sign-up FormData `as string` → `typeof`-narrowing
         (rejects `File`/null). Verify: obs tsc + 30/30 + api tsc; svelte-check
         0 errors in both server files (it also surfaced a pre-existing `asChild`
         type error in `user-avatar.svelte` → #32).
-      Found en route → tracked as #32: dashboard `typecheck` broken
-      (`svelte-check` not a devDep, exit 127) + `bun run lint` red on a few
-      pre-existing files.
+      - Slice 6 (this commit, #32): added `svelte-check@4.6.0` devDep (the
+        `typecheck` script was exit 127 without it); fixed the `asChild` type
+        error (`user-avatar.svelte` → `child` snippet only, bits-ui 2.x);
+        `biome --write` on `auth-proxy.ts` + `+error.svelte`. Dashboard now
+        **typecheck 0/0/0 + biome clean**.
 - [x] Ambiente de testes do `apps/api` (bun:test, real-DB, mac-dashboard-style;
       plano em `tasks/done/api-test-environment.md`). Dois tiers: **unit**
       (`bun test test/unit`, sem docker, roda no turbo) + **e2e** (`bun run test:e2e`,

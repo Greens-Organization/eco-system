@@ -123,8 +123,6 @@ export function redactEmail(email: string): {
   const local = email.slice(0, at);
   const domain = email.slice(at + 1).toLowerCase();
   const hint =
-    local.length <= 2
-      ? `${local[0] ?? '?'}***`
-      : `${local.slice(0, 2)}***`;
+    local.length <= 2 ? `${local[0] ?? '?'}***` : `${local.slice(0, 2)}***`;
   return { domain, localHint: hint };
 }

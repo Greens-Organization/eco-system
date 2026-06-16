@@ -83,7 +83,7 @@ const btnClass =
 
             <DropdownMenu.Separator class="my-1 h-px bg-border" />
 
-            <DropdownMenu.Item asChild>
+            <DropdownMenu.Item>
                 {#snippet child({ props })}
                     <form method="POST" action="/{locale}/sign-out">
                         <button
