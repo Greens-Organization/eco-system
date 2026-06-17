@@ -126,6 +126,7 @@
         "@tailwindcss/typography": "catalog:",
         "@types/node": "catalog:dev",
         "postcss": "catalog:",
+        "svelte-check": "4.6.0",
         "tailwind-variants": "3.2.2",
         "tailwindcss": "catalog:",
         "tw-animate-css": "catalog:",
