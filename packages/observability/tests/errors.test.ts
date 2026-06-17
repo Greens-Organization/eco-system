@@ -8,7 +8,7 @@ import {
   SchemaError,
   shouldReportToSentry,
   statusToCode,
-} from '../errors';
+} from '../src/errors';
 
 describe('error codes <-> status', () => {
   test('statusToCode maps known statuses incl. 429, unknown -> 500', () => {

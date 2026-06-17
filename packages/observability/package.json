@@ -9,11 +9,11 @@
   },
   "exports": {
     ".": "./index.ts",
-    "./errors": "./errors/index.ts",
-    "./logger": "./logger/index.ts",
-    "./context": "./context/index.ts",
-    "./sentry": "./sentry/index.ts",
-    "./instrumentation": "./instrumentation.ts",
+    "./errors": "./src/errors/index.ts",
+    "./logger": "./src/logger/index.ts",
+    "./context": "./src/context/index.ts",
+    "./sentry": "./src/sentry/index.ts",
+    "./instrumentation": "./src/instrumentation.ts",
     "./pack-env": "./pack-env.ts"
   },
   "dependencies": {

@@ -5,7 +5,7 @@ import {
   parseCfRay,
   runWithContext,
   setContext,
-} from '../context';
+} from '../src/context';
 
 describe('generateSupportId', () => {
   test('format is SUP- + 12 uppercase hex chars', () => {

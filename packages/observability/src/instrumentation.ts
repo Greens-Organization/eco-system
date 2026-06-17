@@ -13,7 +13,7 @@ import {
   NodeTracerProvider,
 } from '@opentelemetry/sdk-trace-node';
 import * as Sentry from '@sentry/bun';
-import { env } from './pack-env';
+import { env } from '../pack-env';
 import { scrubPii } from './sentry';
 
 /**

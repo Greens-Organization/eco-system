@@ -7,9 +7,9 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "exports": {
-    "./server": "./server.ts",
-    "./client.svelte": "./client.svelte.ts",
-    "./cookies": "./cookies.ts",
+    "./server": "./src/server.ts",
+    "./client.svelte": "./src/client.svelte.ts",
+    "./cookies": "./src/cookies.ts",
     "./pack-env": "./pack-env.ts"
   },
   "dependencies": {

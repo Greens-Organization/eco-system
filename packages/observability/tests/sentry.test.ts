@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { captureError, sentryCaptureOptions } from '../sentry';
+import { captureError, sentryCaptureOptions } from '../src/sentry';
 
 describe('sentryCaptureOptions', () => {
   test('maps tags and allowlists extra (drops PII)', () => {

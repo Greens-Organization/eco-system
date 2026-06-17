@@ -2,7 +2,7 @@ import { db } from '@pack/db';
 import { argon2Adapter } from '@pack/tools';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { env } from './pack-env';
+import { env } from '../pack-env';
 
 export const auth = betterAuth({
   secret: env.BETTER_AUTH_SECRET,

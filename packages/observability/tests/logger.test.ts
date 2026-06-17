@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test';
 import { trace } from '@opentelemetry/api';
 import pino, { type DestinationStream } from 'pino';
-import { runWithContext } from '../context';
-import { log, loggerOptions, spanToFields } from '../logger';
+import { runWithContext } from '../src/context';
+import { log, loggerOptions, spanToFields } from '../src/logger';
 
 describe('logger config', () => {
   test('base carries the contract fields', () => {
