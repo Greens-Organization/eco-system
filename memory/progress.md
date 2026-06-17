@@ -8,6 +8,17 @@ changed but this file wasn't updated.
 
 ## In Progress
 
+- [x] **Package reorg → tools-style `src/`** (user request; reverses the earlier
+      "domain-folders-at-root" no-`src/` choice from the observability reorg).
+      Refactor-only — no behavior change; the TDD nudges on the new `src/` files
+      are moved code, not new logic.
+      - cache (`refactor(cache)`): split the monolithic `index.ts` into one file
+        per function under `src/` (client/get/set/del/has/remember/disconnect) +
+        a root `index.ts` barrel; `pack-env.ts` stays at root (repo convention).
+        Public API unchanged. Verify: cache tsc OK.
+      - (Pending: confirm scope for the other flat packages — auth/db/email/i18n/
+        observability/seo/storage/testing — before moving them; design-system,
+        tools, tsconfig stay as-is.)
 - [x] **TECHNICAL_ANALYSIS.md §6 implementation** (one commit per slice, each
       verified before commit). Baseline commit `63896f9` first committed ALL the
       v2 in-flight work below (observability port + test harness + dockerize +
