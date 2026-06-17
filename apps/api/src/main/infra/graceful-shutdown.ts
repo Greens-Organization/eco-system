@@ -42,9 +42,7 @@ export function createGracefulShutdown(
 
     try {
       log.info('Waiting for pending requests...');
-      await new Promise<void>((resolve) =>
-        setTimeout(resolve, options.gracePeriod)
-      );
+      await Bun.sleep(options.gracePeriod);
 
       log.info('Stopping HTTP server...');
       server.stop();

@@ -90,6 +90,15 @@ changed but this file wasn't updated.
         `stat` + `presignDownload`/`presignUpload`. pack-env swapped to `S3_*`;
         removed the dead `BLOB_READ_WRITE_TOKEN` + the `./client` subpath; added
         exports map. **No test** — needs an S3 backend (deferred); tsc-verified.
+      - Slice 13 (this commit, #14): `using`/`Symbol.dispose` (scoped). Replaced
+        the `new Promise(setTimeout)` grace-period with `Bun.sleep` in
+        graceful-shutdown. Made the e2e containers a `Disposable` (`start()` →
+        `[Symbol.dispose]` = `compose down`, swallows its own error) consumed via
+        `using` in `run.ts` (replaces the manual try/finally). Deliberately did
+        NOT add `[Symbol.asyncDispose]` to the `db`/`cache` global singletons —
+        `await using` there would close the shared pool for all consumers;
+        `disconnect*()` is the correct teardown. Verify: api tsc + e2e 7/7 +
+        the `eco-api-pg-test` container confirmed torn down by `using`.
 - [x] Ambiente de testes do `apps/api` (bun:test, real-DB, mac-dashboard-style;
       plano em `tasks/done/api-test-environment.md`). Dois tiers: **unit**
       (`bun test test/unit`, sem docker, roda no turbo) + **e2e** (`bun run test:e2e`,

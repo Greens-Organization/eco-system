@@ -24,8 +24,22 @@ function compose(args: string[]): void {
 }
 
 export const testContainers = {
-  // Sobe pg e bloqueia até o healthcheck passar.
-  up: () => compose(['up', '-d', '--wait']),
-  // Derruba container + rede. tmpfs some automaticamente.
-  down: () => compose(['down', '--remove-orphans']),
+  /**
+   * Sobe o pg (bloqueia até o healthcheck passar) e retorna um `Disposable`:
+   * com `using`, o teardown (container + rede; tmpfs some sozinho) roda ao sair
+   * do escopo. O `[Symbol.dispose]` engole o próprio erro (vira aviso) pra não
+   * mascarar o exit code dos testes.
+   */
+  start(): Disposable {
+    compose(['up', '-d', '--wait']);
+    return {
+      [Symbol.dispose]() {
+        try {
+          compose(['down', '--remove-orphans']);
+        } catch (err) {
+          console.error('Aviso: teardown dos containers falhou:', err);
+        }
+      },
+    };
+  },
 };
