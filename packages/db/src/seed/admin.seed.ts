@@ -1,7 +1,7 @@
 import { argon2Adapter } from '@pack/tools';
+import { env } from '../../pack-env';
+import { account, user } from '../../schema';
 import { db } from '../index';
-import { env } from '../pack-env';
-import { account, user } from '../schema';
 
 const email = env.ADMIN_EMAIL ?? 'admin@example.com';
 const password = env.ADMIN_PASSWORD ?? 'admin';

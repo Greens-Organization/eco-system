@@ -1,6 +1,6 @@
 import { reset } from 'drizzle-seed';
+import * as schema from '../schema';
 import { db } from '.';
-import * as schema from './schema';
 
 if (process.env.NODE_ENV === 'local') {
   console.log('Initializing data reset...');

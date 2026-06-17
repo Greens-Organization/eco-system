@@ -1,2 +1,2 @@
-export * from './send';
-export * from './templates/contact';
+export * from './src/send';
+export * from './src/templates/contact';
