@@ -32,7 +32,7 @@ Three things hold it back, and this analysis adds the two that the prior reports
 | ✅ | ~~Fix the broken `@pack/email` barrel~~ — **done** (relative specifiers + tsconfig base/jsx fix; package now typechecks) | Was broken on import. | done |
 | ✅ | ~~Dashboard `vite.config.ts` perf~~ — **done** (cold render ~37s→~20-26s on a slow box; nested `>` form needed for transitive deps under the isolated linker) | The developer's daily pain. | done |
 | ✅ | ~~Migrate `lucide-svelte` → `@lucide/svelte`~~ — **done** (4 files; lockfile unified on `@lucide/svelte@1.18.0`) | Removed the deprecated package. | done |
-| ◐ | Add `exports` maps — **`@pack/db` + `@pack/tools` done**; `@pack/design-system` remaining (fiddly subpaths/CSS, §6 #8b) | Most-imported packages resolved only via filesystem fallback. | M |
+| ✅ | ~~Add `exports` maps to `@pack/tools`/`@pack/db`/`@pack/design-system`~~ — **all done** (db/tools + a design-system wildcard map) | Was the highest structural debt. | done |
 | P2 | The remaining items in §3 and §6 | Strict-TS escapes, dead code, `using` adoption, convention drift. | S–L |
 
 ---
@@ -252,7 +252,7 @@ Severity: **Critical** / **High** / Medium / Low. Effort: S (<30 min) / M (hours
 | ~~6~~ | deps | `lucide-svelte` (dashboard) | ✅ | — | **DONE** — 4 files migrated to `@lucide/svelte/icons/*`; dashboard dep + catalog swapped; vite.config updated; lockfile unified on `@lucide/svelte@1.18.0` (lucide-svelte gone). Prod build verified (13.8s). |
 | ~~7~~ | email | `packages/email/index.ts` + `tsconfig.json` | ✅ | — | **DONE** — relative specifiers (`./send`, `./templates/contact`); tsconfig → `bun.json` base + `jsx: react-jsx` + broadened include; package now typechecks. |
 | ~~8a~~ | module boundaries | `packages/{db,tools}/package.json` | ✅ | — | **DONE** — `exports` maps added (db: `.`/`./schema`/`./pack-env`; tools: `.`). Verified: tsc (auth/db/tools/api) + runtime subpath resolution + e2e 7/7. |
-| 8b | module boundaries | `packages/design-system/package.json` | **High** | M | Add `exports` map — fiddly (many subpaths + `.svelte`/`.css` + wildcards); its own slice. |
+| ~~8b~~ | module boundaries | `packages/design-system/package.json` | ✅ | — | **DONE** — wildcard `exports` map (`./components/*` → `*/index.ts`, `./providers`, `./lib/*`, `./styles/*`) covering all 8 consumed subpaths incl. the `.css`. Verified: dashboard svelte-check 0/0/0 + prod build 18.5s (resolves every subpath + the CSS `@import` through the map). |
 | ~~9~~ | ts strictness | `packages/tsconfig/svelte.json` | ✅ | — | **DONE** — removed the `noUncheckedIndexedAccess:false` override (+ the redundant re-declarations; svelte.json now only adds the DOM `lib`). Consumers (`auth`/`observability`/`i18n`) clean after fixing 4 `i18n` errors — `getDictionary` rewritten to a typed `loadDictionary(locale: Locale)` (also kills the double-fallback) + `format.ts` `?? 'USD'`. Dashboard svelte-check still 0/0/0. |
 | ~~10~~ | dead code | `packages/observability/errors/parse-error.ts` | ✅ | — | **DONE** — deleted + removed from barrel (0 callers confirmed). Verified: obs tsc + 30/30 tests + api tsc. |
 | ~~11~~ | type soundness | dashboard `sign-in,sign-up/+page.server.ts` | ✅ | — | **DONE** — 5× `data.get(x) as string` → `typeof`-narrowing (rejects `File`/null, not just empty). Verified: svelte-check 0 errors in both files. |

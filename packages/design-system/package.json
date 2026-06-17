@@ -2,6 +2,12 @@
   "name": "@pack/design-system",
   "version": "0.0.0",
   "private": true,
+  "exports": {
+    "./components/*": "./components/*/index.ts",
+    "./providers": "./providers/index.ts",
+    "./lib/*": "./lib/*.ts",
+    "./styles/*": "./styles/*"
+  },
   "scripts": {
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "typecheck": "svelte-check --tsconfig ./tsconfig.json"

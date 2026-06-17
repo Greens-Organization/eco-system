@@ -128,6 +128,12 @@ changed but this file wasn't updated.
         tsc-on-svelte issues, all now fixed). Noted but NOT changed: the
         `apps/api` `docker:infra:*` scripts still point at a nonexistent
         `docker-compose.local.yml` (root has the correct ones) — separate.
+      - Slice 18 (this commit, #8b): added a wildcard `exports` map to
+        `@pack/design-system` (`./components/*` → `*/index.ts`, `./providers`,
+        `./lib/*`, `./styles/*`) covering all 8 subpaths the dashboard imports,
+        incl. `styles/globals.css`. Completes #8 (db/tools + design-system).
+        Verify: dashboard svelte-check 0/0/0 + prod build 18.5s (resolves every
+        subpath + the CSS `@import` through the map).
 - [x] Ambiente de testes do `apps/api` (bun:test, real-DB, mac-dashboard-style;
       plano em `tasks/done/api-test-environment.md`). Dois tiers: **unit**
       (`bun test test/unit`, sem docker, roda no turbo) + **e2e** (`bun run test:e2e`,
