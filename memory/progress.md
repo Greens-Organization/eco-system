@@ -134,6 +134,13 @@ changed but this file wasn't updated.
         incl. `styles/globals.css`. Completes #8 (db/tools + design-system).
         Verify: dashboard svelte-check 0/0/0 + prod build 18.5s (resolves every
         subpath + the CSS `@import` through the map).
+      - Slice 19 (this commit): #24 added `@pack/tools` tests (7 — argon2
+        round-trip + `m=19456` guard for #3 + m-string) and a `test` script
+        (`turbo test` now 4/4 green); db/auth deeper tests need DB infra (e2e
+        covers them). #29 already addressed — `biome.json` quarantines the
+        generated design-system dirs via the `!`-denylist (no change needed).
+        This clears the §6 table: all actionable items done, deferred, or
+        planned.
 - [x] Ambiente de testes do `apps/api` (bun:test, real-DB, mac-dashboard-style;
       plano em `tasks/done/api-test-environment.md`). Dois tiers: **unit**
       (`bun test test/unit`, sem docker, roda no turbo) + **e2e** (`bun run test:e2e`,
