@@ -99,6 +99,12 @@ changed but this file wasn't updated.
         `await using` there would close the shared pool for all consumers;
         `disconnect*()` is the correct teardown. Verify: api tsc + e2e 7/7 +
         the `eco-api-pg-test` container confirmed torn down by `using`.
+      - Slice 14 (this commit, #22): wrote `tasks/todo/i18n-paraglide-migration.md`
+        — a plan (not execution) for moving `@pack/i18n` from the custom
+        dynamic-import-JSON dictionaries to **Paraglide JS** (compiler-first,
+        tree-shaken + typed messages). Covers options, phased steps, SSR wiring,
+        edge cases (`<html lang>`/hreflang/dictionary-via-`load`), and open
+        decisions. Per the user, seo (#26) is left as-is for now.
 - [x] Ambiente de testes do `apps/api` (bun:test, real-DB, mac-dashboard-style;
       plano em `tasks/done/api-test-environment.md`). Dois tiers: **unit**
       (`bun test test/unit`, sem docker, roda no turbo) + **e2e** (`bun run test:e2e`,
