@@ -275,11 +275,11 @@ Severity: **Critical** / **High** / Medium / Low. Effort: S (<30 min) / M (hours
 | 24 | tests | `packages/{db,auth}/package.json` | Low | M | Add `"test"` script + unit tests (argon2 adapter, db guard). |
 | ~~25~~ | storage | `packages/storage/*` | ✅ | — | **DONE** — replaced `@vercel/blob` with native `Bun.s3` (S3/R2/MinIO/Spaces via `S3_ENDPOINT`): `put`/`getText/Json/Bytes`/`remove`/`exists`/`stat` + presigned upload/download URLs. Dropped the dead `BLOB_READ_WRITE_TOKEN` + the `./client` subpath; added exports map. Verified: tsc. Runtime tests need an S3 backend (deferred). |
 | 26 | dead code | `packages/seo/*` | Low | M | Wire into dashboard or remove from build; drop the cast-enabling index signature. |
-| 27 | dead code | `apps/api/src/main/setup.ts:6` | Low | S | Implement `timezone()` or remove the no-op stub. |
+| ~~27~~ | dead code | `apps/api/src/main/setup.ts` | ✅ | — | **DONE** — removed the no-op `setup.timezone()` (+ its `server.ts` call); the timezone is set via the `TZ` env var (in `.env.example`), which Bun honors. Comment updated. |
 | 28 | DRY | `observability/pack-env.ts` + `db/pack-env.ts` | ⊘ defer | — | **Deferred** — the duplication is a one-line `stringbool({truthy,falsy})` config literal; hoisting it to a shared helper means adding a `@pack/tools` (+ zod) dep edge to `observability`/`db` for marginal DRY. Not worth the coupling. |
 | 29 | style | `packages/design-system/**` | Low | M | Configure Biome to format/quarantine generated dirs. |
-| 30 | perf | `packages/db/index.ts:16` | Low | S | Benchmark `prepare: true` for the long-running API. |
-| 31 | infra | `apps/api/dofigen.yml` | Low | S | Remove the phantom `packages/analytics` bind; fix the `curl` healthcheck; populate/delete empty docker artifacts. |
+| ~~30~~ | perf | `packages/db/index.ts:16` | ✅ | — | **DONE** — `prepare: true` (the long-running API benefits from prepared statements); comment documents when to revert to `false` (PgBouncer txn mode / Supabase pooler / serverless). e2e 7/7 with it on. |
+| ~~31~~ | infra | `apps/api/dofigen.yml` | ✅ | — | **DONE** — removed the phantom `packages/analytics` bind + completed the workspace bind list (added i18n/seo/testing/tools); `curl` healthcheck → `bun -e fetch(...)`; deleted the empty `docker-compose.yml`; `.dockerignore` populated by dofigen; **added the missing build→runtime binary `COPY`** (the image had no `api` binary — it wouldn't run). Dockerfile regenerated. |
 | ~~32~~ | tooling | `apps/dashboard` | ✅ | — | **DONE** — added `svelte-check@4.6.0` devDep (typecheck script was exit 127); fixed the real `asChild` type error in `user-avatar.svelte` (→ `child` snippet only, bits-ui 2.x); `biome --write` on `auth-proxy.ts` + `+error.svelte`. Dashboard now **typecheck 0/0/0 + biome clean**. |
 
 ---

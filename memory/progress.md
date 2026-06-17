@@ -105,6 +105,14 @@ changed but this file wasn't updated.
         tree-shaken + typed messages). Covers options, phased steps, SSR wiring,
         edge cases (`<html lang>`/hreflang/dictionary-via-`load`), and open
         decisions. Per the user, seo (#26) is left as-is for now.
+      - Slice 15 (this commit): #27 removed the no-op `setup.timezone()` (TZ is
+        an env var Bun honors); #30 db `prepare: true` (long-running API; comment
+        notes when to revert — pooler/serverless); #31 dofigen — dropped the
+        phantom `packages/analytics` bind + completed the workspace bind list,
+        `curl`→`bun -e fetch` healthcheck, deleted the empty `docker-compose.yml`,
+        and **added the missing build→runtime binary `COPY`** (the runtime image
+        had no `api` binary — it would not have run). Dockerfile regenerated via
+        dofigen. Verify: api/db tsc + e2e 7/7.
 - [x] Ambiente de testes do `apps/api` (bun:test, real-DB, mac-dashboard-style;
       plano em `tasks/done/api-test-environment.md`). Dois tiers: **unit**
       (`bun test test/unit`, sem docker, roda no turbo) + **e2e** (`bun run test:e2e`,

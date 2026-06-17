@@ -6,7 +6,7 @@ effective: |
     build:
       fromImage:
         path: oven/bun
-        digest: sha256:8956c7667fa17beb6e3c664115e66bdacfe502da5d99603626e74c197bdef160
+        digest: sha256:e10577f0db68676a7024391c6e5cb4b879ebd17188ab750cf10024a6d700e5c4
       workdir: /app/apps/api
       copy:
       - paths:
@@ -21,7 +21,7 @@ effective: |
     install:
       fromImage:
         path: oven/bun
-        digest: sha256:8956c7667fa17beb6e3c664115e66bdacfe502da5d99603626e74c197bdef160
+        digest: sha256:e10577f0db68676a7024391c6e5cb4b879ebd17188ab750cf10024a6d700e5c4
       workdir: /app/
       run:
       - bun install --production --frozen-lockfile --verbose
@@ -34,8 +34,6 @@ effective: |
         source: package.json
       - target: apps/api/package.json
         source: apps/api/package.json
-      - target: packages/analytics/package.json
-        source: packages/analytics/package.json
       - target: packages/auth/package.json
         source: packages/auth/package.json
       - target: packages/cache/package.json
@@ -46,24 +44,37 @@ effective: |
         source: packages/design-system/package.json
       - target: packages/email/package.json
         source: packages/email/package.json
+      - target: packages/i18n/package.json
+        source: packages/i18n/package.json
       - target: packages/observability/package.json
         source: packages/observability/package.json
       - target: packages/payments/package.json
         source: packages/payments/package.json
+      - target: packages/seo/package.json
+        source: packages/seo/package.json
       - target: packages/storage/package.json
         source: packages/storage/package.json
+      - target: packages/testing/package.json
+        source: packages/testing/package.json
+      - target: packages/tools/package.json
+        source: packages/tools/package.json
       - target: packages/tsconfig/package.json
         source: packages/tsconfig/package.json
   fromImage:
     path: oven/bun
-    digest: sha256:8956c7667fa17beb6e3c664115e66bdacfe502da5d99603626e74c197bdef160
+    digest: sha256:e10577f0db68676a7024391c6e5cb4b879ebd17188ab750cf10024a6d700e5c4
   workdir: /home/bun/app
+  copy:
+  - fromBuilder: build
+    paths:
+    - /app/apps/api/api
+    target: /home/bun/app/api
   entrypoint:
   - /home/bun/app/api
   expose:
   - port: 3002
   healthcheck:
-    cmd: curl -f http://localhost:3002/status || exit 1
+    cmd: 'bun -e ''fetch("http://localhost:3002/status").then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))'''
     interval: 30s
     timeout: 10s
     start: 30s
@@ -72,11 +83,11 @@ images:
   registry.hub.docker.com:443:
     oven:
       bun:
-        1.3.12:
-          digest: sha256:8956c7667fa17beb6e3c664115e66bdacfe502da5d99603626e74c197bdef160
+        1.3.14:
+          digest: sha256:e10577f0db68676a7024391c6e5cb4b879ebd17188ab750cf10024a6d700e5c4
 resources:
   dofigen.yml:
-    hash: 528305479caf3666c42a5bca8893f6c445a0bb6756c21de9a0edb58f2929c5e7
+    hash: 7b9cd00a755f6e43e39228b842c2eb84d2d3b1170d9133995c7b5f3d095c3a5e
     content: |
       ignore:
         - node_modules
@@ -84,7 +95,7 @@ resources:
 
       builders:
         install:
-          fromImage: oven/bun:1.3.12
+          fromImage: oven/bun:1.3.14
           workdir: /app/
           labels:
             org.opencontainers.image.stage: install
@@ -92,22 +103,25 @@ resources:
             - bunfig.toml
             - package.json
             - apps/api/package.json
-            - packages/analytics/package.json
             - packages/auth/package.json
             - packages/cache/package.json
             - packages/db/package.json
             - packages/design-system/package.json
             - packages/email/package.json
+            - packages/i18n/package.json
             - packages/observability/package.json
             - packages/payments/package.json
+            - packages/seo/package.json
             - packages/storage/package.json
+            - packages/testing/package.json
+            - packages/tools/package.json
             - packages/tsconfig/package.json
           run: bun install --production --frozen-lockfile --verbose
           cache:
             - /root/.bun/install/cache
 
         build:
-          fromImage: oven/bun:1.3.12
+          fromImage: oven/bun:1.3.14
           workdir: /app/apps/api
           labels:
             org.opencontainers.image.stage: build
@@ -118,7 +132,7 @@ resources:
               target: /app/node_modules
           run: bun build --compile src/server.ts --outfile=api
 
-      fromImage: oven/bun:1.3.12
+      fromImage: oven/bun:1.3.14
 
       labels:
         org.opencontainers.image.title: Eco System API
@@ -127,6 +141,11 @@ resources:
 
       workdir: /home/bun/app
 
+      copy:
+        - fromBuilder: build
+          source: /app/apps/api/api
+          target: /home/bun/app/api
+
       expose: "3002"
 
       healthcheck:
@@ -134,6 +153,6 @@ resources:
         timeout: 10s
         start: 30s
         retries: 3
-        cmd: curl -f http://localhost:3002/status || exit 1
+        cmd: "bun -e 'fetch(\"http://localhost:3002/status\").then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))'"
 
       entrypoint: /home/bun/app/api

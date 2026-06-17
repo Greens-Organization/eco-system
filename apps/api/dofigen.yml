@@ -12,15 +12,18 @@ builders:
       - bunfig.toml
       - package.json
       - apps/api/package.json
-      - packages/analytics/package.json
       - packages/auth/package.json
       - packages/cache/package.json
       - packages/db/package.json
       - packages/design-system/package.json
       - packages/email/package.json
+      - packages/i18n/package.json
       - packages/observability/package.json
       - packages/payments/package.json
+      - packages/seo/package.json
       - packages/storage/package.json
+      - packages/testing/package.json
+      - packages/tools/package.json
       - packages/tsconfig/package.json
     run: bun install --production --frozen-lockfile --verbose
     cache:
@@ -47,6 +50,11 @@ labels:
 
 workdir: /home/bun/app
 
+copy:
+  - fromBuilder: build
+    source: /app/apps/api/api
+    target: /home/bun/app/api
+
 expose: "3002"
 
 healthcheck:
@@ -54,6 +62,6 @@ healthcheck:
   timeout: 10s
   start: 30s
   retries: 3
-  cmd: curl -f http://localhost:3002/status || exit 1
+  cmd: "bun -e 'fetch(\"http://localhost:3002/status\").then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))'"
 
 entrypoint: /home/bun/app/api

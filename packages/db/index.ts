@@ -9,11 +9,12 @@ const client = postgres(connectionString, {
   connect_timeout: 10,
   onnotice: () => {}, // silence PostgreSQL notifications
   /**
-   * Prepared statements cache compiled queries on the PostgreSQL server for faster execution.
-   * Set to `false` for serverless environments or connection pooling.
-   * Set to `true` for long-running servers with repetitive queries (better performance).
+   * Prepared statements cache compiled queries on the server for faster repeat
+   * execution. `true` suits the long-running API; set `false` behind a
+   * transaction-pooling proxy (PgBouncer txn mode / Supabase pooler) or in
+   * serverless, where prepared statements don't survive the connection.
    */
-  prepare: false,
+  prepare: true,
   // Connection settings executed when establishing the connection
   // connection: {
   //   TimeZone: env.TZ,

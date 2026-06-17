@@ -11,9 +11,8 @@ import { setup } from '@/main/setup';
 
 async function main() {
   try {
-    // Setup Timezone before any date operations
-    setup.timezone();
-
+    // Timezone is configured via the TZ env var (see apps/api/.env.example),
+    // which Bun reads for all Date operations — no programmatic setup needed.
     const server = Bun.serve({
       port: env.PORT,
       development: false,

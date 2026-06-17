@@ -3,27 +3,30 @@
 # See https://github.com/lenra-io/dofigen
 
 # install
-FROM oven/bun@sha256:8956c7667fa17beb6e3c664115e66bdacfe502da5d99603626e74c197bdef160 AS install
+FROM oven/bun@sha256:e10577f0db68676a7024391c6e5cb4b879ebd17188ab750cf10024a6d700e5c4 AS install
 WORKDIR /app/
 RUN \
     --mount=type=bind,target=bunfig.toml,source=bunfig.toml \
     --mount=type=bind,target=package.json,source=package.json \
     --mount=type=bind,target=apps/api/package.json,source=apps/api/package.json \
-    --mount=type=bind,target=packages/analytics/package.json,source=packages/analytics/package.json \
     --mount=type=bind,target=packages/auth/package.json,source=packages/auth/package.json \
     --mount=type=bind,target=packages/cache/package.json,source=packages/cache/package.json \
     --mount=type=bind,target=packages/db/package.json,source=packages/db/package.json \
     --mount=type=bind,target=packages/design-system/package.json,source=packages/design-system/package.json \
     --mount=type=bind,target=packages/email/package.json,source=packages/email/package.json \
+    --mount=type=bind,target=packages/i18n/package.json,source=packages/i18n/package.json \
     --mount=type=bind,target=packages/observability/package.json,source=packages/observability/package.json \
     --mount=type=bind,target=packages/payments/package.json,source=packages/payments/package.json \
+    --mount=type=bind,target=packages/seo/package.json,source=packages/seo/package.json \
     --mount=type=bind,target=packages/storage/package.json,source=packages/storage/package.json \
+    --mount=type=bind,target=packages/testing/package.json,source=packages/testing/package.json \
+    --mount=type=bind,target=packages/tools/package.json,source=packages/tools/package.json \
     --mount=type=bind,target=packages/tsconfig/package.json,source=packages/tsconfig/package.json \
     --mount=type=cache,target=/root/.bun/install/cache,sharing=locked \
     bun install --production --frozen-lockfile --verbose
 
 # build
-FROM oven/bun@sha256:8956c7667fa17beb6e3c664115e66bdacfe502da5d99603626e74c197bdef160 AS build
+FROM oven/bun@sha256:e10577f0db68676a7024391c6e5cb4b879ebd17188ab750cf10024a6d700e5c4 AS build
 WORKDIR /app/apps/api
 COPY \
     --link \
@@ -35,8 +38,13 @@ COPY \
 RUN bun build --compile src/server.ts --outfile=api
 
 # runtime
-FROM oven/bun@sha256:8956c7667fa17beb6e3c664115e66bdacfe502da5d99603626e74c197bdef160 AS runtime
+FROM oven/bun@sha256:e10577f0db68676a7024391c6e5cb4b879ebd17188ab750cf10024a6d700e5c4 AS runtime
 WORKDIR /home/bun/app
+COPY \
+    --from=build \
+    --chown=1000:1000 \
+    --link \
+    "/app/apps/api/api" "/home/bun/app/api"
 USER 1000:1000
 EXPOSE 3002
 HEALTHCHECK \
@@ -44,5 +52,5 @@ HEALTHCHECK \
     --timeout=10s \
     --start-period=30s \
     --retries=3 \
-    CMD curl -f http://localhost:3002/status || exit 1
+    CMD bun -e 'fetch("http://localhost:3002/status").then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))'
 ENTRYPOINT ["/home/bun/app/api"]
