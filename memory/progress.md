@@ -119,6 +119,15 @@ changed but this file wasn't updated.
         confirms the design-system is clean under the #9 strict index access.
         (turbo `typecheck` is now blocked only by `@pack/payments` — the empty
         placeholder, `TS18003: No inputs`. Backlog: stub or remove it.)
+      - Slice 17 (this commit): user removed `packages/payments`; cleaned the
+        leftovers — dropped `@pack/payments` from `apps/api/package.json` deps
+        (nothing imported it) + the `packages/payments` bind in `dofigen.yml`
+        (regenerated Dockerfile); `bun install` removed it from the lock. Zero
+        `payments` references remain. **Milestone: full `turbo typecheck` is now
+        GREEN — 13/13** (was blocked by payments + the design-system/dashboard
+        tsc-on-svelte issues, all now fixed). Noted but NOT changed: the
+        `apps/api` `docker:infra:*` scripts still point at a nonexistent
+        `docker-compose.local.yml` (root has the correct ones) — separate.
 - [x] Ambiente de testes do `apps/api` (bun:test, real-DB, mac-dashboard-style;
       plano em `tasks/done/api-test-environment.md`). Dois tiers: **unit**
       (`bun test test/unit`, sem docker, roda no turbo) + **e2e** (`bun run test:e2e`,

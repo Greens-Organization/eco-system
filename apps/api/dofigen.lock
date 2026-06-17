@@ -3,21 +3,6 @@ effective: |
   - node_modules
   - /apps/api/.env*
   builders:
-    build:
-      fromImage:
-        path: oven/bun
-        digest: sha256:e10577f0db68676a7024391c6e5cb4b879ebd17188ab750cf10024a6d700e5c4
-      workdir: /app/apps/api
-      copy:
-      - paths:
-        - .
-        target: /app/
-      - fromBuilder: install
-        paths:
-        - /app/node_modules
-        target: /app/node_modules
-      run:
-      - bun build --compile src/server.ts --outfile=api
     install:
       fromImage:
         path: oven/bun
@@ -48,8 +33,6 @@ effective: |
         source: packages/i18n/package.json
       - target: packages/observability/package.json
         source: packages/observability/package.json
-      - target: packages/payments/package.json
-        source: packages/payments/package.json
       - target: packages/seo/package.json
         source: packages/seo/package.json
       - target: packages/storage/package.json
@@ -60,6 +43,21 @@ effective: |
         source: packages/tools/package.json
       - target: packages/tsconfig/package.json
         source: packages/tsconfig/package.json
+    build:
+      fromImage:
+        path: oven/bun
+        digest: sha256:e10577f0db68676a7024391c6e5cb4b879ebd17188ab750cf10024a6d700e5c4
+      workdir: /app/apps/api
+      copy:
+      - paths:
+        - .
+        target: /app/
+      - fromBuilder: install
+        paths:
+        - /app/node_modules
+        target: /app/node_modules
+      run:
+      - bun build --compile src/server.ts --outfile=api
   fromImage:
     path: oven/bun
     digest: sha256:e10577f0db68676a7024391c6e5cb4b879ebd17188ab750cf10024a6d700e5c4
@@ -87,7 +85,7 @@ images:
           digest: sha256:e10577f0db68676a7024391c6e5cb4b879ebd17188ab750cf10024a6d700e5c4
 resources:
   dofigen.yml:
-    hash: 7b9cd00a755f6e43e39228b842c2eb84d2d3b1170d9133995c7b5f3d095c3a5e
+    hash: 497e31dc8ffe357fc8795ffb7c100dcaddc8e579c402d7fd70674b2a2af5b64b
     content: |
       ignore:
         - node_modules
@@ -110,7 +108,6 @@ resources:
             - packages/email/package.json
             - packages/i18n/package.json
             - packages/observability/package.json
-            - packages/payments/package.json
             - packages/seo/package.json
             - packages/storage/package.json
             - packages/testing/package.json

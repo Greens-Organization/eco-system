@@ -20,7 +20,6 @@
     "@pack/auth": "workspace:*",
     "@pack/db": "workspace:*",
     "@pack/observability": "workspace:*",
-    "@pack/payments": "workspace:*",
     "@pack/testing": "workspace:*",
     "@scalar/hono-api-reference": "0.11.3",
     "hono": "catalog:",

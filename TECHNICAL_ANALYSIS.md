@@ -39,7 +39,7 @@ Three things hold it back, and this analysis adds the two that the prior reports
 
 ## 2. What the boilerplate is (descriptive state)
 
-A Bun-native, Turbo-orchestrated monorepo: a **Hono API on Bun** (`apps/api`) and a **SvelteKit + Svelte 5 dashboard** (`apps/dashboard`), backed by **13 internal packages** (`@pack/*`) — down from 14 after `rate-limit` was removed.
+A Bun-native, Turbo-orchestrated monorepo: a **Hono API on Bun** (`apps/api`) and a **SvelteKit + Svelte 5 dashboard** (`apps/dashboard`), backed by **12 internal packages** (`@pack/*`) — after `rate-limit` and `payments` (empty placeholders) were removed.
 
 | Layer | Choice |
 |---|---|
@@ -52,7 +52,7 @@ A Bun-native, Turbo-orchestrated monorepo: a **Hono API on Bun** (`apps/api`) an
 | Validation | Zod (shared `pack-env.ts` schema convention per package) |
 | Containers | Dockerfile via dofigen; compose files (infra / observability / test) |
 
-### Maturity scorecard (13 packages)
+### Maturity scorecard (12 packages)
 
 | Package | Maturity | `exports` map | tests | Notes |
 |---|---|---|---|---|
@@ -67,7 +67,6 @@ A Bun-native, Turbo-orchestrated monorepo: a **Hono API on Bun** (`apps/api`) an
 | `seo` | **Implemented (orphaned)** | ✅ | ❌ | Metadata + JSON-LD. **Zero importers.** |
 | `storage` | **Implemented** | ✅ | ❌ | Native `Bun.s3` (S3/R2/MinIO/Spaces): put/get/del/exists/stat + presigned URLs. Tests need an S3 backend. |
 | `cache` | **Implemented** | ✅ | ❌ | Native `Bun.RedisClient` (Bun 1.3): typed JSON helpers + TTL. Tests need Redis. |
-| `payments` | **Placeholder** | ❌ | ❌ | Only `package.json` + `tsconfig`. |
 | `tsconfig` | **Mature** | n/a | n/a | `bun.json` + `svelte.json`. `svelte.json` weakens `noUncheckedIndexedAccess`. |
 
 **API** (`apps/api`) — solid layering (`server.ts` → `buildApp()` → middleware → routes), complete `health→status/ready` migration, no `any`. Two-tier test harness: **unit 10/10** (no Docker, DI + `mock.module`), **e2e 7/7** (ephemeral tmpfs Postgres, real better-auth flow, truncate-per-test). Thin feature surface (the only `v1` endpoint, `stats`, is mock data). Loose ends: empty docker artifacts, `curl`-based healthcheck in the `oven/bun` base, `dofigen.yml` binds a phantom `packages/analytics`.
@@ -107,7 +106,7 @@ The base config is strong; the defects are **local escapes** from it.
 
 - **`exports` maps not upheld** — the highest structural debt. Copy `observability/package.json:10–18` to `@pack/tools`, `@pack/design-system`, `@pack/db`. Today `@pack/db/schema` and `@pack/db/pack-env` resolve only via Bun's filesystem fallback.
 - **Naming** — `MString.capitalize()` is actually `toTitleCase`; `MString.valueOf(): string` is a coercion footgun (drop it); mixed PT/EN comments in `m-string.ts`.
-- **Dead / orphaned** — `observability/errors/parse-error.ts` (zero callers; drags the pino/OTel graph into the `errors` subpath; logs at error on every parse — delete); `@pack/seo` (orphaned); `@pack/payments` + `@pack/cache` (placeholders); unused deps (`resend` in email, the decorative tokens).
+- **Dead / orphaned** — `observability/errors/parse-error.ts` (zero callers; drags the pino/OTel graph into the `errors` subpath; logs at error on every parse — delete); `@pack/seo` (orphaned); unused deps (`resend` in email, the decorative tokens). *(The `@pack/payments`/`@pack/cache` placeholders are resolved — payments removed, cache implemented.)*
 - **Barrel correctness** — `@pack/email/index.ts` bare specifier + phantom export (P1); `@pack/i18n` redundant `./utils` subpath.
 - **Code-style drift** — `@pack/design-system` mixes tabs/double-quote/`.js`-ext (shadcn-generated) with 2-space/single-quote (hand-authored) — even within `lib/utils.ts`. Biome isn't normalizing the generated dirs.
 - **Convention drift** — `db` throws bare `Error` vs `AppError` elsewhere; `db`/`auth` have no `test` script; `stringbool({truthy,falsy})` duplicated in two `pack-env.ts`; `setup.timezone()` is a no-op stub.

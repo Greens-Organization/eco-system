@@ -20,7 +20,6 @@
         "@pack/auth": "workspace:*",
         "@pack/db": "workspace:*",
         "@pack/observability": "workspace:*",
-        "@pack/payments": "workspace:*",
         "@pack/testing": "workspace:*",
         "@scalar/hono-api-reference": "0.11.3",
         "hono": "catalog:",
@@ -186,16 +185,6 @@
         "@pack/tsconfig": "workspace:*",
         "@types/bun": "1.3.14",
         "@types/node": "catalog:dev",
-      },
-    },
-    "packages/payments": {
-      "name": "@pack/payments",
-      "version": "0.0.0",
-      "dependencies": {
-        "zod": "catalog:",
-      },
-      "devDependencies": {
-        "@pack/tsconfig": "workspace:*",
       },
     },
     "packages/seo": {
@@ -469,8 +458,6 @@
     "@pack/i18n": ["@pack/i18n@workspace:packages/i18n"],
 
     "@pack/observability": ["@pack/observability@workspace:packages/observability"],
-
-    "@pack/payments": ["@pack/payments@workspace:packages/payments"],
 
     "@pack/seo": ["@pack/seo@workspace:packages/seo"],
 

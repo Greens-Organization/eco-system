@@ -19,7 +19,6 @@ builders:
       - packages/email/package.json
       - packages/i18n/package.json
       - packages/observability/package.json
-      - packages/payments/package.json
       - packages/seo/package.json
       - packages/storage/package.json
       - packages/testing/package.json

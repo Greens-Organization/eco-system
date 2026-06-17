@@ -16,7 +16,6 @@ RUN \
     --mount=type=bind,target=packages/email/package.json,source=packages/email/package.json \
     --mount=type=bind,target=packages/i18n/package.json,source=packages/i18n/package.json \
     --mount=type=bind,target=packages/observability/package.json,source=packages/observability/package.json \
-    --mount=type=bind,target=packages/payments/package.json,source=packages/payments/package.json \
     --mount=type=bind,target=packages/seo/package.json,source=packages/seo/package.json \
     --mount=type=bind,target=packages/storage/package.json,source=packages/storage/package.json \
     --mount=type=bind,target=packages/testing/package.json,source=packages/testing/package.json \
