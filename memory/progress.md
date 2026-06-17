@@ -16,9 +16,13 @@ changed but this file wasn't updated.
         per function under `src/` (client/get/set/del/has/remember/disconnect) +
         a root `index.ts` barrel; `pack-env.ts` stays at root (repo convention).
         Public API unchanged. Verify: cache tsc OK.
-      - (Pending: confirm scope for the other flat packages — auth/db/email/i18n/
-        observability/seo/storage/testing — before moving them; design-system,
-        tools, tsconfig stay as-is.)
+      - Scope confirmed by the user: the 8 flat packages (auth/db/email/i18n/
+        observability/seo/storage/testing); design-system/tools/tsconfig stay;
+        config/contracts (pack-env, drizzle.config) + asset dirs (migrations,
+        templates, dictionaries) stay at root — only the `.ts` logic moves to
+        `src/`, exports repointed to `./src/...`.
+      - storage: `index.ts → src/storage.ts` (`../pack-env`) + root barrel.
+        seo: `{metadata,json-ld}.ts → src/`, exports repointed. Verify: tsc both.
 - [x] **TECHNICAL_ANALYSIS.md §6 implementation** (one commit per slice, each
       verified before commit). Baseline commit `63896f9` first committed ALL the
       v2 in-flight work below (observability port + test harness + dockerize +

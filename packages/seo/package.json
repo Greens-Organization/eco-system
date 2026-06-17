@@ -7,8 +7,8 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "exports": {
-    "./metadata": "./metadata.ts",
-    "./json-ld": "./json-ld.ts"
+    "./metadata": "./src/metadata.ts",
+    "./json-ld": "./src/json-ld.ts"
   },
   "dependencies": {
     "es-toolkit": "catalog:",
