@@ -23,6 +23,20 @@ changed but this file wasn't updated.
         `src/`, exports repointed to `./src/...`.
       - storage: `index.ts → src/storage.ts` (`../pack-env`) + root barrel.
         seo: `{metadata,json-ld}.ts → src/`, exports repointed. Verify: tsc both.
+      - testing: `{index,preload}.ts → src/`, `runner.test.ts → tests/`, root
+        barrel, exports/test-script repointed (`./preload` → `./src/preload.ts`).
+      - i18n: `{index,utils,format,shared}.ts → src/` (dictionaries/ + languine
+        stay root; dynamic import path fixed to `../dictionaries/`), root barrel.
+      - **GOTCHA (vite/rolldown):** the dashboard's bundler resolves workspace
+        package SUBPATHS via the FILESYSTEM, not the `exports` map (TS/svelte-check
+        DO honor it). So moving a file under `src/` breaks a dashboard *subpath*
+        import of it. Fixed i18n by dropping the redundant `./utils` subpath +
+        switching the 2 dashboard imports to the `@pack/i18n` root barrel.
+        Implication for the rest: packages the DASHBOARD imports by subpath
+        (auth `/client.svelte` etc., observability `/logger`) need root-barrel
+        imports or root re-export shims; db/email are API/SSR-only (bun honors
+        exports) → unaffected. Verify: turbo typecheck 13/13 + turbo test 4/4 +
+        dashboard build ✔ + svelte-check 0/0/0.
 - [x] **TECHNICAL_ANALYSIS.md §6 implementation** (one commit per slice, each
       verified before commit). Baseline commit `63896f9` first committed ALL the
       v2 in-flight work below (observability port + test harness + dockerize +

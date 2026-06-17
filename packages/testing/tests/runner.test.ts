@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { setTestEnv } from './index.ts';
+import { setTestEnv } from '../src/index.ts';
 
 /**
  * Smoke test for the bun:test toolchain (D9). Proves three things:

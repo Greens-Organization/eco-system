@@ -8,8 +8,7 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "exports": {
-    ".": "./index.ts",
-    "./utils": "./utils.ts"
+    ".": "./index.ts"
   },
   "dependencies": {
     "@formatjs/intl-localematcher": "0.8.10",

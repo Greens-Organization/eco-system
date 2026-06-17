@@ -5,7 +5,7 @@ import Trees from '@lucide/svelte/icons/trees';
 import UserRound from '@lucide/svelte/icons/user-round';
 import Users from '@lucide/svelte/icons/users';
 import * as Sidebar from '@pack/design-system/components/ui/sidebar';
-import { removeLocaleFromPathname } from '@pack/i18n/utils';
+import { removeLocaleFromPathname } from '@pack/i18n';
 import { page } from '$app/state';
 import { useLocale, useTranslation } from '$lib/i18n/context.svelte';
 import UserAvatar from './user-avatar.svelte';

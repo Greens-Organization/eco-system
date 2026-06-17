@@ -5,12 +5,12 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
-    "./preload": "./preload.ts"
+    "./preload": "./src/preload.ts"
   },
   "scripts": {
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
-    "test": "bun test --preload ./preload.ts"
+    "test": "bun test --preload ./src/preload.ts"
   },
   "devDependencies": {
     "@pack/tsconfig": "workspace:*",

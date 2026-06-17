@@ -3,7 +3,7 @@ import {
   addLocaleToPathname,
   locales,
   removeLocaleFromPathname,
-} from '@pack/i18n/utils';
+} from '@pack/i18n';
 import { page } from '$app/state';
 import { useLocale, useTranslation } from '$lib/i18n/context.svelte';
 
