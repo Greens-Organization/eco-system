@@ -238,7 +238,6 @@
     "@sveltejs/vite-plugin-svelte": "7.1.2",
     "@tailwindcss/postcss": "4.3.1",
     "@tailwindcss/typography": "0.5.20",
-    "@tanstack/svelte-form": "1.28.5",
     "bits-ui": "2.18.1",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
