@@ -17,7 +17,7 @@ só as pontas que sobraram, cada uma com critério de aceite.
   atual (logger 3 camadas, classification→Sentry, support_id, /status vs /ready,
   topologia OTel desacoplada). Aponta para os arquivos-fonte reais.
 
-- [ ] **F2 — Verify manual do round-trip Grafana** (era a nota solta da Fase 2 — o
+- [x] **F2 — Verify do round-trip Grafana** (era a nota solta da Fase 2 — o
   único item de verify ainda em aberto).
   Passos: `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318` no `.env` →
   `bun run docker:obs:up` → gerar tráfego na API → abrir `http://localhost:3000`.
@@ -25,6 +25,13 @@ só as pontas que sobraram, cada uma com critério de aceite.
   Nota: o lado do app já está provado (OTEL on → `trace_id` no access log); falta só o
   export OTLP chegar no coletor (fire-and-forget, `BatchSpanProcessor` dropa em silêncio
   se o endpoint estiver morto — por isso precisa de verificação visual).
+  **Feito (2026-06-19):** stack `otel-lgtm` no ar; API com OTLP→`http://localhost:4318`;
+  21 requests de tráfego. Confirmado **via as datasources do próprio Grafana**:
+  Tempo recuperou o **mesmo `trace_id`** visto no access log da API + busca
+  `service.name=api` → 20 traces; Prometheus tem `target_info{service_name="api"}`
+  (labels `deployment_environment=local`, `service_version=0.0.0`, `job=api`).
+  Zero erro de exporter no log. Round-trip OTLP→coletor provado; restam só os
+  cards adiados F3–F7.
 
 ## Cards adiados — deliberado (D8 + §9 do plano original)
 
@@ -38,6 +45,7 @@ só as pontas que sobraram, cada uma com critério de aceite.
 
 ---
 
-**Status:** F2 é a única pendência in-scope (F1 feito — `CLAUDE.md` §16). F3–F7 são deferidos por decisão
+**Status:** F1 e F2 feitos (CLAUDE.md §16 + round-trip Grafana provado). Nenhuma
+pendência in-scope. F3–F7 são deferidos por decisão
 (não bloqueiam nada). Nenhuma ponta solta no plano principal — o que estava stale foi
 corrigido antes de arquivar (`observability.md` §3/§4/§5/§7/§10).
