@@ -39,13 +39,22 @@ só as pontas que sobraram, cada uma com critério de aceite.
   net-new, incerteza no Bun; HTTP spans via `@hono/otel` já cobrem ~80%.
 - [ ] **F4 — Testes p/ `instrumentation.ts` e `pack-env.ts`** — gap de cobertura
   pré-existente (ver `observability-structure.md` §8). Adicionar é trabalho de teste.
-- [ ] **F5 — Logs → Loki via Alloy** — coleta de stdout = infra de cluster, fora do app.
+- [x] **F5 — Logs → Loki** — **feito (2026-06-19)** por uma rota diferente da Alloy:
+  bridge **in-process** pino→OTLP-logs (`logger/otel-stream.ts` + `LoggerProvider` no
+  `instrumentation.ts`), sem worker (evita o conflito Bun×OTel) e sem depender de coleta
+  de stdout por sidecar. Logs vão via OTLP (`/v1/logs`) → coletor lgtm → Loki, com
+  `service_name=api`, severidade mapeada e `trace_id`/`support_id`/`request_id` como
+  atributos. **Gotcha resolvido:** `multistream` sobre `pino.destination(1)` (sonic-boom
+  async) starvava o stream do bridge → trocado por um destino síncrono único (stdout +
+  bridge no mesmo tick). Verificado: 8/8 access logs no Loki via Grafana. Teste:
+  `tests/otel-log-bridge.test.ts`. (A rota Alloy/sidecar segue válida p/ k8s, mas não é
+  mais necessária localmente.)
 - [ ] **F6 — Sampling dinâmico/tail-based** — hoje head sampling fixo via `OTEL_TRACES_SAMPLER[_ARG]` (lido pelo SDK).
 - [ ] **F7 — Observabilidade no dashboard SvelteKit + k8s manifests/HPA** — apps/cards separados.
 
 ---
 
-**Status:** F1 e F2 feitos (CLAUDE.md §16 + round-trip Grafana provado). Nenhuma
-pendência in-scope. F3–F7 são deferidos por decisão
+**Status:** F1, F2 e F5 feitos (CLAUDE.md §16 + round-trip Grafana provado + logs→Loki
+via bridge in-process). Nenhuma pendência in-scope. F3, F4, F6, F7 seguem deferidos
 (não bloqueiam nada). Nenhuma ponta solta no plano principal — o que estava stale foi
 corrigido antes de arquivar (`observability.md` §3/§4/§5/§7/§10).

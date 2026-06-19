@@ -1,4 +1,5 @@
 import os from 'node:os';
+import { Writable } from 'node:stream';
 import { type Span, trace } from '@opentelemetry/api';
 import pino, {
   type Logger,
@@ -7,6 +8,7 @@ import pino, {
 } from 'pino';
 import { env } from '../../pack-env';
 import { getContext } from '../context';
+import { createOtelLogStream } from './otel-stream';
 
 export type { Logger };
 
@@ -75,8 +77,34 @@ if (env.FILE_LOG) {
   });
 }
 
-export const log = pino(
-  usePretty
-    ? { ...loggerOptions, transport: { targets: transports } }
-    : loggerOptions
-);
+/**
+ * When OTLP is enabled, stdout stays the primary sink and an in-process bridge
+ * mirrors each record to OTel logs (-> Loki). Pretty mode (dashboard / TTY)
+ * keeps the worker transport and opts out of the bridge — the API sets
+ * `LOG_PRETTY=false` precisely so it lands on the OTel path. See ./otel-stream.
+ */
+const otelLogsEnabled = Boolean(env.OTEL_EXPORTER_OTLP_ENDPOINT);
+
+function buildLogger(): Logger {
+  if (usePretty) {
+    return pino({ ...loggerOptions, transport: { targets: transports } });
+  }
+  if (otelLogsEnabled) {
+    // stdout stays the primary sink; the OTel bridge mirrors each record. A
+    // single synchronous destination (no multistream / no sonic-boom worker
+    // buffering) guarantees every record reaches both sinks on the same tick —
+    // multistream over an async sonic-boom destination starved the bridge.
+    const otelStream = createOtelLogStream();
+    const dual = new Writable({
+      write(chunk, _encoding, callback) {
+        process.stdout.write(chunk);
+        otelStream.write(chunk);
+        callback();
+      },
+    });
+    return pino(loggerOptions, dual);
+  }
+  return pino(loggerOptions);
+}
+
+export const log = buildLogger();

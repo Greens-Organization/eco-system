@@ -1,9 +1,15 @@
 import os from 'node:os';
 import { metrics } from '@opentelemetry/api';
+import { logs } from '@opentelemetry/api-logs';
+import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { HostMetrics } from '@opentelemetry/host-metrics';
 import { resourceFromAttributes } from '@opentelemetry/resources';
+import {
+  BatchLogRecordProcessor,
+  LoggerProvider,
+} from '@opentelemetry/sdk-logs';
 import {
   MeterProvider,
   PeriodicExportingMetricReader,
@@ -21,15 +27,17 @@ import { scrubPii } from './sentry';
  * live before the first request. No-op without SENTRY_DSN / OTEL endpoint.
  *
  * Topology is DECOUPLED (D12): Sentry handles ERRORS only; OpenTelemetry sends
- * traces + metrics to Grafana via OTLP (independent provider). Nothing relies on
- * require-hook auto-instrumentation (HTTP spans come from `@hono/otel`), so
- * import order is not fragile on Bun.
+ * traces + metrics + logs to Grafana via OTLP (independent providers). Nothing
+ * relies on require-hook auto-instrumentation (HTTP spans come from `@hono/otel`,
+ * logs are bridged in-process from pino — see logger/otel-stream), so import
+ * order is not fragile on Bun.
  */
 const sentryDsn = env.SENTRY_DSN;
 const otlpEndpoint = env.OTEL_EXPORTER_OTLP_ENDPOINT;
 
 let provider: NodeTracerProvider | undefined;
 let meterProvider: MeterProvider | undefined;
+let loggerProvider: LoggerProvider | undefined;
 
 if (sentryDsn) {
   Sentry.init({
@@ -73,6 +81,14 @@ if (otlpEndpoint) {
   });
   metrics.setGlobalMeterProvider(meterProvider);
   new HostMetrics({ meterProvider, name: 'host-metrics' }).start();
+
+  // Logs: the pino logger bridges into this provider in-process (no worker —
+  // see logger/otel-stream), exporting via OTLP (-> Loki in the lgtm stack).
+  loggerProvider = new LoggerProvider({
+    resource,
+    processors: [new BatchLogRecordProcessor(new OTLPLogExporter())],
+  });
+  logs.setGlobalLoggerProvider(loggerProvider);
 }
 
 /** Flush + close all exporters. Wired into the graceful shutdown (best-effort). */
@@ -84,6 +100,11 @@ export async function shutdownObservability(): Promise<void> {
   }
   try {
     await meterProvider?.shutdown();
+  } catch {
+    // best-effort
+  }
+  try {
+    await loggerProvider?.shutdown();
   } catch {
     // best-effort
   }
