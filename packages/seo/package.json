@@ -7,11 +7,9 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "exports": {
-    "./metadata": "./src/metadata.ts",
     "./json-ld": "./src/json-ld.ts"
   },
   "dependencies": {
-    "es-toolkit": "catalog:",
     "schema-dts": "2.0.0"
   },
   "devDependencies": {

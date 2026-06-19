@@ -191,7 +191,6 @@
       "name": "@pack/seo",
       "version": "0.0.0",
       "dependencies": {
-        "es-toolkit": "catalog:",
         "schema-dts": "2.0.0",
       },
       "devDependencies": {
