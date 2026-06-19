@@ -6,13 +6,16 @@ só as pontas que sobraram, cada uma com critério de aceite.
 
 ## Aberto — in-scope, não-bloqueante
 
-- [ ] **F1 — Seção "Observabilidade" no `CLAUDE.md`** (era §13 do plano).
+- [x] **F1 — Seção "Observabilidade" no `CLAUDE.md`** (era §13 do plano).
   Espelhar a do `study/fastify-boilerplate`, adaptada Bun+Hono.
   Conteúdo: contrato de log em 3 camadas (base / per-request via ALS / per-event via
   AppError), `classification` + roteamento Sentry (só technical/critical), `support_id`
   (`SUP-`+12hex), health split (`/status` liveness vs `/ready` readiness), default-off.
   **Aceite:** seção existe no `CLAUDE.md`; descreve o contrato real do código atual
   (não o da fonte Fastify).
+  **Feito:** `CLAUDE.md` §16 (project-specific) — descreve o contrato real do código
+  atual (logger 3 camadas, classification→Sentry, support_id, /status vs /ready,
+  topologia OTel desacoplada). Aponta para os arquivos-fonte reais.
 
 - [ ] **F2 — Verify manual do round-trip Grafana** (era a nota solta da Fase 2 — o
   único item de verify ainda em aberto).
@@ -35,6 +38,6 @@ só as pontas que sobraram, cada uma com critério de aceite.
 
 ---
 
-**Status:** F1/F2 são as únicas pendências in-scope. F3–F7 são deferidos por decisão
+**Status:** F2 é a única pendência in-scope (F1 feito — `CLAUDE.md` §16). F3–F7 são deferidos por decisão
 (não bloqueiam nada). Nenhuma ponta solta no plano principal — o que estava stale foi
 corrigido antes de arquivar (`observability.md` §3/§4/§5/§7/§10).

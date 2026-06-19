@@ -303,3 +303,80 @@ required          = true
 artifacts_dir     = ".agent/visual"
 freshness_seconds = 3600
 ```
+
+---
+
+## 16. Observability (project-specific)
+
+This section describes the real observability contract implemented in
+`@pack/observability` and wired in `apps/api`. It is project-specific, not
+part of the vendored agent-md template above. Everything is **default-off**:
+no `SENTRY_DSN` → Sentry is a no-op; no `OTEL_EXPORTER_OTLP_ENDPOINT` → no
+trace/metric export.
+
+### Structured log contract (3 layers)
+
+Logs are pino JSON with fields composed from three layers
+(`@pack/observability/logger`):
+
+1. **Base — per process** (`loggerOptions.base`): `service`, `environment`,
+   `instance`, `version`, and `region` (when `REGION` is set).
+2. **Per request — via AsyncLocalStorage** (`mixin` → `getContext()`,
+   `@pack/observability/context`): `request_id`, `support_id`, `cf_ray_id?`,
+   `route`, `method`, `status_code`, `duration_ms`, `ip`, `user_agent`, plus
+   any business fields a domain attaches with `setContext()`. The API's
+   `middleware/observability.ts` opens this scope with `runWithContext()` per
+   request; `/status`, `/ready`, `/health` are quiet (not access-logged).
+3. **Per event — via `AppError`** (`@pack/observability/errors`): `error_code`,
+   `classification`, `eventCategory?`, `userMessage?`. Emitted by the central
+   error handler (`apps/api/src/main/infra/error-handler.ts`).
+
+`trace_id` / `span_id` are injected from the active OTel span (logger `mixin`),
+so logs correlate with traces automatically when OTel is on.
+
+> The pino-pretty transport intentionally surfaces `requestId` / `path`
+> (and `request_id` / `route`). The SvelteKit dashboard's `hooks.server.ts`
+> bridges live logs through these fields — **do not remove them.**
+
+### Classification → Sentry routing
+
+`AppError.classification` decides routing (`errors/classification.ts`):
+
+| Classification      | Routing        |
+| ------------------- | -------------- |
+| `business_error`    | log only       |
+| `validation_error`  | log only       |
+| `technical_error`   | log + Sentry   |
+| `critical_incident` | log + Sentry   |
+
+`shouldReportToSentry()` gates the capture; `defaultClassification(status)`
+derives it from the HTTP status when not set explicitly (400/422 →
+`validation_error`, ≥500 → `technical_error`, otherwise `business_error`).
+Sentry tags carry `support_id`, `error_code`, `classification`; `extra` is
+PII-allowlisted (`sentry/scrub`).
+
+### support_id
+
+`generateSupportId()` returns `SUP-` + 12 uppercase hex chars. It is set once
+per request, returned to the client (correlates a user report), and sent to
+Sentry as a tag.
+
+### Health split
+
+- **`/status`** — liveness. Always `{ status: 'ok' }`. Use for the container
+  healthcheck and Kubernetes `livenessProbe`.
+- **`/ready`** — readiness. Checks the DB and the shutdown flag; returns `503`
+  (`not_ready` / `shutting_down`) when not serving. Use for `readinessProbe`.
+
+### Telemetry topology (decoupled)
+
+Sentry handles **errors only**; OpenTelemetry owns **traces + metrics** and
+exports them to Grafana via OTLP (independent `NodeTracerProvider` /
+`MeterProvider`, `instrumentation.ts`). HTTP spans come from `@hono/otel`, not
+require-hook auto-instrumentation, so Bun import order is not fragile. Head
+sampling is controlled by the standard `OTEL_TRACES_SAMPLER[_ARG]` env vars.
+
+> `BatchSpanProcessor` is fire-and-forget: if the OTLP endpoint is down it
+> drops spans silently. Verify the collector side visually in Grafana — the
+> app side is proven once `trace_id` shows up in the access log.
+
