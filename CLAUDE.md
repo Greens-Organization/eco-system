@@ -380,3 +380,21 @@ sampling is controlled by the standard `OTEL_TRACES_SAMPLER[_ARG]` env vars.
 > drops spans silently. Verify the collector side visually in Grafana — the
 > app side is proven once `trace_id` shows up in the access log.
 
+### Trace sampling
+
+Head sampling only, driven by the standard env vars — the `NodeTracerProvider`
+reads them (verified: `OTEL_TRACES_SAMPLER=always_off` exports zero traces, the
+app still logs `trace_id`):
+
+- Unset (default) → `parentbased_always_on` (keep 100%). Fine at low volume.
+- Prod → `OTEL_TRACES_SAMPLER=parentbased_traceidratio` +
+  `OTEL_TRACES_SAMPLER_ARG=0.1`. **Parent-based** so a whole trace is kept or
+  dropped together (no fragmented traces across services).
+
+Content-aware "dynamic" sampling (keep all errors + slow traces, down-sample the
+rest) is **tail sampling** and belongs in a Collector, not the SDK — the SDK
+decides at the root span before the trace exists. The `otel-lgtm` image's
+bundled collector is a fixed forward pipeline and can't tail-sample; that needs a
+standalone OTel Collector / Grafana Alloy in front. Full strategy + sample
+config: `tasks/todo/sampling-strategy.md`.
+

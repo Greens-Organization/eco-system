@@ -53,12 +53,21 @@ só as pontas que sobraram, cada uma com critério de aceite.
   bridge no mesmo tick). Verificado: 8/8 access logs no Loki via Grafana. Teste:
   `tests/otel-log-bridge.test.ts`. (A rota Alloy/sidecar segue válida p/ k8s, mas não é
   mais necessária localmente.)
-- [ ] **F6 — Sampling dinâmico/tail-based** — hoje head sampling fixo via `OTEL_TRACES_SAMPLER[_ARG]` (lido pelo SDK).
+- [~] **F6 — Sampling dinâmico/tail-based** — **pesquisado + decidido (2026-06-19)**, ver
+  `tasks/todo/sampling-strategy.md`. **App-side feito:** head sampling via env
+  (`OTEL_TRACES_SAMPLER[_ARG]`, parent-based), **verificado** que o `NodeTracerProvider`
+  honra o knob (`always_off` → 0 traces no Tempo, app ainda loga `trace_id`); knobs
+  documentados no `.env.example` + `CLAUDE.md §16`. **Tail/dynamic deferido:** é
+  collector-side e o `otel-lgtm` tem pipeline fixo → precisa de OTel Collector/Alloy
+  separado na frente (config de exemplo no doc). Consistent-probability sampling quando
+  sair de experimental no SDK JS.
 - [ ] **F7 — Observabilidade no dashboard SvelteKit + k8s manifests/HPA** — apps/cards separados.
 
 ---
 
-**Status:** F1, F2 e F5 feitos (CLAUDE.md §16 + round-trip Grafana provado + logs→Loki
-via bridge in-process). Nenhuma pendência in-scope. F3, F4, F6, F7 seguem deferidos
-(não bloqueiam nada). Nenhuma ponta solta no plano principal — o que estava stale foi
-corrigido antes de arquivar (`observability.md` §3/§4/§5/§7/§10).
+**Status:** F1, F2, F5 feitos; F4 e F6 feitos no que era acionável no app (testes do
+`instrumentation.ts`; head sampling via env documentado/verificado). Restam deferidos
+por decisão: F3 (spans de DB), F6-tail (sampling dinâmico = collector-side, fora do
+otel-lgtm), F7 (dashboard + k8s), e o `pack-env.ts` (sem teste, a pedido do dono).
+Nenhum bloqueia nada. O que estava stale foi corrigido antes de arquivar
+(`observability.md` §3/§4/§5/§7/§10).
