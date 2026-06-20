@@ -37,8 +37,12 @@ só as pontas que sobraram, cada uma com critério de aceite.
 
 - [ ] **F3 (era T14) — Spans de DB** postgres.js/Drizzle (hook no logger do Drizzle). D8:
   net-new, incerteza no Bun; HTTP spans via `@hono/otel` já cobrem ~80%.
-- [ ] **F4 — Testes p/ `instrumentation.ts` e `pack-env.ts`** — gap de cobertura
-  pré-existente (ver `observability-structure.md` §8). Adicionar é trabalho de teste.
+- [~] **F4 — Testes p/ `instrumentation.ts`** — **feito (2026-06-19)**: `tests/instrumentation.test.ts`
+  (subprocess-isolado, pois o módulo lê env + tem side-effects no import) cobre o gate
+  default-off (nenhum provider real registrado) e o caminho OTLP-on (MeterProvider +
+  LoggerProvider reais registrados; `shutdownObservability` best-effort resolve). Fixture:
+  `tests/fixtures/instrumentation-probe.ts`. **`pack-env.ts` deixado de fora por decisão**
+  do dono (não vale o esforço agora).
 - [x] **F5 — Logs → Loki** — **feito (2026-06-19)** por uma rota diferente da Alloy:
   bridge **in-process** pino→OTLP-logs (`logger/otel-stream.ts` + `LoggerProvider` no
   `instrumentation.ts`), sem worker (evita o conflito Bun×OTel) e sem depender de coleta
