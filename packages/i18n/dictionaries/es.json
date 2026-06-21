@@ -55,6 +55,15 @@
       "title": "Empleados",
       "empty": "No se encontraron empleados"
     },
+    "settings": {
+      "appearance": "Apariencia",
+      "appearanceDescription": "Personaliza cómo se ve la app en tu dispositivo.",
+      "theme": "Tema",
+      "language": "Idioma",
+      "languageDescription": "Elige tu idioma preferido.",
+      "account": "Cuenta",
+      "accountDescription": "Los detalles de tu cuenta."
+    },
     "errors": {
       "notFound": "Página no encontrada",
       "notFoundDescription": "La página que buscas no existe o ha sido movida.",

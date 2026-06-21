@@ -55,6 +55,15 @@
       "title": "Employees",
       "empty": "No employees found"
     },
+    "settings": {
+      "appearance": "Appearance",
+      "appearanceDescription": "Customize how the app looks on your device.",
+      "theme": "Theme",
+      "language": "Language",
+      "languageDescription": "Choose your preferred language.",
+      "account": "Account",
+      "accountDescription": "Your account details."
+    },
     "errors": {
       "notFound": "Page not found",
       "notFoundDescription": "The page you are looking for doesn't exist or has been moved.",
