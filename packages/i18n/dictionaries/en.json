@@ -64,6 +64,13 @@
       "account": "Account",
       "accountDescription": "Your account details."
     },
+    "profile": {
+      "title": "Profile",
+      "description": "Your personal information.",
+      "name": "Name",
+      "email": "Email",
+      "accountId": "Account ID"
+    },
     "errors": {
       "notFound": "Page not found",
       "notFoundDescription": "The page you are looking for doesn't exist or has been moved.",

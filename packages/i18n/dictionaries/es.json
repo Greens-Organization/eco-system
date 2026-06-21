@@ -64,6 +64,13 @@
       "account": "Cuenta",
       "accountDescription": "Los detalles de tu cuenta."
     },
+    "profile": {
+      "title": "Perfil",
+      "description": "Tu información personal.",
+      "name": "Nombre",
+      "email": "Correo electrónico",
+      "accountId": "ID de cuenta"
+    },
     "errors": {
       "notFound": "Página no encontrada",
       "notFoundDescription": "La página que buscas no existe o ha sido movida.",
