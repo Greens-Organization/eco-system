@@ -24,6 +24,8 @@ const rowClass =
             <img
                 src={avatarSrc}
                 alt={user?.name ?? t.app.common.user}
+                width="64"
+                height="64"
                 class="size-16 shrink-0 rounded-full object-cover"
             />
             <div class="space-y-1">
