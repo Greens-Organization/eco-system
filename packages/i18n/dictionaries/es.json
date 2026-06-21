@@ -47,6 +47,10 @@
       "recentActivity": "Actividad Reciente",
       "noActivity": "No se encontró actividad"
     },
+    "customers": {
+      "title": "Clientes",
+      "empty": "No se encontraron clientes"
+    },
     "errors": {
       "notFound": "Página no encontrada",
       "notFoundDescription": "La página que buscas no existe o ha sido movida.",
