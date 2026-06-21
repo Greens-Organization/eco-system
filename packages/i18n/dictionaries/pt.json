@@ -51,6 +51,10 @@
       "title": "Clientes",
       "empty": "Nenhum cliente encontrado"
     },
+    "employees": {
+      "title": "Funcionários",
+      "empty": "Nenhum funcionário encontrado"
+    },
     "errors": {
       "notFound": "Página não encontrada",
       "notFoundDescription": "A página que você procura não existe ou foi movida.",

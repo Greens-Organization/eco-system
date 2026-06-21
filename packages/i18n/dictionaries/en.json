@@ -51,6 +51,10 @@
       "title": "Customers",
       "empty": "No customers found"
     },
+    "employees": {
+      "title": "Employees",
+      "empty": "No employees found"
+    },
     "errors": {
       "notFound": "Page not found",
       "notFoundDescription": "The page you are looking for doesn't exist or has been moved.",

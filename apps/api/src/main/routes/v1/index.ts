@@ -5,6 +5,7 @@ import { CONSTANTS } from '@/infra/common/constants';
 import { handleZodError } from '@/main/infra/openapi/utils';
 import { type AppVariables, authMiddleware } from '@/main/middleware';
 import customersRoute from './customers';
+import employeesRoute from './employees';
 import statsRoute from './stats';
 
 export type Variables = AppVariables;
@@ -49,6 +50,11 @@ v1.doc('/openapi', {
       description: 'Customers endpoints',
       'x-displayName': 'Customers',
     },
+    {
+      name: 'employees',
+      description: 'Employees endpoints',
+      'x-displayName': 'Employees',
+    },
   ],
   security: [
     {
@@ -92,7 +98,8 @@ v1.use('/*', authMiddleware);
  */
 const routes = v1
   .route('/stats', statsRoute)
-  .route('/customers', customersRoute);
+  .route('/customers', customersRoute)
+  .route('/employees', employeesRoute);
 
 export default routes;
 export type AppType = typeof routes;
