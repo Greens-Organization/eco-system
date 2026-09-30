@@ -6,14 +6,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build", "test"],
-      "outputs": [
-        ".next/**",
-        "!.next/cache/**",
-        ".svelte-kit/**",
-        "build/**",
-        "**/generated/**",
-        ".react-email/**"
-      ]
+      "outputs": [".svelte-kit/**", "build/**", "api"]
     },
     "test": {
       "dependsOn": ["^test"]
