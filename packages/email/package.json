@@ -2,24 +2,21 @@
   "name": "@pack/email",
   "version": "0.0.0",
   "private": true,
+  "exports": {
+    ".": "./index.ts",
+    "./pack-env": "./pack-env.ts"
+  },
   "scripts": {
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@react-email/components": "1.0.12",
-    "@react-email/render": "2.0.8",
     "nodemailer": "9.0.0",
-    "react": "catalog:",
-    "react-dom": "catalog:",
-    "resend": "6.12.4",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@pack/tsconfig": "workspace:*",
     "@types/node": "catalog:dev",
-    "@types/nodemailer": "8.0.1",
-    "@types/react": "catalog:dev",
-    "@types/react-dom": "catalog:dev"
+    "@types/nodemailer": "8.0.2"
   }
 }

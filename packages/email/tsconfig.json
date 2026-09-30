@@ -1,9 +1,5 @@
 {
   "extends": "@pack/tsconfig/bun.json",
-  "compilerOptions": {
-    "jsx": "react-jsx",
-    "lib": ["ESNext", "DOM", "DOM.Iterable"]
-  },
-  "include": ["./**/*.ts", "./**/*.tsx"],
+  "include": ["./**/*.ts"],
   "exclude": ["node_modules"]
 }

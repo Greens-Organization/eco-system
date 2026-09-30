@@ -1,21 +1,5 @@
-import { render } from '@react-email/render';
 import nodemailer from 'nodemailer';
-import type { ReactElement } from 'react';
 import { env } from '../pack-env';
-
-export interface SendEmailOptions {
-  react: ReactElement;
-  subject: string;
-  to: string | string[];
-  from?: string;
-  fromDisplayName?: string;
-  cc?: string | string[];
-  attachments?: Array<{
-    filename: string;
-    content: string;
-    encoding: string;
-  }>;
-}
 
 export interface SendEmailHtmlOptions {
   html: string;
@@ -47,33 +31,10 @@ const shouldSendEmail =
   process.env.NODE_ENV === 'development';
 
 /**
- * Send email with React component
- */
-export const sendEmail = async (options: SendEmailOptions): Promise<void> => {
-  if (!shouldSendEmail) {
-    console.log('[DEV] Email que seria enviado:', {
-      to: options.to,
-      subject: options.subject,
-      from: options.from || env.SMTP_FROM,
-    });
-    return;
-  }
-
-  const html = await render(options.react);
-
-  await sendEmailHtml({
-    html,
-    subject: options.subject,
-    to: options.to,
-    from: options.from,
-    fromDisplayName: options.fromDisplayName,
-    cc: options.cc,
-    attachments: options.attachments,
-  });
-};
-
-/**
- * Send email with HTML string
+ * Send email with HTML string.
+ *
+ * Templating is deliberately left to the caller: render your HTML however you
+ * like and hand it over as a string.
  */
 export const sendEmailHtml = async (
   options: SendEmailHtmlOptions
