@@ -5,7 +5,13 @@ type Success<T> = { success: true; data: T };
 type Failure = { success: false; error: string; status: number };
 type Result<T> = Success<T> | Failure;
 
-async function failure(res: Response): Promise<Failure> {
+// Structural, not `Response`: the Hono client returns `ClientResponse`, which is
+// not assignable to Bun's `Response` (it lacks `textStream`). This asks for the
+// two members actually read, so either shape satisfies it.
+async function failure(res: {
+  status: number;
+  json(): Promise<unknown>;
+}): Promise<Failure> {
   let message = 'Internal server error';
   try {
     const json: unknown = await res.json();

@@ -35,7 +35,7 @@
   "devDependencies": {
     "@pack/testing": "workspace:*",
     "@pack/tsconfig": "workspace:*",
-    "@types/bun": "1.3.14",
+    "@types/bun": "1.4.2",
     "@types/node": "catalog:dev"
   }
 }
