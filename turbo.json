@@ -3,6 +3,7 @@
   "globalDependencies": ["**/.env.*local"],
   "ui": "tui",
   "envMode": "loose",
+  "agentGuidance": false,
   "tasks": {
     "build": {
       "dependsOn": ["^build", "test"],
