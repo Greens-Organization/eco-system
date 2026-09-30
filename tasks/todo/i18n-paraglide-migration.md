@@ -1,8 +1,9 @@
 # Plano: migrar i18n para Paraglide JS (compiler-first)
 
-> Status: **PLANEJADO** (não executado). Documento de intenção — referência
-> `TECHNICAL_ANALYSIS.md` §5d (#22). Migração grande (L), opt-in; só executar
-> quando o boilerplate estabilizar e houver volume de mensagens que justifique.
+> Status: **PLANEJADO** (não executado). Documento de intenção. Migração grande
+> (L), opt-in; só executar quando o boilerplate estabilizar e houver volume de
+> mensagens que justifique. Motivação: o runtime de dicionários atual não faz
+> tree-shaking por mensagem nem tipagem de chave em tempo de compilação.
 
 ## 1. Estado atual
 

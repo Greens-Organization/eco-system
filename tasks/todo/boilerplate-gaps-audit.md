@@ -1,299 +1,285 @@
 # Boilerplate Gaps — Audit & Roadmap
 
-> Audit date: 2026-05-10.
-> Scope: full repo sweep (apps/api, apps/dashboard, packages/*, tooling, CI, docs).
-> Status: **Backlog** — no implementation yet. Use this to prioritize follow-up work.
+> Auditoria original: 2026-05-10. **Re-auditado: 2026-09-30** contra a árvore
+> atual de `apps/` e `packages/`.
+> Método: cada afirmação foi verificada por execução ou inspeção do código —
+> não por memória do documento anterior.
+> Status: metade do P0 original fechou sozinha nos commits de junho. O que
+> sobrou está abaixo, mais 9 lacunas que a auditoria original não via.
 
 ---
 
-## TL;DR
+## TL;DR (2026-09-30)
 
-The auth, observability, i18n, theme, and monorepo foundations are
-mature — better than 80% of SvelteKit boilerplates on GitHub. The
-gaps that hurt forkers most are:
+A fundação continua madura. O que mudou desde maio: README existe, os 7
+pacotes "vazios" viraram zero, as 4 rotas mortas da sidebar existem, e
+observabilidade saiu de "só pino" para OTel + Sentry + contrato documentado.
 
-1. **README is one line** — onboarding nightmare
-2. **Zero tests, zero CI** — first PR can break anything silently
-3. **Seven empty/skeleton packages** — `cache`, `rate-limit`, `storage`,
-   `payments`, `seo`, `email`, `testing` — promise features the
-   boilerplate doesn't deliver
-4. **Sidebar links to pages that don't exist** (`/profile`, `/settings`)
-5. **Design system missing 10+ common components** for a dashboard
+O que **dói hoje**, em ordem:
 
-The rest is polish.
+1. **Zero CI e zero gate local** — 70 testes existem e nada os roda
+2. **Zero rate limiting no repo** — `/auth/sign-in/email` sem throttle
+3. **Design system parado em 13 componentes** — sem dialog, table, card, form
+4. **Toda a v1 é mock** — o dashboard parece vivo e não toca o banco
+5. **Dashboard sem nenhum teste**
 
----
-
-## 🔴 P0 — Foundational (would fix first)
-
-### 1. Tests + CI
-
-Current:
-- `vitest@4.1.5` in devDeps but **no `*.test.*` / `*.spec.*` files** anywhere
-- `.github/` has `CONTRIBUTING.md`, `SECURITY.md`, issue templates — **no `workflows/`**
-
-Add:
-- `.github/workflows/ci.yml` — matrix run of `lint + typecheck + test + build` on PR / push
-- Per-package smoke tests for the critical helpers:
-  - `apps/dashboard/src/lib/auth-proxy.ts` — `localizeAuthError`,
-    `redactEmail`, `userMessageFor`
-  - `packages/i18n/format.ts` — `formatCurrency`, `formatNumber`,
-    `formatPercent`
-  - `apps/api/src/main/middleware/request-logger.ts` — middleware
-    contract
-- Playwright baseline covering sign-in → dashboard → sign-out flow
-
-Estimate: ~4-6h. Highest leverage of any item here.
-
-### 2. README with quick start
-
-Current: literally one line `# Eco System (Template)`.
-
-Add (single page, scannable):
-- Prerequisites (Bun version, Node, Postgres)
-- Quick start (`git clone` → `bun install` → `bun db:push` →
-  `bun db:seed` → `bun run dev`)
-- Project structure (apps + packages, what each does)
-- Common commands cheatsheet
-- Env variables reference (or link to `.env.example` files + the
-  `BETTER_AUTH_SECRET` cross-app constraint)
-- Deploy notes (which adapters are wired, what to set in prod)
-
-Estimate: ~1-2h. Forkers feel this every single time.
-
-### 3. Empty / skeleton packages — decide
-
-| Package | Current state | Recommendation |
-|---|---|---|
-| `@pack/cache` | empty | Implement (`get/set/del/clear` over Redis or in-mem fallback) **or** remove |
-| `@pack/rate-limit` | empty | better-auth covers `/auth/*`; either expand to `/v1/*` (Hono middleware) or remove |
-| `@pack/storage` | `index.ts` 30B | Implement S3/R2 wrapper (`put/get/delete/sign`) or remove |
-| `@pack/payments` | empty | Stripe stub (checkout session + webhook + subscription record) or remove |
-| `@pack/email` | has `templates/contact.tsx` (React leftover from migration) | Migrate templates to Svelte SSR-render OR isolate React-email and document |
-| `@pack/seo` | basic `metadata.ts` + `json-ld.ts` | Add sitemap generator + robots.txt template |
-| `@pack/testing` | tiny `index.js` | Test fixtures + reusable matchers + setup helpers |
-
-**Principle**: a half-empty package promising features hurts more
-than no package at all. Either implement minimum viable, or remove.
-
-Estimate: 2-4h to triage; per-package implementation varies.
+> Este documento é ferramenta de construção. Ele — e o resto de `tasks/` — sai
+> do repo no commit de release do template (§17), para quem forkar começar
+> limpo.
 
 ---
 
-## 🟡 P1 — UX gaps in dashboard
+## ✅ Fechado desde a auditoria original
 
-### 4. Sidebar links to non-existent routes
+Verificado item a item; não precisa mais de atenção.
 
-`app-sidebar.svelte` lists `Customers`, `Employees`, `Settings`,
-plus `user-avatar.svelte` links to `/profile` and `/settings`.
-None of these routes exist → 404 on click.
+| Item original | Estado hoje |
+| --- | --- |
+| §2 README de uma linha | Reescrito (`cd91e2b`, atualizado 2026-09-30) |
+| §3 sete pacotes vazios/esqueleto | **Zero.** `rate-limit` e `payments` removidos; `cache` implementado com `Bun.RedisClient` (`6afee55`); `storage` com `Bun.s3` (`0a37781`); `testing` com `index.ts` + `preload.ts`; `seo` reduzido a `json-ld` por decisão (`858b7ad`) |
+| §4 sidebar apontando para 404 | `customers`, `employees`, `settings`, `profile` existem (`ac83234`, `98aac6d`, `02a51ae`, `86d6968`) |
+| §9 observabilidade além do pino | OTel traces + metrics, Sentry por classificação, contrato no `CLAUDE.md` §6 |
+| §14 camada de cache | `@pack/cache` implementado |
+| §1 (parcial) testes | Vitest descartado; **70 testes** em 6 pacotes + suíte e2e de 7 arquivos |
 
-Fix: either create placeholder pages with consistent layout (good
-for boilerplate — shows the pattern) or trim the sidebar until
-they exist.
+Fechado em **2026-09-30** (ver `tasks/done/pendencias-2026-09-30.md`):
 
-Estimate: 30min for placeholders.
-
-### 5. Auth flows incomplete
-
-Already documented in `tasks/completed/auth.md` §5.5 onwards:
-- Sign-up doesn't auto-sign-in (drops Set-Cookie, redirects to /sign-in)
-- No forgot-password UI (better-auth supports it, no UI)
-- No email verification UI
-- No multi-session / device management
-- No 2FA (better-auth has plugin)
-
-Estimate: 4h for forgot-password + email-verification minimal flow.
-
-### 6. UX details
-
-- `svelte-sonner` is in catalog but never imported — **no toast system**
-- `Skeleton` component exists but isn't used in any loading state
-- No `+loading.svelte` (SvelteKit 2 supports it — show skeleton
-  while load runs; right now you see blank screen during transitions)
-- Form validation = server roundtrip only. No `zod` + `sveltekit-superforms`
-- Theme persists via `mode-watcher` but `<html data-theme>` may FOUC on
-  initial SSR — verify
-- No empty states for lists (the recent-activity empty state is the
-  only one, and it's now i18n'd — establish the pattern elsewhere)
-
-Estimate: 1h for sonner wire-up; 2h for skeleton loading pattern;
-4h for full superforms migration.
+| Lacuna | O que foi feito |
+| --- | --- |
+| `turbo.json` com resto de Next | `.next/**` e `.react-email/**` removidos; binário da API adicionado a `outputs` e ao `.gitignore` |
+| `docker:infra:*` do `apps/api` | removidos — apontavam para compose inexistente |
+| Colisão de porta | Grafana passou a publicar em `3001` |
+| `@pack/email` React | react-email/react/resend removidos; só SMTP sobre nodemailer, com `exports` map; dep phantom da API declarada |
+| Toolchain divergente | `mise.toml` com bun 1.4.2 + node 26.10.0; `packageManager` e `engines` alinhados |
+| 60 deps desatualizadas | 27 subiram; **18 seguem abertas por decisão** (4 majors, 7 minors de 0.x, grupo OTel em lockstep) |
+| `LANGUINE_PROJECT_ID` | documentado no `.env.example` do i18n + seção no README |
+| Cobertura (parcial) | `@pack/db` (10) e `@pack/auth` (5) ganharam testes — 6 de 12 pacotes |
 
 ---
 
-## 🟡 P1 — Design system: 10+ components missing
+## 🔴 P0 — o que realmente falta
 
-Current 13: `avatar`, `badge`, `breadcrumb`, `button`, `button-group`,
-`dropdown-menu`, `input`, `select`, `separator`, `sheet`, `sidebar`,
-`skeleton`, `tooltip`.
+### 1. CI — nada roda sozinho
 
-For a dashboard boilerplate, missing essentials:
+`.github/` tem `CONTRIBUTING.md`, `SECURITY.md`, templates de issue e PR.
+**Nenhum `workflows/`.** Desde 2026-09-30 também não há gate local (`memory/`,
+`.agent-md/`, `agent-md.toml` e os hooks do `.claude/` foram removidos).
 
-| Component | Why it matters | Source |
-|---|---|---|
-| `dialog` / `alert-dialog` | every confirm action needs it | bits-ui |
-| `toast` | feedback for actions (svelte-sonner already in catalog) | svelte-sonner |
-| `table` | every dashboard has tables | shadcn-svelte pattern |
-| `card` | universal layout primitive | css only |
-| `alert` | inline error/info banners | css only |
-| `tabs` | settings pages, multi-section views | bits-ui |
-| `switch` / `checkbox` / `radio-group` | forms | bits-ui |
-| `popover` | dropdowns beyond menu | bits-ui |
-| `command` | command palette (Cmd+K) | bits-ui + cmdk-sv |
-| `pagination` | tables need it | css/calc only |
-| `progress` / `spinner` | loading states | css only |
-| `form` / `label` | with `sveltekit-superforms` for client validation | superforms |
+Resultado: 70 testes verdes que ninguém executa, e um lint com 5 erros
+conhecidos que nada bloqueia.
 
-Estimate: ~4h to add the top 5 (dialog, toast, table, form, tabs).
+Mínimo viável — um workflow rodando o que já está medido e verde:
 
----
+```
+bunx turbo run typecheck   # 13/13
+bunx biome check .         # 5 erros conhecidos — zerar antes de tornar bloqueante
+bunx turbo run test        # 70 pass, 6 tasks
+```
 
-## 🟡 P1 — DX gaps
+Nas versões do `mise.toml` (bun 1.4.2, node 26.10.0). Estimativa: 1–2h.
 
-### 7. Aggregated commands
+### 2. Rate limiting — não existe mais em lugar nenhum
 
-Add to root `package.json`:
-- `bun run check` → `lint + typecheck + test` (single command before commit)
-- `bun run db:push` → `bun --filter @pack/db x --bun drizzle-kit push --force`
-- `bun run db:reset` → reset + push + seed
-- `bun run db:seed` → run admin seed
-- `bun run setup` → install + db setup + create admin user
+`@pack/rate-limit` foi removido e **nada ocupou o lugar**. Hoje:
 
-Right now forkers have to discover `bun x --bun drizzle-kit ...`
-themselves.
+- `/auth/sign-in/email` aceita tentativas ilimitadas → brute-force de credenciais
+- `/v1/*` tem `authMiddleware` (sessão), mas nenhum limite por IP ou por conta
 
-Estimate: 30min.
+A auditoria original tratava isso como "expandir o rate-limit para `/v1`".
+A premissa mudou: não há de onde expandir. Opções: middleware Hono próprio com
+`@pack/cache` (o Redis já está de pé), ou um plugin do better-auth para a
+superfície de auth.
 
-### 8. Env management
+Estimativa: 2–3h. **É o item mais sensível a segurança da lista.**
 
-4 separate `.env.example` files. `BETTER_AUTH_SECRET` must match
-between dashboard and api or sessions silently break.
+### 3. Dashboard sem testes
 
-Options:
-- A) Single root `.env.example` documenting everything; dotenv-flow style loader
-- B) `setup` script that prompts for shared values and propagates
-- C) Document the cross-app dependencies in README
+Zero arquivos de teste em `apps/dashboard`. Os 70 testes cobrem `api`,
+`@pack/observability`, `@pack/tools`, `@pack/testing`, `@pack/db` e
+`@pack/auth` — 6 de 12 pacotes.
 
-Estimate: 1h for option C; 2-3h for A/B.
+Alvos óbvios, todos lógica pura e já existentes:
+`src/lib/auth-proxy.ts` (`localizeAuthError`, `redactEmail`, `userMessageFor`),
+`src/lib/api/safe-fetch.ts` (caminho de erro + validação zod),
+`packages/i18n/src/format.ts` (formatadores Intl).
 
-### 9. Observability beyond pino
-
-Pino logs are good but missing:
-- **OpenTelemetry traces** — cross-tier span correlation
-  (we have requestId for grep; OTel for actual distributed tracing)
-- **`/metrics` endpoint** — Prometheus-friendly counters
-  (request rate, latency p50/p99, error rate by route)
-- **Sentry / error-monitoring SaaS hook** in `handleError` —
-  gated by `SENTRY_DSN` env var
-
-Estimate: 4h for OTel; 1h for Sentry hook; 2h for `/metrics`.
-
-### 10. Deploy recipe
-
-No `Dockerfile`, no `docker-compose.yml`, no `fly.toml` /
-`railway.json` / `vercel.json`. Doc-only or actual configs?
-
-Recommendation: at least
-- `Dockerfile.api` + `Dockerfile.dashboard` (multi-stage Bun → adapter-node)
-- `docker-compose.yml` for local prod-like (postgres + api + dashboard)
-- Brief deploy README pointing at fly.io / railway / Coolify
-
-Estimate: 2-3h.
+> A auditoria original sugeria testar
+> `apps/api/src/main/middleware/request-logger.ts` — esse arquivo não existe
+> mais, virou `observability.ts`.
 
 ---
 
-## 🟢 P2 — Security / production hardening
+## 🟡 P1 — superfície de produto
 
-### 11. Hono middleware not wired
+### 4. Design system: 13 componentes, os mesmos de maio
 
-`apps/api/src/main/app.ts` doesn't use:
-- `hono/secure-headers` — CSP, X-Frame-Options, HSTS
-- `hono/csrf` — better-auth covers `/auth/*` via `trustedOrigins`,
-  `/v1/*` is unprotected
-- `hono/body-limit` — no DoS protection for large payloads
+`avatar`, `badge`, `breadcrumb`, `button`, `button-group`, `dropdown-menu`,
+`input`, `select`, `separator`, `sheet`, `sidebar`, `skeleton`, `tooltip`.
 
-Add with sane defaults. Estimate: 1h.
+Continua faltando o básico de dashboard: `dialog`/`alert-dialog`, `toast`,
+`table`, `card`, `alert`, `tabs`, `switch`/`checkbox`/`radio-group`, `popover`,
+`command`, `pagination`, `progress`, `form`/`label`.
 
-### 12. SvelteKit CSP
+Sintoma concreto: as páginas de `customers` e `employees` renderizam listas à
+mão porque não há `table`.
 
-`svelte.config.js` `kit.csp` not set. SvelteKit can generate CSP
-hashes for inline styles/scripts automatically.
+### 5. Detalhes de UX pendentes
 
-Estimate: 30min.
+- `svelte-sonner` está no catálogo e **nunca é importado** — não há toast
+- `skeleton` existe como componente e não é usado em nenhum estado de carregamento
+- Validação de formulário é só server roundtrip; sem `sveltekit-superforms`
 
-### 13. better-auth prod settings
+> Correção da auditoria original: ela pedia um `+loading.svelte`, dizendo que
+> "SvelteKit 2 suporta". **Não existe** esse arquivo de rota no SvelteKit. O
+> equivalente real é `{#await}`, o `navigating` de `$app/state`, ou streaming de
+> promessas pelo `load`.
 
-- `useSecureCookies: true` (or auto via `https://` in `BETTER_AUTH_URL`) — verify in prod
-- `cookieCache.maxAge: 60 * 5` (5min) — fine for dev, consider lower for high-revocation needs
+### 6. Fluxos de auth incompletos
 
----
+Verificado em `packages/auth/src/server.ts`: só `emailAndPassword`, nenhum
+plugin habilitado.
 
-## 🟢 P2 — Performance
+- Sign-up **não** faz auto-sign-in — redireciona para `/sign-in` (`+page.server.ts:90`)
+- Sem UI de forgot-password (better-auth suporta)
+- Sem verificação de e-mail
+- Sem 2FA, sem gestão de multi-sessão
 
-### 14. Caching layer
+### 7. Toda a v1 é mock
 
-`@pack/cache` empty (see §3). Without it:
-- No way to cache API responses (e.g. expensive `/v1/stats`)
-- better-auth's `secondaryStorage` not configurable (defaults to DB)
-- No request-deduplication
-
-If implementing: Redis adapter with in-memory fallback for dev.
-
-### 15. Bundle size budget
-
-Earlier session installed `bundleStats` plugin (homemade, gated by
-`ANALYZE=1`). Wire it into CI to fail on regression beyond a
-threshold (e.g. dashboard client bundle > 500KB gzipped).
-
-Estimate: 1h.
-
-### 16. Edge / multi-region
-
-Currently `@sveltejs/adapter-node`. No Cloudflare / Vercel /
-Netlify adapter. For boilerplate, optional — but document the
-swap recipe.
+`stats`, `customers` e `employees` retornam dados hardcoded. Quem forka recebe
+um dashboard que parece vivo e não toca o Postgres — apesar de `@pack/db` ter
+schema, migrations e seed funcionando. Falta pelo menos **uma** rota real de
+ponta a ponta como referência do padrão.
 
 ---
 
-## Ordered roadmap (recommended attack order)
+## 🟡 P1 — DX
 
-| # | Item | Effort | Value | Notes |
-|---|---|---|---|---|
-| 1 | README quick-start | 1-2h | 🔴 every fork pays | §2 |
-| 2 | CI workflow + 5 unit tests + 1 e2e | 4-6h | 🔴 stops regressions | §1 |
-| 3 | Decide 7 empty packages (impl or remove) | 2-4h triage | 🔴 reduces phantom features | §3 |
-| 4 | Sidebar route placeholders (or trim) | 30min | 🟡 fixes obvious 404s | §4 |
-| 5 | DB / setup scripts on root | 30min | 🟡 onboarding DX | §7 |
-| 6 | Add 5 missing UI components | 4h | 🟡 dashboard table-stakes | §6 |
-| 7 | Wire svelte-sonner + skeleton loading | 1-2h | 🟡 already in deps | §6 |
-| 8 | Dockerfile + docker-compose | 2-3h | 🟡 deploy recipe | §10 |
-| 9 | Sentry hook in handleError | 30min | 🟢 obs | §9 |
-| 10 | hono/secure-headers + csrf + body-limit | 1h | 🟢 prod hardening | §11 |
-| 11 | Sign-up auto-sign-in + forgot-password UI | 4h | 🟢 auth completeness | §5 |
-| 12 | OpenTelemetry traces | 4h | 🟢 SRE-ready | §9 |
-| 13 | size-limit in CI | 1h | 🟢 perf regressions | §15 |
-| 14 | Edge adapter swap recipe (docs) | 1h | 🟢 deploy flexibility | §16 |
+### 8. Sem comandos agregados na raiz
 
-**Suggested first sprint** (1 week of focused work):
-items 1, 2, 3, 4, 5 — gets the boilerplate from "promising but raw"
-to "ready to fork and ship".
+Nenhum de `check`, `db:push`, `db:seed`, `db:reset`, `setup` existe. Hoje o
+forker precisa descobrir `cd packages/db && bun run db:migrate` sozinho, e não
+há comando único de pré-commit. `typecheck` também não tem alias na raiz — só
+`bunx turbo run typecheck`.
+
+### 9. Gestão de env
+
+4 arquivos `.env.example` (`apps/api`, `apps/dashboard`, `packages/db`,
+`packages/i18n`). `BETTER_AUTH_SECRET` precisa bater entre API e dashboard ou a
+sessão quebra silenciosamente — documentado só num comentário do
+`apps/dashboard/.env.example`. O `packages/i18n/.env.example` expõe
+`LANGUINE_PROJECT_ID`, um acoplamento a serviço de tradução que não está
+documentado em lugar nenhum.
+
+### 10. Receita de deploy incompleta
+
+Só `apps/api` tem `Dockerfile` (via dofigen, com digest pinado). Falta imagem do
+dashboard (`adapter-node`) e um compose prod-like (postgres + api + dashboard).
 
 ---
 
-## What's already strong (don't touch)
+## 🟢 P2 — hardening
 
-For context — these areas are mature, not in scope:
+### 11. Middleware de segurança do Hono não montado
 
-- Auth subsystem (`tasks/completed/auth.md`) — cookieCache, URL-encode
-  fix, structured logging, cross-tier `requestId` correlation
-- Observability — pino TTY auto-detect, child loggers, request
-  middleware on both sides
-- i18n — eager dicts, formatters, full auth-error localization,
-  full reload on locale change
-- Theme — destructive contrast fixed, dark mode cleaner
-- Monorepo — Turbo + Bun catalog working, workspace deps sane
-- Cold-start perf — lucide per-icon, Vite externalize, @tailwindcss/vite
-- Error page — root-level locale-aware 404 with errorId reference
+`apps/api/src/main/app.ts` usa `cors`, `requestId`, instrumentação OTel,
+`observability` e `prettyJSON`. **Não usa** `hono/secure-headers`, `hono/csrf`
+nem `hono/body-limit`.
 
-Build on top, don't rebuild these.
+### 12. CSP do SvelteKit
+
+`kit.csp` não está configurado em `apps/dashboard/svelte.config.js`.
+
+### 13. better-auth em produção
+
+`useSecureCookies` não é setado (depende do `https://` em `BETTER_AUTH_URL`);
+`cookieCache.maxAge` é 5min — ok para dev, avaliar para revogação rápida.
+
+### 14. Sem `/metrics`
+
+Não há endpoint de scrape Prometheus. As métricas saem por push OTLP
+(`MeterProvider`). Só é lacuna se o alvo de deploy usa scrape em vez de
+collector — decidir, não assumir.
+
+### 15. Budget de bundle sem CI
+
+O plugin `bundleStats` existe no `vite.config.ts` (gated por `ANALYZE=1`), mas
+sem CI não há como falhar em regressão.
+
+### 16. Adaptador único
+
+`@sveltejs/adapter-node` apenas. Documentar a receita de troca (Cloudflare /
+Vercel / Netlify) seria suficiente para um template.
+
+---
+
+## 🆕 Lacunas que a auditoria original não via
+
+As 7 restantes foram fechadas em 2026-09-30 (tabela acima). Seguem abertas:
+
+1. **Sem gate de verificação** — removido em 2026-09-30, CI ainda não existe (§1).
+2. **Zero rate limiting** — o pacote foi removido sem substituto (§2).
+3. **Cobertura ainda parcial** — 6 de 12 pacotes; o dashboard continua com zero
+   testes (§3).
+
+---
+
+## 📦 §17 — Release do template (último passo, depois de tudo)
+
+Este repo é a oficina; quem forka deve receber a casa limpa. No commit que
+publica o template:
+
+1. **Apagar `tasks/`** por inteiro — `todo/`, `done/`, `in-progress/`. É estado
+   de construção, não conteúdo do boilerplate.
+2. **Tirar a identidade hardcoded.** Hoje `eco-system` / `GRN Group` estão em
+   código, não só em docs:
+   - `apps/dashboard/src/routes/[locale]/(unauthenticated)/+layout.svelte`
+     (nome + a citação do rodapé)
+   - `.../(unauthenticated)/sign-in/+page.svelte` e `.../sign-up/+page.svelte`
+   - `apps/dashboard/src/routes/+error.svelte`
+   - `apps/dashboard/src/lib/components/sidebar/app-sidebar.svelte`
+   - `packages/observability/pack-env.ts` — vira o campo `service` de **todo**
+     log estruturado
+   Trocar por um placeholder óbvio (`APP_NAME`) ou por env, e documentar no
+   README como renomear.
+3. **Decidir `screenshots/`** — hoje só o `.gitkeep` é commitado; se não faz
+   parte do template, remover.
+4. **Revisar `README.md` e `CLAUDE.md`** com olhos de quem acabou de clonar.
+5. Conferir que nenhum `.env` real entrou (hoje só os `.example` são
+   rastreados — manter assim).
+
+---
+
+## Correções à auditoria original
+
+Coisas que o documento de maio afirmava e que não se sustentam mais:
+
+- "`vitest@4.1.5` nos devDeps mas nenhum arquivo de teste" — vitest saiu, 55
+  testes existem.
+- "README é uma linha" — falso desde `cd91e2b`.
+- "Sete pacotes vazios" — zero.
+- "`+loading.svelte`" — esse arquivo de rota não existe no SvelteKit.
+- "`tasks/completed/auth.md`" — o diretório virou `tasks/done/`.
+- "`request-logger.ts`" como alvo de teste — arquivo renomeado para
+  `observability.ts`.
+
+---
+
+## Roadmap sugerido
+
+| # | Item | Esforço | Por quê |
+| --- | --- | --- | --- |
+| 1 | Zerar os 5 erros de lint + workflow de CI | 2–3h | única rede de proteção que sobrou |
+| 2 | Rate limiting em `/auth/*` e `/v1/*` | 2–3h | brute-force de credenciais hoje é livre |
+| 3 | Uma rota v1 real, de ponta a ponta | 2–4h | prova o padrão; tira o dashboard do mock |
+| 4 | `table`, `dialog`, `card`, `form`, `toast` | 4h | table-stakes de dashboard |
+| 5 | Testes do dashboard (auth-proxy, safe-fetch, format) | 2h | lógica pura, sem infra |
+| 6 | Scripts agregados na raiz + doc de env | 1h | onboarding |
+| 7 | `secure-headers` + `csrf` + `body-limit` + CSP | 1–2h | hardening barato |
+| 8 | Dockerfile do dashboard + compose prod-like | 2–3h | receita de deploy |
+| ~~9~~ | ~~Limpar `turbo.json`, script quebrado, colisão de porta~~ | — | ✅ feito em 2026-09-30 |
+| 10 | **Release do template** (§17): apagar `tasks/`, de-brandar, revisar docs | 1h | último commit; deixa o fork limpo |
+
+Itens 1–3 são o que separa "promissor" de "dá pra forkar e subir". O item 10 é
+sempre o último: enquanto houver linha aberta acima, este documento ainda tem
+função.
