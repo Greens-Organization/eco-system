@@ -23,6 +23,50 @@ export function shouldRegisterGracefulShutdown(opts: {
   return !opts.skip;
 }
 
+/** What a drain closes, injected so the order can be tested. */
+export type DrainSteps = {
+  /** Stop accepting connections and resolve once in-flight requests end. */
+  stopServer: () => Promise<void>;
+  closeDatabase: () => Promise<void>;
+  closeCache: () => void | Promise<void>;
+  flushObservability: () => Promise<void>;
+};
+
+/**
+ * The drain, in the only safe order. `/ready` already answers 503 (the
+ * shutdown flag), and the grace period lets the load balancer notice before
+ * the listener closes. Then the server stops and is awaited, so the pool is
+ * never closed under a request still using it.
+ */
+export async function drain(
+  steps: DrainSteps,
+  {
+    gracePeriod,
+    sleep = Bun.sleep,
+  }: { gracePeriod: number; sleep?: (ms: number) => Promise<unknown> }
+): Promise<void> {
+  log.info('Waiting for the load balancer to drop this instance...');
+  await sleep(gracePeriod);
+
+  log.info('Stopping HTTP server (waiting for in-flight requests)...');
+  await steps.stopServer();
+  log.info('HTTP server stopped');
+
+  await steps.closeDatabase();
+  log.info('Database closed');
+
+  await steps.closeCache();
+  log.info('Redis closed');
+
+  await steps.flushObservability();
+  log.info('Observability flushed');
+}
+
+/** A requested stop exits 0; a crash exits 1 even when the drain went well. */
+export function exitCodeFor(signal: string): 0 | 1 {
+  return signal === 'SIGTERM' || signal === 'SIGINT' ? 0 : 1;
+}
+
 export function createGracefulShutdown(
   server: Server<unknown>,
   options = { timeout: 10_000, gracePeriod: 3000 }
@@ -42,26 +86,19 @@ export function createGracefulShutdown(
     }, options.timeout);
 
     try {
-      log.info('Waiting for pending requests...');
-      await Bun.sleep(options.gracePeriod);
-
-      log.info('Stopping HTTP server...');
-      server.stop();
-      log.info('HTTP server stopped');
-
-      log.info('Closing database...');
-      await disconnectDatabase();
-      log.info('Database closed');
-
-      disconnectCache();
-      log.info('Redis closed');
-
-      log.info('Flushing observability...');
-      await shutdownObservability();
-
+      await drain(
+        {
+          // false: let in-flight requests finish; the promise resolves then.
+          stopServer: () => server.stop(false),
+          closeDatabase: disconnectDatabase,
+          closeCache: disconnectCache,
+          flushObservability: shutdownObservability,
+        },
+        { gracePeriod: options.gracePeriod }
+      );
       clearTimeout(timeout);
       log.info('Graceful shutdown completed');
-      process.exit(0);
+      process.exit(exitCodeFor(signal));
     } catch (error) {
       log.error({ error }, 'Error during shutdown');
       clearTimeout(timeout);

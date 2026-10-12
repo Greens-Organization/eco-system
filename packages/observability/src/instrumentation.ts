@@ -21,6 +21,7 @@ import {
 import * as Sentry from '@sentry/bun';
 import { env } from '../pack-env';
 import { scrubPii } from './sentry';
+import { settleWithin } from './settle';
 
 /**
  * Observability preload — imported first by the app entrypoint so the SDKs are
@@ -92,25 +93,17 @@ if (otlpEndpoint) {
 }
 
 /** Flush + close all exporters. Wired into the graceful shutdown (best-effort). */
+/** How long a shutdown waits for telemetry before moving on. */
+export const FLUSH_BUDGET_MS = 2000;
+
 export async function shutdownObservability(): Promise<void> {
-  try {
-    await provider?.shutdown();
-  } catch {
-    // best-effort
-  }
-  try {
-    await meterProvider?.shutdown();
-  } catch {
-    // best-effort
-  }
-  try {
-    await loggerProvider?.shutdown();
-  } catch {
-    // best-effort
-  }
-  try {
-    await Sentry.close(2000);
-  } catch {
-    // best-effort: never block shutdown on telemetry flush
-  }
+  await settleWithin(
+    [
+      provider?.shutdown(),
+      meterProvider?.shutdown(),
+      loggerProvider?.shutdown(),
+      Sentry.close(FLUSH_BUDGET_MS),
+    ],
+    FLUSH_BUDGET_MS
+  );
 }

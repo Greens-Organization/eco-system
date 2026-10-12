@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test';
+import { settleWithin } from '../src/settle';
 
 /**
  * `instrumentation.ts` reads env at import and wires the OTel SDKs as a side
@@ -57,4 +58,24 @@ describe('instrumentation — OTLP enabled', () => {
     expect(r.loggerProvider).toBe('LoggerProvider');
     expect(r.shutdownOk).toBe(true);
   }, 20000);
+});
+
+describe('settleWithin', () => {
+  test('waits for tasks that finish in time', async () => {
+    let done = false;
+    await settleWithin([Bun.sleep(5).then(() => (done = true))], 1000);
+    expect(done).toBe(true);
+  });
+
+  // An OTLP exporter with the collector down never settles in time; the
+  // graceful shutdown used to hang on it until its 10 s kill switch.
+  test('gives up on a task that hangs, at the deadline', async () => {
+    const t0 = performance.now();
+    await settleWithin([new Promise(() => {}), Bun.sleep(5)], 50);
+    expect(performance.now() - t0).toBeLessThan(500);
+  });
+
+  test('a failing task does not throw', async () => {
+    await settleWithin([Promise.reject(new Error('boom')), undefined], 50);
+  });
 });

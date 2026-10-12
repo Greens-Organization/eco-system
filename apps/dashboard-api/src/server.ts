@@ -14,6 +14,7 @@ async function main() {
     // Timezone is configured via the TZ env var (see apps/dashboard-api/.env.example),
     // which Bun reads for all Date operations — no programmatic setup needed.
     const server = Bun.serve({
+      hostname: env.HOST,
       port: env.PORT,
       development: false,
       fetch: app.fetch,
