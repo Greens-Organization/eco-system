@@ -9,8 +9,8 @@ import { env as runtime } from '$env/dynamic/private';
 
 export const env = z
   .object({
-    API_URL: z.url().default('http://localhost:3002'),
-    BETTER_AUTH_SECRET: z.string().min(1),
+    API_URL: z.url(),
+    BETTER_AUTH_SECRET: z.string().min(32),
     // Shared with the API: signs the client IP sent with every auth call.
     CLIENT_IP_SECRET: z.string().min(CLIENT_IP_SECRET_MIN_LENGTH),
   })

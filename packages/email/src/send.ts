@@ -19,7 +19,7 @@ export interface SendEmailHtmlOptions {
 // Create transporter singleton
 const transporter = nodemailer.createTransport({
   host: env.SMTP_HOST,
-  port: Number(env.SMTP_PORT),
+  port: env.SMTP_PORT,
   auth: {
     user: env.SMTP_USER,
     pass: env.SMTP_PASS,

@@ -8,6 +8,7 @@ export const env = z
     ...authSchema.shape,
     ...emailSchema.shape,
     ...observabilitySchema.shape,
+    NODE_ENV: z.enum(['local', 'development', 'test', 'production']),
     HOST: z.string().default('0.0.0.0'),
     PORT: z.coerce.number().default(3002),
     DEBUG: z
@@ -22,8 +23,7 @@ export const env = z
   })
   .parse(process.env);
 
-const nodeEnv: string = process.env.NODE_ENV ?? '';
-export const isProduction = nodeEnv === 'production';
-export const isDevelopment = nodeEnv === 'development';
-export const isLocal = nodeEnv === 'local';
+export const isProduction = env.NODE_ENV === 'production';
+export const isDevelopment = env.NODE_ENV === 'development';
+export const isLocal = env.NODE_ENV === 'local';
 export const debug = env.DEBUG;
