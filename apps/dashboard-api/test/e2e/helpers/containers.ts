@@ -1,4 +1,3 @@
-import { spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
 
 // pg e redis efêmeros pros e2e. Subido/derrubado pelo runner (test/e2e/run.ts).
@@ -9,15 +8,14 @@ const COMPOSE_FILE = resolve(
 const PROJECT_NAME = 'eco-api-test';
 
 function compose(args: string[]): void {
-  const result = spawnSync(
-    'docker',
-    ['compose', '-f', COMPOSE_FILE, '-p', PROJECT_NAME, ...args],
-    { stdio: ['ignore', 'pipe', 'pipe'], encoding: 'utf8' }
+  const result = Bun.spawnSync(
+    ['docker', 'compose', '-f', COMPOSE_FILE, '-p', PROJECT_NAME, ...args],
+    { stdout: 'pipe', stderr: 'pipe' }
   );
-  if (result.status !== 0) {
+  if (result.exitCode !== 0) {
     throw new Error(
-      `docker compose ${args.join(' ')} falhou (exit ${result.status}): ${
-        result.stderr || result.stdout
+      `docker compose ${args.join(' ')} falhou (exit ${result.exitCode}): ${
+        result.stderr.toString() || result.stdout.toString()
       }`
     );
   }
