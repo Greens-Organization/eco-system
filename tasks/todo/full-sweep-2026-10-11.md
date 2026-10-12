@@ -153,14 +153,15 @@ primeiro, numa fatia própria, e só então as telas.
 `href="#"` em `header.svelte:32`), chaves de i18n em `en`/`pt`/`es`, loads com
 `createApiClient` + `safeFetch` + zod, sem lista montada à mão.
 
-**Decisões em aberto:**
-- Customers/Employees continuam mock (N2). As telas ficam **só leitura**
-  (lista + busca + paginação + detalhe) ou ganham **CRUD sobre o mock**
-  (POST/PATCH/DELETE que não persistem)? Recomendação: só leitura — CRUD sem
-  banco ensina um padrão falso; quem forka cria o CRUD real sobre o próprio
-  schema, seguindo o `/v1/me`.
-- Profile vs Settings: fundir (Profile = dados pessoais editáveis, Settings =
-  preferências + segurança) ou manter como está?
+**Decisões:**
+- ✅ **Decidido (2026-10-12): só leitura.** Customers/Employees continuam mock
+  (N2): lista + busca + paginação + detalhe, sem CRUD sobre o mock — quem
+  forka cria o CRUD real sobre o próprio schema, seguindo o `/v1/me`.
+- ✅ **Decidido (2026-10-12): Settings dentro de Profile.** O dono pediu menos
+  lugares para configurar: `/profile` reúne dados, aparência, idioma, 2FA e
+  dispositivos; Settings saiu da sidebar e a rota `/settings` deixou de
+  existir (404). O item "Settings" da tabela acima passa a valer para o
+  Profile.
 
 **Aceite por tela:** renderizada e conferida no browser nas 3 locales, com
 estados vazio e erro exercitados; `svelte-check` 0 erros; nenhum texto sem
@@ -238,8 +239,201 @@ itens abaixo, a fase em que cada um entra:
   - remover o `^test` do turbo;
   - padronizar `test/`;
   - corrigir o comentário do `@pack/testing`.
-- [ ] Fora de escopo, salvo decisão do dono: testes de componente do
-  design-system e e2e de browser (Playwright) no dashboard.
+- [ ] **E2e de navegador (Playwright) no dashboard — no escopo** (decisão do
+  dono, 2026-10-12: "garantir tudo funcionando"). Entra na fase 9, junto das
+  telas. Testes de componente do design-system seguem fora.
+
+### N6. API escondida do navegador + endurecimento do login (2026-10-12)
+
+**Princípio do dono:** a API do backend fica o mais escondida possível do
+frontend. O dashboard é um BFF: só o servidor dele fala com a API, que vive em
+rede interna, sem porta publicada nem CORS. Toda tela nova (N4, G3) usa form
+action ou load no servidor, nunca `fetch` do navegador para a API.
+
+**Decisões do dono (2026-10-12):** senha mínima 8 **com MFA opcional**; sem
+`haveIBeenPwned`; sessão com teto de **24 h**; `SameSite=Strict`; Redis para
+rate limit **e** sessões, organizado por namespace. Revogação: escolhi cache
+de 60 s (revalidar no Redis é barato) + `cookieCache.version` para invalidação
+em massa.
+
+**Pesquisa** (subagente, 2026-10-12): OWASP (cheat sheets de Authentication,
+Session, Credential Stuffing, CSRF, Forgot Password, Password Storage), ASVS
+5.0 (V3/V6/V7), NIST 800-63B rev4, draft IETF de BFF, doc do better-auth 1.7 e
+o código instalado (1.7.6). Fontes em `scratchpad/research/` da sessão.
+
+**PoC:** `apps/api/test/e2e/routes/auth-security.e2e.test.ts` — 10 testes,
+escritos antes da correção: **9 falharam** no código original (o único que
+passou, "um cliente não bloqueia outro", passava porque não havia limite
+nenhum). Depois: 17/17 e2e (23/23 com o 2FA). Os testes do dashboard foram checados por mutação.
+
+Feito (sem commit ainda — o dono pediu os commits no fim):
+
+- [x] **Proxy `/auth/*` removido** (`authHandle`, `proxy.ts`) e o `authClient`
+  morto (`client.svelte.ts`). Ele expunha toda a superfície do better-auth
+  (`update-user`, `list-sessions`…) e repassava `X-Forwarded-For` do cliente.
+- [x] **CORS da API removido.**
+- [x] **IP do cliente:** `authFetch` exige `clientIp`
+  (`event.getClientAddress()`) e sobrescreve `x-real-ip`; a API lê com
+  `advanced.ipAddress.ipAddressHeaders`. Antes, em produção, todo login caía
+  num balde só (`no-trusted-ip`): 3 logins/10 s para o site inteiro, e um 429
+  no `get-session` virava 503 em todas as rotas.
+- [x] **Rate limit** ligado em todo ambiente, `storage: 'secondary-storage'`
+  (🔴 3).
+- [x] **Redis** como `secondaryStorage` via `createNamespace('auth')`
+  (`@pack/cache`): toda chave sob `auth:`, toda chave com TTL; `increment`
+  atômico em Lua (INCR + EXPIRE só na criação). Sessões com cópia no Postgres
+  (`storeSessionInDatabase`).
+- [x] **Sessão 24 h absoluta** (`expiresIn` + `disableSessionRefresh`);
+  **cookie cache 60 s**; **`SameSite=Strict`** + `HttpOnly`.
+- [x] **Sign-up sem enumeração:** `autoSignIn: false` → e-mail repetido recebe
+  a mesma resposta (e não sobra sessão órfã por cadastro).
+- [x] **Config de cookie única** (`AUTH_COOKIE`, `readSessionCache` em
+  `@pack/auth/cookies`); o dashboard lê `__Secure-…` quando a request é https.
+  `BETTER_AUTH_URL` = URL pública do dashboard (https → `Secure` + prefixo).
+- [x] `localizeAuthError` não devolve mais a mensagem crua da API.
+- [x] Sign-out limpa os cookies mesmo com a API fora do ar.
+- [x] `.env.example`: `REDIS_URL` com a senha errada (`genergia_redis` vs
+  `eco_system_redis` do compose) — agora fatal, pois a API precisa do Redis
+  para autenticar; `ORIGIN_ALLOWED` sem a porta do Grafana.
+
+Verificado em runtime (`node build` + API, 2026-10-12): `/auth/get-session`
+no dashboard → 307 para `/en/auth/…` (não proxia); sign-up novo e repetido →
+303 idênticos, sem cookie; sign-in → cookies `HttpOnly; SameSite=Strict`,
+cache `Max-Age=60`, sessão de 24 h; 4 senhas erradas → `401,401,429,429`;
+chaves no Redis só em `auth:*`, todas com TTL; sign-out com a API derrubada →
+303 + cookies apagados (`auth.signout.unreachable` no log).
+
+Falta:
+
+- [x] **MFA (TOTP) opcional** — decisão do dono (2026-10-12): cada usuário
+  ativa no Perfil. **Trade-off aceito:** quem não ativar fica com senha de 8
+  como fator único (o NIST 63B-4 pede 15 nesse caso). Plugin `twoFactor`,
+  tabela `two_factor` + `user.two_factor_enabled` (migração `0001`); login em
+  duas etapas em `/{locale}/sign-in/two-factor` (TOTP ou código de backup de
+  uso único); Perfil → Segurança com QR (SVG no servidor via `uqr`, sem JS),
+  chave manual, 10 códigos de backup, confirmar com código, desativar com
+  senha. O plugin já bloqueia o 2FA da conta após códigos errados repetidos e
+  limita `/two-factor/*` a 3 req/10 s por cliente. Testes:
+  `two-factor.e2e.test.ts` (6) + `localizeAuthError` dos códigos novos.
+  Verificado em runtime contra containers efêmeros (não no banco de dev), sem
+  JS e com Chromium (telas em pt). A sonda achou e corrigi: sem JS, o QR não
+  aparecia (estado num `$effect`, que não roda no SSR).
+  - Ativar/desativar o 2FA **renova a sessão com 24 h novas** (better-auth
+    recria a sessão). Aceito: os dois pedem a senha naquele momento, o que
+    equivale a um login novo.
+  - Sem "confiar neste dispositivo" (`trustDevice`) por ora: ele pularia o
+    2FA por 30 dias.
+- [x] **Limite por conta** (NIST 63B-4 §3.2.2, ASVS 6.3.1) — plugin local
+  `packages/auth/src/account-throttle.ts` (hooks `before`/`after` em
+  `/sign-in/email`). 5 senhas erradas livres por e-mail, depois espera que
+  dobra (2 s … 20 min) respondida com o mesmo 429 do rate limit, de qualquer
+  IP. Desacelera em vez de travar (trava dura = qualquer um tranca o dono
+  fora); e-mails inexistentes contam igual (o 429 não revela contas); Redis
+  guarda `auth:login-failures|wait:<sha256 do e-mail minúsculo>` com TTL;
+  senha certa (inclusive desafio de 2FA) zera. Teto escolhido para caber no
+  NIST: ~86 tentativas/dia (com 15 min seriam ~109). Testes: 4 unitários da
+  tabela de espera + 6 e2e (botnet de IPs, dono espera e entra, sucesso
+  zera, outra conta não é afetada, e-mail inexistente, maiúsculas, hash no
+  Redis); checados por mutação (sem o plugin 4 falham; sem normalizar, 1).
+  - Trade-off aceito: um atacante pode manter uma conta em espera de 20 min
+    tentando a cada 20 min. Escalar para captcha (plugin `captcha` do
+    better-auth) se isso aparecer.
+- [ ] **Deploy (fase 6):** `ORIGIN` e `ADDRESS_HEADER`/`XFF_DEPTH` no
+  adapter-node — sem eles toda form action dá 403 atrás de proxy TLS e o
+  `getClientAddress()` vira o IP do proxy; API sem porta publicada; Scalar e
+  `/v1/openapi` só na rede interna.
+- [ ] **Reset de senha (G3):** não aguardar o envio do e-mail (latência do
+  SMTP revela a conta), `transaction: true` no adapter drizzle,
+  `Referrer-Policy: no-referrer` na página, link apontando para o dashboard.
+- [ ] Acesso direto à API sem `x-real-ip` cai no balde `no-trusted-ip`: OK
+  enquanto só o dashboard alcança a API; se algum outro cliente surgir, usar
+  `trustedProxies`.
+
+Não se aplica, pelo princípio do BFF: `svelteKitHandler` e `sveltekitCookies`
+(exigem a instância do `auth`, com banco, no dashboard);
+`deferSessionRefresh` (só com réplica de leitura); estratégias `jwe`/`jwt`.
+
+---
+
+### N7. Dispositivos conectados — trazido do `eco-system-sales` (2026-10-12)
+
+**Pedido do dono:** ver como o `eco-system-sales` faz login por dispositivo e
+"sair do dispositivo", e trazer para o boilerplate.
+
+**Como é lá** (`packages/auth/src/session/*`, rotas `/v1/auth/sessions*` da
+`dashboard-api`, `profile-security.tsx` + `device-session-list.tsx`):
+sessões próprias (sem better-auth) — uma linha por dispositivo em
+`user_session`, JWT de acesso curto + refresh token opaco rotativo (só o
+SHA-256 no banco, detecção de reuso, janela de graça para refresh
+concorrente), timeout absoluto 30 d e ocioso 7 d, cache em memória de 5 s
+para revogação. A tela lista os dispositivos ("Chrome no Windows", IP,
+"último acesso"), marca "Este dispositivo", sai de um (não o atual; outro
+usuário → 404) ou de todos os outros. Os webs chamam a API pelo servidor e
+repassam o user-agent do navegador (`x-client-user-agent`) e o IP **assinado
+com HMAC** (`x-client-ip` + `x-client-ip-signature`, segredo
+compartilhado, validade de 60 s).
+
+**O que veio para cá** — o better-auth já tem o núcleo (`list-sessions`,
+`revoke-session`, `revoke-other-sessions`, sessões no Redis), então foi só a
+camada do BFF:
+
+- [x] `callAuth` repassa o `user-agent` do navegador (sem isso toda sessão
+  seria "Node"); o sign-in passou a usar `callAuth`.
+- [x] `$lib/server/devices.ts`: `describeUserAgent` (portado de vendas),
+  `toDevices` (atual primeiro, depois as mais novas; **sem o token**, que é a
+  credencial), `tokenFor` (id → token só da lista do próprio usuário; recusa a
+  sessão atual), `timeAgo` (`Intl.RelativeTimeFormat`, en/pt/es).
+- [x] Perfil → **Dispositivos conectados**: lista, "Sair" por dispositivo,
+  "Sair de todos os outros dispositivos"; funciona sem JS.
+- [x] Testes: e2e na API (rótulo com navegador e IP, sair de um, sair dos
+  outros mantendo o atual, não revoga sessão de outro usuário) + 15 unitários
+  no dashboard. Runtime contra containers efêmeros com dois navegadores
+  simulados (Chrome/Windows e Safari/iPhone) e tela conferida no Chromium.
+
+**Diferenças conscientes:**
+
+- "Último acesso" vira "entrou há…": com `disableSessionRefresh` (teto de
+  24 h) a sessão não é tocada depois do login. Vendas atualiza no refresh.
+- Revogação vale em até 60 s (cookie cache), contra 5 s em vendas.
+- Sem dimensão "app" (painel/loja): aqui há um app só.
+- Refresh token rotativo com detecção de reuso não se aplica: o better-auth
+  usa sessão opaca no servidor, sem refresh token no navegador.
+
+- [x] **`x-real-ip` assinado com HMAC** (pedido do dono, 2026-10-12),
+  portado de vendas: `@pack/auth/client-ip` (`signClientIp`,
+  `verifyClientIp`, `stripUnverifiedClientIp`; HMAC-SHA256 sobre
+  `timestamp.ip`, validade 60 s, `timingSafeEqual`). O dashboard assina em
+  todo `authFetch`; a rota `/auth` da API só mantém o IP com assinatura
+  válida e descarta o resto (log `auth.client_ip.rejected`), caindo no balde
+  compartilhado. `CLIENT_IP_SECRET` (≥ 32) nos `.env.example` da API e do
+  dashboard (vazio, falha na subida) e nos `.env` locais (mesmo valor,
+  gerado). Testes: 9 unitários + 5 e2e (IP sem assinatura, outro segredo,
+  replay de 2 min, assinatura válida, sessão grava só o IP assinado);
+  mutação: sem a verificação, 4 dos 5 e2e falham. Runtime: segredos iguais
+  → chave `127.0.0.1`; segredo errado → `no-trusted-ip` + aviso; segredo
+  curto → dashboard não sobe.
+  - Achados no caminho, resolvidos na causa (pedido do dono):
+    1. **Bug do Bun** — `new Request(req, { headers })` ignora `headers`
+       vazio e mantém os originais (só no Bun; Node segue a spec; ainda no
+       canary 1.4.4; documentado no PR oven-sh/bun#41994). Um IP forjado
+       sozinho passaria. Solução: não copiar o `Request` —
+       `stripUnverifiedClientIp` remove os headers na própria requisição. E
+       um plugin do Biome (`biome-plugins/no-request-copy-with-headers.grit`)
+       barra o padrão no lint, sem acusar entradas que são URL.
+    2. **Build quebrado sem o `verify` perceber** — causa: o alias `@pack/*`
+       do `svelte.config.js` (herança da migração do Next) desviava o Vite
+       dos `exports` dos pacotes e obrigava shims na raiz
+       (`packages/auth/cookies.ts`, `packages/observability/logger/index.ts`).
+       Solução: alias removido (os pacotes já estão linkados em
+       `node_modules`), shims apagados; render frio do `vite dev` igual
+       (10,8–14,5 s sem vs 11,6–12,9 s com, 3 rodadas cada). E o `verify` e o
+       CI passam a rodar `turbo check:svelte build` (o build depende de
+       `test`): +11 s, e um import que só o Vite não resolve agora quebra o
+       gate.
+- [x] **e2e de dispositivos completados** (10 no total): exigem login,
+  cada usuário vê só os seus, `sign-out` tira da lista, dispositivo
+  desconectado não gerencia mais nada, sessão revogada some do Redis, sessão
+  aberta pelo 2FA também leva navegador e IP.
 
 ---
 
@@ -264,7 +458,7 @@ itens abaixo, a fase em que cada um entra:
    **Feito:** `proxyRequest` (`src/lib/server/proxy.ts`) devolve um
    `Response` novo, descarta headers hop-by-hop e `content-encoding`, e não
    segue redirect (`redirect: 'manual'`). Antes 500, agora 200 em `node build`.
-3. **Rate limit do login ineficaz.** Sem `rateLimit` no better-auth: default
+3. ✅ **(N6, 2026-10-12)** **Rate limit do login ineficaz.** Sem `rateLimit` no better-auth: default
    só em `production`, storage em memória por processo, IP do primeiro
    `x-forwarded-for` (forjável); sem header → IP `null` → limite pulado. O
    dashboard (`auth-proxy.ts:34`) não repassa o IP do cliente. Corrigir com
@@ -278,7 +472,12 @@ itens abaixo, a fase em que cada um entra:
    `NODE_ENV === 'local'`, que o próprio `packages/db/.env` define e o Bun
    auto-carrega. `DATABASE_URL` de prod no shell passa. Checar host/nome do
    banco. (Typo "eeset" na linha 10.)
-6. **Seed inseguro** (`admin.seed.ts`): fallback `admin@example.com`/`admin`
+6. **Seed inseguro** (`admin.seed.ts`). ✅ parcial (2026-10-12): o admin
+   semeado **não conseguia entrar** — gravava `account.accountId = email`, e o
+   better-auth 1.7 só aceita a credencial com `accountId === user.id` ("User
+   not found" → 401). Corrigido (`accountId: newUser.id`), com e2e
+   `seed-admin.e2e.test.ts` que roda o seed e faz login (mutação: com o e-mail
+   no `accountId`, falha). O resto continua aberto: fallback `admin@example.com`/`admin`
    (abaixo do `minPasswordLength: 8`), loga a senha em claro (`:34`), inserts
    sem transação (user sem credential em re-run), `seed/index.ts:13`
    `.catch(console.error)` sai com 0.
@@ -301,26 +500,27 @@ itens abaixo, a fase em que cada um entra:
 - ✅ (fase 1) Limpeza de cookie no 401 usava `startsWith('better-auth.')` e
   ignorava `__Secure-better-auth.*` (HTTPS), copiada em 3 `+page.server.ts`.
   Agora é `clearAuthCookies` em `src/lib/server/auth-cookies.ts`.
-- Nome do cookie cache no dashboard: `getCookieCache` procura
+- ✅ (N6) Nome do cookie cache no dashboard: `getCookieCache` procura
   `__Secure-better-auth.session_data` quando `NODE_ENV=production`, mas a API
   só põe o prefixo se o `BETTER_AUTH_URL` dela for https. Se divergirem, todo
   request erra o cache e paga o hop do `get-session`: não quebra mais desde a
-  fase 1, mas fica lento. Passar `isSecure` explícito ou validar os dois envs
-  juntos (fase 3).
+  fase 1, mas fica lento. Plano em **N6** (config de cookie única
+  em `@pack/auth`, fase 3).
 - Scrub do Sentry é denylist: `request.data`, `query_string`,
   `x-forwarded-for`, `set-cookie` e breadcrumbs passam.
 - Logger sem `redact`; bridge OTel envia `ip`/`user_agent` ao Loki.
 - Dashboard sem CSP nem `frame-ancestors` (clickjacking no painel admin).
 - `apps/api/.env.example` com credenciais "genergia" que não batem com o
-  compose — fork novo não conecta.
+  compose — fork novo não conecta. (✅ parcial: `REDIS_URL` corrigido no N6;
+  falta o `DATABASE_URL`, que ainda aponta `genergia_*@db-pg`.)
 - `safeFetch` e o layout engolem erros sem log (regra "no silent fallbacks").
 
 ## 🟢 Baixo
 
 - `HOST` parseado e não passado ao `Bun.serve`; `/v1/*` inexistente → 401 em
   vez de 404; `HTTPException` 5xx vaza `err.message`.
-- Redirect de locale descarta a query string; `startsWith('/auth')` casa
-  `/authors`.
+- Redirect de locale descarta a query string. (✅ `startsWith('/auth')`
+  casando `/authors`: resolvido — o proxy `/auth` saiu no N6.)
 - `<html lang="en">` fixo (`app.html:2`); páginas autenticadas sem `<title>`;
   breadcrumb com `href="#"`.
 - Scalar/OpenAPI públicos em prod com server URL fixo em localhost.
@@ -343,9 +543,10 @@ itens abaixo, a fase em que cada um entra:
   pode commitar.
 - **Deps:** 32 desatualizadas. Majors: SvelteKit **3.0**, adapter-node **6.0**
   (novos desde 09-30), TypeScript 7, `@sentry/bun` 11, nodemailer 10.
-- **Código morto:** `@pack/cache` e `@pack/storage` sem importador;
-  `concurrently` e `ws` sem uso; `/health` em `QUIET_PATHS` sem rota;
-  `@pack/auth/client.svelte` sem importador (e redireciona sem locale).
+- **Código morto:** `@pack/storage` sem importador; `concurrently` e `ws` sem
+  uso; `/health` em `QUIET_PATHS` sem rota. (✅ resolvidos pelo N6:
+  `@pack/cache` agora guarda sessões e rate limit; `@pack/auth/client.svelte`
+  foi apagado.)
 
 ## Docs desatualizados
 
@@ -383,8 +584,10 @@ origem, agora em `tasks/done/`.
 - **G3 — Fluxos de auth** (era §6). Sign-up com auto-sign-in (hoje redireciona
   para `/sign-in` e descarta o `Set-Cookie`); forgot/reset password (o
   `revokeSessionsOnPasswordReset` já está configurado, falta UI e envio via
-  `@pack/email`). **Decisão em aberto:** verificação de e-mail, 2FA e sign-up
-  aberto (`disableSignUp`) entram neste card ou ficam fora?
+  `@pack/email`). **Decidido (2026-10-12):** verificação de e-mail e
+  `disableSignUp` ficam **fora** — quem forka decide pelo projeto. O 2FA já
+  foi feito (N6). O sign-up com auto-sign-in também sai: `autoSignIn: false`
+  é deliberado (N6, anti-enumeração). Fica só o reset de senha.
 - **G4 — Design system** (era §4). Os necessários para N4: `table`, `card`,
   `pagination`, `dialog`/`alert-dialog`, `form`/`label`, `toast`
   (`svelte-sonner`). Os demais (`alert`, `tabs`, `switch`/`checkbox`/
@@ -405,8 +608,8 @@ origem, agora em `tasks/done/`.
 - **G8 — Hardening** (era §11–13). `hono/secure-headers`, `hono/csrf`,
   `hono/body-limit` na API; `kit.csp` + `frame-ancestors` no dashboard;
   better-auth em prod (`useSecureCookies`, `cookieCache.maxAge`).
-- **G9 — `/metrics`** (era §14). **Decisão em aberto:** o alvo de deploy usa
-  scrape Prometheus ou collector OTLP? Só vira tarefa se for scrape.
+- **G9 — `/metrics`** (era §14). **Fora deste card (2026-10-12):** nada de
+  Prometheus/OTLP aqui; o dono vai tratar métricas numa frente própria.
 - **G10 — Release do template** (era §17) — **sempre o último commit**:
   apagar `tasks/`; tirar `eco-system`/`GRN Group` do código
   (`(unauthenticated)/+layout.svelte:19,24`, `sign-in/+page.svelte:20`,
@@ -443,7 +646,7 @@ origem, agora em `tasks/done/`.
 ## 🗺️ Execução por fases
 
 Cada fase fecha com `bun run verify` (biome, `bun check`, `check:svelte`,
-`turbo test`; `--force` no turbo para sinal real) no baseline ou melhor, e com a verificação de runtime
+`turbo build`, que roda os testes; `--force` no turbo para sinal real) no baseline ou melhor, e com a verificação de runtime
 que o item pede. Um commit por fatia; docs (`CLAUDE.md`, `README`) atualizados
 no mesmo commit da mudança de comportamento.
 
@@ -452,17 +655,18 @@ no mesmo commit da mudança de comportamento.
 | 0 ✅ | Rede de segurança | zerar lint, **G1** CI, **G5** scripts da raiz, corrigir o drift de `CLAUDE.md`/`README` — feito 2026-10-12 (CI ainda não rodou no GitHub) |
 | 1 ✅ | Bugs visíveis | 🔴 1 (logout 5 min), 🔴 2 (proxy `/auth` 500) + testes em **G2** — feito 2026-10-12 |
 | 2 | Rename | **N1** `@app/dashboard-api` |
-| 3 | Segurança | 🔴 3 rate limit, 🔴 5/6 reset e seed, 🔴 7 json-ld, validação de env, scrub do Sentry, `redact`, `ip` confiável, cookies `__Secure-*`, **G8** hardening |
+| 3 | Segurança | **N7** ✅ dispositivos conectados; **N6** ✅ (API escondida, rate limit por IP e por conta, sessões no Redis, cookies, MFA opcional) — sobram itens de deploy (fase 6) e reset de senha (G3); 🔴 3 ✅, 🔴 5/6 reset e seed, 🔴 7 json-ld, validação de env, scrub do Sentry, `redact`, **G8** hardening |
 | 4 | Correção da API | `route` no log, shutdown, `HOST`, 404 vs 401, `HTTPException` 5xx, Scalar em prod |
 | 5 | Bun-first | **N3** (tipos/config/docs, `NodeTracerProvider`, `Bun.spawnSync`) |
 | 6 | Deploy | 🔴 4 Dockerfile da API em bun 1.4.2 buildado, **G7**, **G6**, pins das imagens |
 | 7 | Banco | **N2** `/v1/me` + **O1** spans de DB + doc de como forkar o schema |
 | 8 | Design system | **G4** |
-| 9 | Telas | **N4** + **G3**, uma tela por fatia: Settings → Profile → Customers → Employees → Dashboard |
-| 10 | Observabilidade do dashboard | **O2**; **O3** opcional |
+| 9 | Telas | **N4** + **G3** (só reset de senha), uma tela por fatia: Profile (com o antigo Settings) → Customers → Employees → Dashboard; **e2e de navegador (Playwright)** |
+| 10 | Observabilidade do dashboard | **O2** |
 | 11 | Dependências | patches, depois **H1** um major por fatia |
 | 12 | Higiene | pins fora do catálogo, ignores do biome, hash de env no turbo, código morto |
 | 13 | Release | **G10** — último commit |
+| — | **Opcionais (o dono decide depois)** | **O3** manifests k8s/HPA; captcha no login (escalada do limite por conta); "confiar neste dispositivo" no 2FA; budget de bundle (`ANALYZE=1`); redirect de `/settings` → `/profile` |
 
 Fases 0–1 primeiro: sem CI, o resto é mudança sem rede. A fase 11 fica depois
 das telas para não brigar com SvelteKit 3 no meio do N4.
