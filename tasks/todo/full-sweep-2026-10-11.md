@@ -232,11 +232,11 @@ itens abaixo, a fase em que cada um entra:
   (`bun test` puro sobre `src/lib`, sem Vite).
 - [x] Fase 3: testes de `json-ld` (escape de `</script>`), do guard do
   `db:reset`, do seed e do rate limit (e2e, 429).
-- [ ] Fase 4: `error-handler` nos ramos `ZodError`/`HTTPException`,
-  `auth-middleware` unitário (sem sessão → 401, sessão → `c.var.user`) e o
-  dreno do graceful shutdown.
-- [ ] Fase 4: no e2e, status exatos, shape validado com o schema zod da rota,
-  `customers`/`employees`, sign-out e cookie adulterado.
+- [x] Fase 4: `error-handler` nos ramos `ZodError`/`HTTPException` e o dreno
+  do graceful shutdown (unitários). O `auth-middleware` ficou coberto no e2e
+  (401 sem sessão, 200 com sessão em cada rota, 404 para rota inexistente).
+- [x] Fase 4: no e2e, status exatos, shape validado com o schema zod da rota,
+  `customers`/`employees`, sign-out e cookie adulterado (`v1.e2e.test.ts`).
 - [ ] Fase 7: `/v1/me` no e2e. Testes de cache contra o redis do compose de
   teste.
 - [ ] Fase 12:
@@ -504,11 +504,15 @@ camada do BFF:
 
 ## 🟡 Médio
 
-- `route` no log é sempre `/*` (`observability.ts:46` lê `routePath` antes do
-  `next()`); o access log não tem path. `ip` confia em `cf-connecting-ip` /
-  `x-forwarded-for` sem proxy confiável.
-- Shutdown: `server.stop()` não aguardado (`graceful-shutdown.ts:48`) antes de
-  fechar o pool; crash termina com `exit(0)`; grace de 3s.
+- ✅ (fase 4) `route` no log era sempre `/*` e o access log não tinha path;
+  `ip` confiava em `cf-connecting-ip`/`x-forwarded-for`. Agora `route` é o
+  padrão do handler (`hono/route`), `path` a URL, `ip` o peer TCP (e o IP
+  assinado no `/auth`). Testes unitários + conferido no log real.
+- ✅ (fase 4) Shutdown: `server.stop()` não aguardado antes de fechar o pool;
+  crash terminava com `exit(0)`. Agora `drain` (testado na ordem), crash →
+  exit 1. Achado na prova: com o coletor OTLP fora, o flush travava o
+  shutdown até o kill de 10 s (exit 1) — agora tem teto de 2 s; SIGTERM
+  conferido: ~5 s, exit 0.
 - ✅ (fase 3) Env sem validação: `BETTER_AUTH_SECRET` `min(1)` (aceita o placeholder
   `32-length`); `BETTER_AUTH_URL` com default localhost (desliga secure
   cookies em prod); `NODE_ENV ?? ''` em `apps/api/src/core/env.ts:25`;
@@ -539,17 +543,20 @@ camada do BFF:
 - `apps/api/.env.example` com credenciais "genergia" que não batem com o
   compose — fork novo não conecta. (✅ parcial: `REDIS_URL` corrigido no N6;
   falta o `DATABASE_URL`, que ainda aponta `genergia_*@db-pg`.)
-- `safeFetch` e o layout engolem erros sem log (regra "no silent fallbacks").
+- ✅ (fase 4) `safeFetch` engolia erros sem log: agora loga cada falha com a
+  causa (o layout já não faz fetch desde a fase 1).
 
 ## 🟢 Baixo
 
-- `HOST` parseado e não passado ao `Bun.serve`; `/v1/*` inexistente → 401 em
-  vez de 404; `HTTPException` 5xx vaza `err.message`.
-- Redirect de locale descarta a query string. (✅ `startsWith('/auth')`
-  casando `/authors`: resolvido — o proxy `/auth` saiu no N6.)
-- `<html lang="en">` fixo (`app.html:2`); páginas autenticadas sem `<title>`;
-  breadcrumb com `href="#"`.
-- Scalar/OpenAPI públicos em prod com server URL fixo em localhost.
+- ✅ (fase 4) `HOST` agora vai ao `Bun.serve`; `/v1/*` inexistente → 404
+  JSON (era 401); `HTTPException` 5xx não vaza mais `err.message`.
+- ✅ (fase 4) Redirect de locale descartava a query string. (✅
+  `startsWith('/auth')` casando `/authors`: o proxy `/auth` saiu no N6.)
+- ✅ (fase 4) `<html lang="en">` fixo — agora segue o locale. Páginas sem
+  `<title>` e breadcrumb com `href="#"` ficam para a fase 9 (telas).
+- ✅ (fase 4) Scalar/OpenAPI com server URL fixo em localhost: agora
+  relativo. "Público em prod" deixou de valer: a API só existe na rede
+  interna (N6); a receita de deploy (fase 6) não publica a porta.
 
 ## Infra / config
 
@@ -684,7 +691,7 @@ no mesmo commit da mudança de comportamento.
 | 1 ✅ | Bugs visíveis | 🔴 1 (logout 5 min), 🔴 2 (proxy `/auth` 500) + testes em **G2** — feito 2026-10-12 |
 | 2 ✅ | Rename | **N1** `@app/dashboard-api` — feito 2026-10-12 |
 | 3 ✅ | Segurança | **N7** ✅ dispositivos conectados; **N6** ✅ (API escondida, rate limit por IP e por conta, sessões no Redis, cookies, MFA opcional) — sobram itens de deploy (fase 6) e reset de senha (G3); 🔴 3 ✅, 🔴 5/6 ✅ reset e seed, 🔴 7 ✅ json-ld, ✅ validação de env, ✅ scrub do Sentry, ✅ `redact`, ✅ **G8** hardening — fase fechada 2026-10-12 |
-| 4 | Correção da API | `route` no log, shutdown, `HOST`, 404 vs 401, `HTTPException` 5xx, Scalar em prod |
+| 4 ✅ | Correção da API | `route` no log, shutdown, `HOST`, 404 vs 401, `HTTPException` 5xx, Scalar em prod; + `safeFetch` com log, query no redirect de locale, `<html lang>` — fechada 2026-10-12 |
 | 5 | Bun-first | **N3** (tipos/config/docs, `NodeTracerProvider`, `Bun.spawnSync`) |
 | 6 | Deploy | 🔴 4 Dockerfile da API em bun 1.4.2 buildado, **G7**, **G6**, pins das imagens |
 | 7 | Banco | **N2** `/v1/me` + **O1** spans de DB + doc de como forkar o schema |

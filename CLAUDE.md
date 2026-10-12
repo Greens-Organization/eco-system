@@ -114,10 +114,10 @@ there is no local hook. Before claiming work is done, run the checks yourself
 
 ```bash
 bunx biome check .                    # 0 errors
-bun check                             # 0 errors, 226 files across 11 projects
+bun check                             # 0 errors, 228 files across 11 projects
 bunx turbo run check:svelte --force   # 0 errors in dashboard + design-system
 bunx turbo run build --force          # api binary + dashboard vite build
-bunx turbo run test --force           # 163 pass / 0 fail
+bunx turbo run test --force           # 174 pass / 0 fail
 ```
 
 `bun check` is not cached by turbo and takes about half a second.
@@ -163,7 +163,17 @@ look at it. For behavior changes, exercise the endpoint or route.
 - `secureHeaders()` and a 1 MiB `bodyLimit` (413 `PAYLOAD_TOO_LARGE`) run on
   every route. No `hono/csrf`: no browser talks to the API, and better-auth
   checks the Origin of its own state-changing routes.
-- `v1.use('/*', authMiddleware)` protects every v1 route. Hono applies
+- `v1.use('/*', authMiddleware)` protects every v1 route; a path no handler
+  matches skips it and falls to `app.notFound` (404 `NOT_FOUND`, JSON), so an
+  unknown route is not reported as 401.
+- Errors: a 5xx never echoes its message (AppError or HTTPException) — the
+  detail stays in the log.
+- Shutdown (`graceful-shutdown.ts` `drain`): `/ready` turns 503, a 3 s grace
+  lets the load balancer drop the instance, `server.stop(false)` is awaited
+  (in-flight requests finish), then DB, Redis and telemetry close — the
+  telemetry flush is capped at 2 s (`settleWithin`) so a dead collector
+  cannot hang it. SIGTERM/SIGINT exit 0, a crash exits 1. `HOST` is passed to
+  `Bun.serve`. Hono applies
   middleware in registration order, so `/v1/openapi` and the Scalar UI —
   registered earlier — stay public by design.
 
@@ -171,7 +181,9 @@ look at it. For behavior changes, exercise the endpoint or route.
 
 - Routes are `[locale]/(authenticated)/…` and `[locale]/(unauthenticated)/…`.
   Route groups do not appear in the URL: the panel is `/{locale}`, not
-  `/dashboard`. Locales: `en` (default), `pt`, `es`.
+  `/dashboard`. Locales: `en` (default), `pt`, `es`. A path without a locale
+  redirects keeping its query string; `<html lang>` follows the locale
+  (`localeHandle` rewrites app.html's `lang="en"`).
 - Account settings live on **Profile** (`/{locale}/profile`): profile data,
   appearance, language, 2FA and signed-in devices on one page, reached from
   the user menu. There is no separate Settings page (owner decision,
@@ -210,7 +222,9 @@ look at it. For behavior changes, exercise the endpoint or route.
   without), which sends the browser's cookies and user agent, the origin, the
   client IP and the request id.
 - Server loads fetch the API through `createApiClient(cookieHeader, requestId)`
-  and validate every response with `safeFetch` + a zod schema. A `401` clears
+  and validate every response with `safeFetch(request, schema, locals.log)`,
+  which logs every failure with its cause (`api.request.rejected`,
+  `api.response.schema_mismatch`, `api.request.failed`). A `401` clears
   the `better-auth.*` cookies and redirects to sign-in.
 
 ### Auth
@@ -330,8 +344,12 @@ pino JSON, composed in `@pack/observability/logger`:
 1. **Per process** (`base`): `service`, `environment`, `instance`, `version`,
    `region?`.
 2. **Per request** (AsyncLocalStorage `mixin` → `getContext()`): `request_id`,
-   `support_id`, `cf_ray_id?`, `route`, `method`, `status_code`, `duration_ms`,
-   `ip`, `user_agent`, plus business fields added via `setContext()`. The API's
+   `support_id`, `cf_ray_id?`, `route` (the handler pattern,
+   `/v1/customers/:id`, or `(unmatched)`), `path` (the concrete URL),
+   `method`, `status_code`, `duration_ms`, `ip`, `user_agent`, plus business
+   fields added via `setContext()`. `ip` is the TCP peer — client-sent
+   `X-Forwarded-For`/`CF-Connecting-IP` are never read — and `/auth` replaces
+   it with the browser's IP once its signature checks out. The API's
    `middleware/observability.ts` opens the scope per request. `/status`,
    `/ready` and `/health` are not access-logged.
 3. **Per event** (`AppError`): `error_code`, `classification`,
@@ -429,7 +447,7 @@ executed in phases (one verified commit per slice). The only other card,
 1. **CI is written but unproven** — the workflow has never run on GitHub.
    Unit tests used to depend on the local `.env`; they now pass in a clean
    checkout (verified in a worktree with no `.env` files).
-2. **Test coverage is concentrated** in 9 of 13 workspaces (163 unit + 49
+2. **Test coverage is concentrated** in 9 of 13 workspaces (174 unit + 56
    e2e). `bun test --coverage` only lists files a test imported, so
    per-workspace percentages overstate it. Gaps and plan: card item N5.
 3. **Known bugs**: the remaining 🔴 item on the card is the Dockerfile
