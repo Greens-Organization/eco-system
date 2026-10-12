@@ -87,7 +87,7 @@ Consequências a aplicar:
    `createApiClient` + `safeFetch` + zod. Cobrir no e2e (401 sem sessão, 200
    com o usuário do sign-up). As demais rotas v1 seguem mock.
 
-### N3. Remover menções a Node — repo Bun-first
+### N3. ✅ Remover menções a Node — repo Bun-first (fase 5, 2026-10-12)
 
 Objetivo: quem forka não deve tropeçar em ferramenta Node; tudo roda em Bun.
 
@@ -134,6 +134,18 @@ a troca do `NodeTracerProvider` e o `Bun.spawnSync` nos e2e.
 Como o build de produção do dashboard continua rodando em Node, **manter o
 `node` no `mise.toml`/`engines`** até verificar que nada mais depende dele
 além do adapter — se o runtime de prod é Node, a paridade local exige Node.
+
+**Feito:** `@types/node` → `@types/bun` (catálogo `dev`) em todos os
+workspaces e `types: ["bun"]`; `NodeTracerProvider` → `BasicTracerProvider`
++ `AsyncLocalStorageContextManager` + propagador W3C explícitos (provado com
+um coletor OTLP falso: o span exportado carrega o `traceparent` recebido, o
+log tem o mesmo `trace_id`, e `OTEL_TRACES_SAMPLER=always_off` não exporta);
+runner e2e com `Bun.spawnSync` (exit code de falha propaga, containers
+derrubados); `.gitignore` reescrito (258 → 47 linhas, mesmo conjunto
+ignorado, conferido arquivo a arquivo, + `.claude/settings.local.json`);
+comentários de `bunfig.toml`/CI/`mise.toml` explicam por que o Node fica.
+`noNodejsModules: off` no biome continua: os módulos `node:*` usados são os
+que o Bun implementa.
 
 **Aceite:** `git grep -n -i -E "\bnode\b|nodejs|@types/node"` retorna só a
 lista "irredutível" + `adapter-node` e o pin de Node que ele exige; baseline
@@ -572,8 +584,8 @@ camada do BFF:
 - **Imagens:** `grafana/otel-lgtm:latest` sem pin; `redis:7-alpine` e o
   postgres do test em tag flutuante. `REDIS_PASSWORD=redis` no compose é
   ignorado (a senha real vem do `requirepass`).
-- `.claude/settings.local.json` só é ignorado pelo gitignore global — um fork
-  pode commitar.
+- ✅ (fase 5) `.claude/settings.local.json` só era ignorado pelo gitignore
+  global — agora está no `.gitignore` do repo.
 - **Deps:** 32 desatualizadas. Majors: SvelteKit **3.0**, adapter-node **6.0**
   (novos desde 09-30), TypeScript 7, `@sentry/bun` 11, nodemailer 10.
 - **Código morto:** `@pack/storage` sem importador; `concurrently` e `ws` sem
@@ -692,7 +704,7 @@ no mesmo commit da mudança de comportamento.
 | 2 ✅ | Rename | **N1** `@app/dashboard-api` — feito 2026-10-12 |
 | 3 ✅ | Segurança | **N7** ✅ dispositivos conectados; **N6** ✅ (API escondida, rate limit por IP e por conta, sessões no Redis, cookies, MFA opcional) — sobram itens de deploy (fase 6) e reset de senha (G3); 🔴 3 ✅, 🔴 5/6 ✅ reset e seed, 🔴 7 ✅ json-ld, ✅ validação de env, ✅ scrub do Sentry, ✅ `redact`, ✅ **G8** hardening — fase fechada 2026-10-12 |
 | 4 ✅ | Correção da API | `route` no log, shutdown, `HOST`, 404 vs 401, `HTTPException` 5xx, Scalar em prod; + `safeFetch` com log, query no redirect de locale, `<html lang>` — fechada 2026-10-12 |
-| 5 | Bun-first | **N3** (tipos/config/docs, `NodeTracerProvider`, `Bun.spawnSync`) |
+| 5 ✅ | Bun-first | **N3** (tipos/config/docs, `NodeTracerProvider`, `Bun.spawnSync`) — fechada 2026-10-12 |
 | 6 | Deploy | 🔴 4 Dockerfile da API em bun 1.4.2 buildado, **G7**, **G6**, pins das imagens |
 | 7 | Banco | **N2** `/v1/me` + **O1** spans de DB + doc de como forkar o schema |
 | 8 | Design system | **G4** |

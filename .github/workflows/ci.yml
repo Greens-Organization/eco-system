@@ -20,7 +20,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Same bun/node as local development: both come from mise.toml.
+      # Same tools as local development, from mise.toml: bun runs everything;
+      # node is there only because the dashboard's production build
+      # (adapter-node) runs on it.
       - uses: jdx/mise-action@v2
 
       - uses: actions/cache@v4

@@ -2,7 +2,7 @@
 telemetry = false
 
 [run]
-# Force bun runtime for all scripts (replaces node shebang with bun)
+# Run every package script with Bun, even when its shebang says node.
 bun = true
 
 [install]

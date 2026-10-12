@@ -135,6 +135,12 @@ look at it. For behavior changes, exercise the endpoint or route.
 
 ## 5. Conventions
 
+- **Bun-first.** Scripts, tests, the e2e runner (`Bun.spawnSync`) and the API
+  run on Bun. Node exists only for the dashboard's production build
+  (`adapter-node`, owner decision), which is why `mise.toml` and `engines`
+  pin it. Types come from `@types/bun` (it brings the `node:*` types); the
+  `node:*` modules used (`async_hooks`, `crypto`, `net`, `os`…) are ones Bun
+  implements.
 - **Versions** live in the root `package.json` `workspaces.catalog` /
   `workspaces.catalogs.dev`. Reference them as `"catalog:"` — never pin a
   version inside a package. The tree does not follow this yet (~42 literal
@@ -394,8 +400,9 @@ returned to the client, sent to Sentry as a tag.
 ### Telemetry topology
 
 Sentry handles **errors only**. OpenTelemetry owns **traces + metrics** and
-exports via OTLP to Grafana through an independent `NodeTracerProvider` /
-`MeterProvider` (`instrumentation.ts`). HTTP spans come from `@hono/otel`, not
+exports via OTLP to Grafana through an independent `BasicTracerProvider` /
+`MeterProvider` (`instrumentation.ts`), with the `AsyncLocalStorage` context
+manager and W3C propagation registered explicitly (no Node-specific SDK). HTTP spans come from `@hono/otel`, not
 require-hook auto-instrumentation, so Bun import order is not fragile.
 
 > `BatchSpanProcessor` is fire-and-forget: if the OTLP endpoint is down it drops
