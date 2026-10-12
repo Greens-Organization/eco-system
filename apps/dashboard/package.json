@@ -9,7 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "prepare": "svelte-kit sync || echo ''",
-    "typecheck": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "check:svelte": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "analyze": "ANALYZE=1 vite build",
     "clean": "git clean -xdf .cache .svelte-kit build",
     "clean:hard": "git clean -xdf .cache .svelte-kit build node_modules"

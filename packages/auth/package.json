@@ -4,8 +4,7 @@
   "private": true,
   "scripts": {
     "test": "bun test",
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+    "clean": "git clean -xdf .cache .turbo dist node_modules"
   },
   "exports": {
     "./server": "./src/server.ts",

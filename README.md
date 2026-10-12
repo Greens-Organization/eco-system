@@ -105,9 +105,10 @@ Root scripts fan out across the workspace via Turborepo:
 | `bun run build`              | Build every workspace (runs `test` first).           |
 | `bun run test`               | Run the test suites.                                 |
 | `bun run test:e2e`           | API e2e suite on an ephemeral Postgres.              |
-| `bun run typecheck`          | Typecheck every workspace.                           |
+| `bun check`                  | Type check the TypeScript workspaces (Bun's checker). |
+| `bun run check:svelte`       | `svelte-check` in the dashboard and design system.   |
 | `bun run lint` / `format`    | Biome check (and `--write` to fix).                  |
-| `bun run check`              | Lint, then typecheck + test — the pre-commit check.  |
+| `bun run verify`             | Lint, type check and test — the pre-commit check.    |
 | `bun run setup`              | Install, start infra, migrate and seed.              |
 | `bun run db:<task>`          | `generate`, `migrate`, `seed`, `reset`, `studio` in `@pack/db`. |
 | `bun run docker:infra:up`    | Start Postgres + Redis and wait until healthy.       |
@@ -149,7 +150,7 @@ instead.
   them with `"catalog:"` instead of pinning per package.
 - **Verification.** CI (`.github/workflows/ci.yml`) runs lint, typecheck,
   unit and e2e tests on pull requests. There is no commit hook: run
-  `bun run check` before calling a change done. `CLAUDE.md` §4 lists the
+  `bun run verify` before calling a change done. `CLAUDE.md` §4 lists the
   checks.
 
 ## License

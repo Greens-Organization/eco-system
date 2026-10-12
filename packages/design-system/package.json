@@ -10,7 +10,7 @@
   },
   "scripts": {
     "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "typecheck": "svelte-check --tsconfig ./tsconfig.json"
+    "check:svelte": "svelte-check --tsconfig ./tsconfig.json"
   },
   "dependencies": {
     "svelte": "catalog:",

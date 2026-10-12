@@ -12,8 +12,8 @@
     "test": {
       "dependsOn": ["^test"]
     },
-    "typecheck": {
-      "dependsOn": ["^typecheck"]
+    "check:svelte": {
+      "dependsOn": ["^check:svelte"]
     },
     "analyze": {
       "dependsOn": ["^analyze"]

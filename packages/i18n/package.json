@@ -4,8 +4,7 @@
   "private": true,
   "scripts": {
     "translate": "bun x -y languine@latest translate",
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+    "clean": "git clean -xdf .cache .turbo dist node_modules"
   },
   "exports": {
     ".": "./index.ts"

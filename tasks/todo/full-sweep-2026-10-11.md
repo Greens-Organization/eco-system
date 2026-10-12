@@ -297,7 +297,8 @@ origem, agora em `tasks/done/`.
   `radio-group`, `popover`, `command`, `progress`) só se alguma tela pedir.
   Tirar o código do design system do ignore do biome antes (ver Infra).
 - [x] **G5 — Scripts agregados na raiz** (era §8). **Feito (2026-10-12,
-  `80b18d0`):** `check`, `typecheck`, `setup`, `test:e2e`,
+  `80b18d0`):** `check`, `typecheck`, `setup`, `test:e2e`, (`check` e
+  `typecheck` viraram `verify` e `bun check` + `check:svelte` no Bun 1.4.3),
   `db:generate|migrate|seed|reset|studio` (via `bun --filter`);
   `docker:infra:up --wait` com healthchecks novos no compose. `setup`
   verificado de ponta a ponta. `docker:test:*` não foi criado — o runner do
@@ -347,8 +348,8 @@ origem, agora em `tasks/done/`.
 
 ## 🗺️ Execução por fases
 
-Cada fase fecha com `turbo typecheck --force`, `biome check .` e
-`turbo test --force` no baseline ou melhor, e com a verificação de runtime
+Cada fase fecha com `bun run verify` (biome, `bun check`, `check:svelte`,
+`turbo test`; `--force` no turbo para sinal real) no baseline ou melhor, e com a verificação de runtime
 que o item pede. Um commit por fatia; docs (`CLAUDE.md`, `README`) atualizados
 no mesmo commit da mudança de comportamento.
 

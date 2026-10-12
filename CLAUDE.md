@@ -38,10 +38,11 @@ bun run setup                # install + infra up (--wait) + db:migrate + db:see
 bun run dev                  # turbo dev — api + dashboard
 bun run build                # turbo build (note: build dependsOn test)
 bun run test                 # turbo test
-bun run typecheck            # turbo typecheck
+bun check                    # TypeScript type check (Bun's built-in checker)
+bun run check:svelte         # svelte-check in the dashboard and design-system
 bun run lint                 # biome check ./
 bun run format               # biome check --write ./
-bun run check                # lint, then turbo typecheck + test
+bun run verify               # lint, bun check, then turbo check:svelte + test
 
 bun run docker:infra:up      # postgres + redis, waits for healthchecks
 bun run docker:obs:up        # grafana/otel-lgtm
@@ -55,9 +56,29 @@ bun run db:studio
 bun run test:e2e             # API e2e on an ephemeral compose, gated by E2E=1
 ```
 
-Per-package: `typecheck` (`tsc --noEmit` in packages, `svelte-check` in the
-dashboard). `api`, `@pack/auth`, `@pack/db`, `@pack/observability`,
-`@pack/tools` and `@pack/testing` define `test`.
+Type checking is split by file type, because `bun check` does not read
+`.svelte` files:
+
+- **`bun check`** (Bun ≥ 1.4.3, a port of typescript-go that behaves like
+  TypeScript 7) checks the 11 TS-only workspaces through the root
+  `tsconfig.json`, which has `"files": []` and one `references` entry per
+  workspace. **A new TS workspace must be added there** or it goes unchecked.
+  Inside a single workspace, `bun check` checks just that one.
+- **`check:svelte`** (`svelte-check`) covers `apps/dashboard` and
+  `@pack/design-system`. Pointed at those two, `bun check` either passes
+  without looking at the `.svelte` files or fails on component exports, so
+  they stay out of the root references.
+
+There is deliberately no root script named `check`: a `check` script shadows
+the built-in `bun check`. The aggregate gate is `verify`.
+
+The `typescript` package (6.0.3, root devDependency) is only for
+`svelte-check` and the editor. `bun check` matches TypeScript 7.0.2
+(`bun -p process.versions.typescript`), so the editor can in rare cases
+disagree with it; aligning the two is part of the dependency majors (H1).
+
+`api`, `@pack/auth`, `@pack/db`, `@pack/observability`, `@pack/tools` and
+`@pack/testing` define `test`.
 
 `drizzle-kit` must run under Bun (`bun x --bun`, as the `@pack/db` scripts do):
 the schema imports `bun`, so a bare `bunx drizzle-kit` fails to resolve it.
@@ -79,17 +100,21 @@ the schema imports `bun`, so a bare `bunx drizzle-kit` fails to resolve it.
 
 ## 4. Verification
 
-`.github/workflows/ci.yml` runs `biome ci`, `turbo typecheck test` and the API
+`.github/workflows/ci.yml` runs `biome ci`, `bun check`, `turbo check:svelte
+test` and the API
 e2e suite on pull requests and on pushes to `main`, with bun/node from
 `mise.toml`. It has not run on GitHub yet — this branch has no upstream — and
 there is no local hook. Before claiming work is done, run the checks yourself
-(`bun run check` does all three):
+(`bun run verify` does all of them):
 
 ```bash
-bunx turbo run typecheck --force   # 13/13 packages green
-bunx biome check .                 # 0 errors
-bunx turbo run test --force        # 70 pass / 0 fail
+bunx biome check .                    # 0 errors
+bun check                             # 0 errors, 189 files across 11 projects
+bunx turbo run check:svelte --force   # 0 errors in dashboard + design-system
+bunx turbo run test --force           # 70 pass / 0 fail
 ```
+
+`bun check` is not cached by turbo and takes about half a second.
 
 Turbo caches aggressively — pass `--force` when you need a real signal, or a
 green run may just be a replay.
