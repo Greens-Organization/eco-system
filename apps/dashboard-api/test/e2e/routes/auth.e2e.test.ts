@@ -12,7 +12,7 @@ describe('auth flow (better-auth, real DB)', () => {
       headers: authHeaders(),
       body: JSON.stringify(u),
     });
-    expect([200, 201]).toContain(signUp.status);
+    expect(signUp.status).toBe(200);
 
     const signIn = await app.request('/auth/sign-in/email', {
       method: 'POST',
@@ -32,6 +32,9 @@ describe('auth flow (better-auth, real DB)', () => {
       headers: authHeaders(),
       body: JSON.stringify(u),
     });
-    expect(res.status).toBeGreaterThanOrEqual(400);
+    expect(res.status).toBe(400);
+    expect(((await res.json()) as { code: string }).code).toBe(
+      'PASSWORD_TOO_SHORT'
+    );
   });
 });

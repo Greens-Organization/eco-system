@@ -7,8 +7,12 @@
 // resolves session state internally. Authenticated routes (/v1/*) get
 // session via `authMiddleware`.
 
-import { stripUnverifiedClientIp } from '@pack/auth/client-ip';
+import {
+  CLIENT_IP_HEADER,
+  stripUnverifiedClientIp,
+} from '@pack/auth/client-ip';
 import { auth as bAuth } from '@pack/auth/server';
+import { setContext } from '@pack/observability/context';
 import { log } from '@pack/observability/logger';
 import { Hono } from 'hono';
 import { env } from '@/core/env';
@@ -23,7 +27,10 @@ auth.on(['POST', 'GET'], '/*', (c) => {
     c.req.raw,
     env.CLIENT_IP_SECRET
   );
-  if (claimed && !verified) {
+  if (verified) {
+    // Log lines from here on carry the browser's IP, not the dashboard's.
+    setContext({ ip: c.req.raw.headers.get(CLIENT_IP_HEADER) ?? undefined });
+  } else if (claimed) {
     log.warn({ path: c.req.path }, 'auth.client_ip.rejected');
   }
   return bAuth.handler(c.req.raw);

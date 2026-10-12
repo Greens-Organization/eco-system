@@ -1,6 +1,5 @@
 import { OpenAPIHono } from '@hono/zod-openapi';
 import { Scalar } from '@scalar/hono-api-reference';
-import { env } from '@/core/env';
 import { CONSTANTS } from '@/infra/common/constants';
 import { handleZodError } from '@/main/infra/openapi/utils';
 import { type AppVariables, authMiddleware } from '@/main/middleware';
@@ -70,12 +69,9 @@ v1.get(
   '/',
   Scalar({
     url: `${CONSTANTS.API_REST_V1}/openapi`,
-    servers: [
-      {
-        url: `http://localhost:${env.PORT}${CONSTANTS.API_REST_V1}`,
-        description: 'Dev server',
-      },
-    ],
+    // Relative: right on any host. The docs are only reachable where the API
+    // is — the internal network (card N6).
+    servers: [{ url: CONSTANTS.API_REST_V1, description: 'This server' }],
     theme: 'purple',
     layout: 'modern',
     metaData: {

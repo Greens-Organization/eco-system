@@ -29,7 +29,8 @@ export function handleError(err: Error, c: AppContext): Response {
   const ctx = c.get('obsContext');
   const requestId = ctx?.request_id ?? c.get('requestId');
   const supportId = ctx?.support_id;
-  const route = c.req.path;
+  const route = ctx?.route;
+  const path = c.req.path;
   const method = c.req.method;
 
   const body = (code: ErrorCode, message: string): ErrorSchema => ({
@@ -49,6 +50,7 @@ export function handleError(err: Error, c: AppContext): Response {
     error_code: code,
     classification,
     route,
+    path,
     method,
     status_code: status,
   });
@@ -94,7 +96,9 @@ export function handleError(err: Error, c: AppContext): Response {
     if (status >= 500) log.error({ ...fields, err }, err.message);
     else log.warn({ ...fields, err }, err.message);
     if (shouldReportToSentry(classification)) captureError(err, fields);
-    return c.json<ErrorSchema>(body(code, err.message), status);
+    // Same rule as AppError: a 5xx message is internal and stays in the log.
+    const message = status >= 500 ? 'Internal Server Error' : err.message;
+    return c.json<ErrorSchema>(body(code, message), status);
   }
 
   // Unknown -> 500 technical

@@ -1,6 +1,7 @@
 import { auth } from '@pack/auth/server';
 import { createMiddleware } from 'hono/factory';
 import { OpenStatusApiError } from '@/main/infra/openapi/utils';
+import { handlerRoute } from './observability';
 
 export type AuthVariables = {
   user: typeof auth.$Infer.Session.user;
@@ -13,6 +14,10 @@ export type AuthVariables = {
  */
 export const authMiddleware = createMiddleware<{ Variables: AuthVariables }>(
   async (c, next) => {
+    // Nothing handles this path: let it fall through to a 404 rather than
+    // answer 401 for a route that does not exist.
+    if (!handlerRoute(c)) return next();
+
     const session = await auth.api.getSession({
       headers: c.req.raw.headers,
     });

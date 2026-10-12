@@ -14,7 +14,10 @@ export interface RequestContext {
   request_id: string;
   support_id: string;
   cf_ray_id?: string;
+  /** Route pattern of the handler (`/v1/customers/:id`), for grouping. */
   route?: string;
+  /** The concrete request path (`/v1/customers/42`). */
+  path?: string;
   method?: string;
   status_code?: number;
   duration_ms?: number;

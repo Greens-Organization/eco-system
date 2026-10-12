@@ -66,6 +66,12 @@ export function buildApp() {
     showRoutes(app, { verbose: false, colorize: true });
   }
 
+  app.notFound((c) =>
+    handleError(
+      new OpenStatusApiError({ code: 'NOT_FOUND', message: 'Not Found' }),
+      c
+    )
+  );
   app.onError(handleError);
   return app;
 }

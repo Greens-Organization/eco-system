@@ -6,8 +6,11 @@ import {
   setContext,
 } from '@pack/observability/context';
 import { type Logger, log } from '@pack/observability/logger';
+import type { Context } from 'hono';
+import { getConnInfo } from 'hono/bun';
 import { createMiddleware } from 'hono/factory';
 import type { RequestIdVariables } from 'hono/request-id';
+import { matchedRoutes } from 'hono/route';
 import type { AuthVariables } from './auth-middleware';
 
 export type LogVariables = {
@@ -28,6 +31,33 @@ export type AppVariables = RequestIdVariables &
 const QUIET_PATHS = new Set(['/status', '/ready', '/health']);
 
 /**
+ * The pattern of the route that handles the request. Middlewares are
+ * registered as method ALL, so the handler is the last other match; a
+ * request nothing handles (a 404) has none. `c.req.routePath` would read
+ * this middleware's own `/*`.
+ */
+export function handlerRoute(c: Context): string | undefined {
+  return matchedRoutes(c).findLast((route) => route.method !== 'ALL')?.path;
+}
+
+/**
+ * The address of the TCP peer. Client-sent headers (X-Forwarded-For,
+ * CF-Connecting-IP) are never read: anyone can write them, and only the
+ * dashboard server talks to this API. `/auth` replaces it with the
+ * browser's IP once its signature checks out (routes/public/auth.ts).
+ */
+function peerAddress(c: Context): string | undefined {
+  try {
+    const address = getConnInfo(c).remote.address;
+    // Bun reports IPv4 peers as IPv4-mapped IPv6.
+    return address?.replace(/^::ffff:(?=\d+\.\d+\.\d+\.\d+$)/, '');
+  } catch {
+    // app.request() in tests has no socket behind it.
+    return undefined;
+  }
+}
+
+/**
  * Observability middleware (replaces request-logger). Run AFTER `requestId()`.
  *
  *  - builds the per-request context (request_id, support_id, cf_ray_id, route,
@@ -43,11 +73,10 @@ export const observability = () =>
       request_id: c.get('requestId'),
       support_id: generateSupportId(),
       cf_ray_id: parseCfRay(c.req.header('cf-ray')),
-      route: c.req.routePath,
+      route: handlerRoute(c) ?? '(unmatched)',
+      path: c.req.path,
       method: c.req.method,
-      ip:
-        c.req.header('cf-connecting-ip') ??
-        c.req.header('x-forwarded-for')?.split(',')[0]?.trim(),
+      ip: peerAddress(c),
       user_agent: c.req.header('user-agent'),
     };
     c.set('obsContext', ctx);

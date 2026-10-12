@@ -1,7 +1,9 @@
 import { describe, expect, test } from 'bun:test';
 import { AppError } from '@pack/observability/errors';
 import { Hono } from 'hono';
+import { HTTPException } from 'hono/http-exception';
 import { requestId } from 'hono/request-id';
+import { z } from 'zod';
 import { handleError } from '../../src/main/infra/error-handler';
 import {
   type AppVariables,
@@ -37,6 +39,19 @@ function buildApp() {
   });
   app.get('/raw', () => {
     throw new Error('totally unexpected');
+  });
+  app.get('/zod', (c) =>
+    c.json(z.object({ id: z.number() }).parse({ id: 'nope' }))
+  );
+  app.get('/http-400', () => {
+    throw new HTTPException(400, { message: 'bad cursor' });
+  });
+  app.get('/http-503', () => {
+    throw new HTTPException(503, { message: 'pool exhausted at 10.0.0.5' });
+  });
+  app.get('/items/:id', (c) => {
+    const ctx = c.get('obsContext');
+    return c.json({ route: ctx?.route, path: ctx?.path, ip: ctx?.ip ?? null });
   });
 
   return app;
@@ -93,5 +108,51 @@ describe('observability pipeline (e2e via app.request)', () => {
       getJson('/technical'),
     ]);
     expect(a.support_id).not.toBe(b.support_id);
+  });
+});
+
+describe('error handler branches', () => {
+  const app = buildApp();
+
+  test('a ZodError is a 4xx validation error, never a 500', async () => {
+    const res = await app.request('/zod');
+    expect(res.status).toBeGreaterThanOrEqual(400);
+    expect(res.status).toBeLessThan(500);
+    const json = (await res.json()) as ErrBody;
+    expect(json.code).not.toBe('INTERNAL_SERVER_ERROR');
+  });
+
+  test('an HTTPException 4xx keeps its message', async () => {
+    const res = await app.request('/http-400');
+    expect(res.status).toBe(400);
+    expect(((await res.json()) as ErrBody).message).toBe('bad cursor');
+  });
+
+  // It used to echo err.message, internals included, on 5xx too.
+  test('an HTTPException 5xx hides its message', async () => {
+    const res = await app.request('/http-503');
+    expect(res.status).toBe(503);
+    const json = (await res.json()) as ErrBody;
+    expect(json.message).toBe('Internal Server Error');
+    expect(JSON.stringify(json)).not.toContain('10.0.0.5');
+  });
+});
+
+describe('request context', () => {
+  // The middleware used to read its own `/*` as the route.
+  test('route is the handler pattern; path is the concrete URL', async () => {
+    const res = await buildApp().request('/items/42');
+    expect(await res.json()).toEqual({
+      route: '/items/:id',
+      path: '/items/42',
+      ip: null,
+    });
+  });
+
+  test('a forged X-Forwarded-For is not logged as the client IP', async () => {
+    const res = await buildApp().request('/items/1', {
+      headers: { 'x-forwarded-for': '6.6.6.6', 'cf-connecting-ip': '6.6.6.6' },
+    });
+    expect(((await res.json()) as { ip: string | null }).ip).toBeNull();
   });
 });
