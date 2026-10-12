@@ -25,9 +25,21 @@ export function sentryContextAllowlist(
   return out;
 }
 
+/** Request headers allowed into Sentry: they describe the request, not the user. */
+const REQUEST_HEADER_ALLOWLIST = [
+  'accept',
+  'content-length',
+  'content-type',
+  'x-request-id',
+] as const;
+
 /**
- * Sentry `beforeSend`: strip PII before the event leaves the process. If the
- * scrub itself throws, drop the event (return null) rather than risk a leak.
+ * Sentry `beforeSend`: keep only what is known to be safe (LGPD), rather than
+ * removing what is known to be unsafe — a new field is then dropped by
+ * default. Out go the user, the request body, cookies, the query string,
+ * every header not in the allowlist (auth, cookies, forwarded IPs) and
+ * breadcrumb payloads. If the scrub itself throws, drop the event rather
+ * than risk a leak.
  */
 export function scrubPii(
   event: ErrorEvent,
@@ -35,12 +47,31 @@ export function scrubPii(
 ): ErrorEvent | null {
   try {
     event.user = undefined;
+
     if (event.request) {
-      event.request.cookies = undefined;
-      if (event.request.headers) {
-        delete event.request.headers.authorization;
-        delete event.request.headers.cookie;
+      const { method, url, headers } = event.request;
+      const kept: Record<string, string> = {};
+      for (const name of REQUEST_HEADER_ALLOWLIST) {
+        const value = headers?.[name];
+        if (value !== undefined) kept[name] = value;
       }
+      event.request = {
+        method,
+        // The query string can carry tokens and emails.
+        url: url?.split('?')[0],
+        headers: kept,
+      };
+    }
+
+    if (event.breadcrumbs) {
+      event.breadcrumbs = event.breadcrumbs.map(
+        ({ category, level, timestamp, type }) => ({
+          category,
+          level,
+          timestamp,
+          type,
+        })
+      );
     }
     return event;
   } catch {

@@ -40,6 +40,24 @@ export const loggerOptions = {
   mixin() {
     return { ...(getContext() ?? {}), ...spanToFields(trace.getActiveSpan()) };
   },
+  // Last line of defence: credentials never reach a log line, wherever a
+  // caller put them. Fields are censored, not dropped, so the shape stays.
+  redact: {
+    paths: [
+      'password',
+      '*.password',
+      'token',
+      '*.token',
+      'secret',
+      '*.secret',
+      'req.headers.authorization',
+      'req.headers.cookie',
+      'res.headers["set-cookie"]',
+      'headers.authorization',
+      'headers.cookie',
+    ],
+    censor: '[redacted]',
+  },
   serializers: {
     req: pino.stdSerializers.req,
     res: pino.stdSerializers.res,

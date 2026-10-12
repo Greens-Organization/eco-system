@@ -41,22 +41,56 @@ describe('sentryContextAllowlist', () => {
 });
 
 describe('scrubPii', () => {
-  test('removes user, cookies and auth/cookie headers, keeps the rest', () => {
+  test('keeps only allowlisted request fields', () => {
     const event = {
       user: { id: 'u1', email: 'a@b.com' },
       request: {
-        cookies: 'sid=x',
-        headers: { authorization: 'Bearer x', cookie: 'sid=x', 'x-keep': 'ok' },
+        method: 'POST',
+        url: 'https://api.test/auth/reset?token=secret&email=a@b.com',
+        query_string: 'token=secret',
+        data: { password: 'hunter2' },
+        cookies: { sid: 'x' },
+        env: { REMOTE_ADDR: '203.0.113.1' },
+        headers: {
+          authorization: 'Bearer x',
+          cookie: 'sid=x',
+          'set-cookie': 'sid=y',
+          'x-forwarded-for': '203.0.113.1',
+          'x-real-ip': '203.0.113.1',
+          'user-agent': 'Mozilla/5.0',
+          'content-type': 'application/json',
+          'x-request-id': 'req-1',
+        },
       },
     } as unknown as ErrorEvent;
 
     const out = scrubPii(event, hint);
 
     expect(out?.user).toBeUndefined();
-    expect(out?.request?.cookies).toBeUndefined();
-    expect(out?.request?.headers?.authorization).toBeUndefined();
-    expect(out?.request?.headers?.cookie).toBeUndefined();
-    expect(out?.request?.headers?.['x-keep']).toBe('ok');
+    expect(out?.request).toEqual({
+      method: 'POST',
+      url: 'https://api.test/auth/reset',
+      headers: { 'content-type': 'application/json', 'x-request-id': 'req-1' },
+    });
+  });
+
+  test('breadcrumbs keep their shape but lose message and data', () => {
+    const event = {
+      breadcrumbs: [
+        {
+          category: 'fetch',
+          level: 'info',
+          timestamp: 1,
+          type: 'http',
+          message: 'GET /users?email=a@b.com',
+          data: { url: '/users?email=a@b.com', status_code: 200 },
+        },
+      ],
+    } as unknown as ErrorEvent;
+
+    expect(scrubPii(event, hint)?.breadcrumbs).toEqual([
+      { category: 'fetch', level: 'info', timestamp: 1, type: 'http' },
+    ]);
   });
 
   test('returns the event when there is nothing to scrub', () => {

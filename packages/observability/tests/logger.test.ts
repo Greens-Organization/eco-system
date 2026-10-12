@@ -67,3 +67,34 @@ describe('spanToFields (trace_id/span_id correlation)', () => {
     });
   });
 });
+
+describe('logger redaction', () => {
+  test('credentials are censored wherever a caller puts them', () => {
+    const lines: Record<string, unknown>[] = [];
+    const testLog = pino(loggerOptions, {
+      write: (s: string) => {
+        lines.push(JSON.parse(s));
+      },
+    });
+
+    testLog.info(
+      {
+        password: 'hunter2',
+        body: { password: 'hunter2', email: 'kept@eco.local' },
+        token: 't',
+        headers: { authorization: 'Bearer x', cookie: 'sid=x', accept: '*/*' },
+      },
+      'sign-in'
+    );
+
+    const line = JSON.stringify(lines.at(-1));
+    expect(line).not.toContain('hunter2');
+    expect(line).not.toContain('Bearer x');
+    expect(line).not.toContain('sid=x');
+    expect(lines.at(-1)).toMatchObject({
+      password: '[redacted]',
+      body: { password: '[redacted]', email: 'kept@eco.local' },
+      headers: { accept: '*/*' },
+    });
+  });
+});
