@@ -1,6 +1,6 @@
-# Postgres e Redis efêmeros pros testes e2e do apps/api. Sem persistência — some
+# Postgres e Redis efêmeros pros testes e2e do apps/dashboard-api. Sem persistência — some
 # no `down`. Portas 5436 e 6380 pra não colidir com o dev (5432, 6379).
-# Subidos/derrubados pelo runner `apps/api/test/e2e/run.ts`.
+# Subidos/derrubados pelo runner `apps/dashboard-api/test/e2e/run.ts`.
 name: eco-api-test
 
 services:

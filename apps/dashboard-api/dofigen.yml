@@ -1,6 +1,6 @@
 ignore:
   - node_modules
-  - /apps/api/.env*
+  - /apps/dashboard-api/.env*
 
 builders:
   install:
@@ -11,7 +11,7 @@ builders:
     bind:
       - bunfig.toml
       - package.json
-      - apps/api/package.json
+      - apps/dashboard-api/package.json
       - packages/auth/package.json
       - packages/cache/package.json
       - packages/db/package.json
@@ -30,7 +30,7 @@ builders:
 
   build:
     fromImage: oven/bun:1.3.14
-    workdir: /app/apps/api
+    workdir: /app/apps/dashboard-api
     labels:
       org.opencontainers.image.stage: build
     copy:
@@ -38,7 +38,7 @@ builders:
       - fromBuilder: install
         source: /app/node_modules
         target: /app/node_modules
-    run: bun build --compile src/server.ts --outfile=api
+    run: bun build --compile src/server.ts --outfile=dashboard-api
 
 fromImage: oven/bun:1.3.14
 
@@ -51,8 +51,8 @@ workdir: /home/bun/app
 
 copy:
   - fromBuilder: build
-    source: /app/apps/api/api
-    target: /home/bun/app/api
+    source: /app/apps/dashboard-api/dashboard-api
+    target: /home/bun/app/dashboard-api
 
 expose: "3002"
 
@@ -63,4 +63,4 @@ healthcheck:
   retries: 3
   cmd: "bun -e 'fetch(\"http://localhost:3002/status\").then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))'"
 
-entrypoint: /home/bun/app/api
+entrypoint: /home/bun/app/dashboard-api

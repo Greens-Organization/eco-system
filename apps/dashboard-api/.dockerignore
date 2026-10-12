@@ -2,4 +2,4 @@
 # See https://github.com/lenra-io/dofigen
 
 node_modules
-/apps/api/.env*
+/apps/dashboard-api/.env*

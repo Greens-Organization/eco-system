@@ -7,11 +7,11 @@ const config = {
   kit: {
     adapter: adapter(),
     alias: {
-      '@api/*': '../api/src/*',
+      '@api/*': '../dashboard-api/src/*',
       // Transitive API path aliases (needed to typecheck AppType imports)
-      '@/core/*': '../api/src/core/*',
-      '@/infra/*': '../api/src/infra/*',
-      '@/main/*': '../api/src/main/*',
+      '@/core/*': '../dashboard-api/src/core/*',
+      '@/infra/*': '../dashboard-api/src/infra/*',
+      '@/main/*': '../dashboard-api/src/main/*',
     },
   },
 };

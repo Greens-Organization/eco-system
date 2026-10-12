@@ -8,7 +8,7 @@ WORKDIR /app/
 RUN \
     --mount=type=bind,target=bunfig.toml,source=bunfig.toml \
     --mount=type=bind,target=package.json,source=package.json \
-    --mount=type=bind,target=apps/api/package.json,source=apps/api/package.json \
+    --mount=type=bind,target=apps/dashboard-api/package.json,source=apps/dashboard-api/package.json \
     --mount=type=bind,target=packages/auth/package.json,source=packages/auth/package.json \
     --mount=type=bind,target=packages/cache/package.json,source=packages/cache/package.json \
     --mount=type=bind,target=packages/db/package.json,source=packages/db/package.json \
@@ -26,7 +26,7 @@ RUN \
 
 # build
 FROM oven/bun@sha256:e10577f0db68676a7024391c6e5cb4b879ebd17188ab750cf10024a6d700e5c4 AS build
-WORKDIR /app/apps/api
+WORKDIR /app/apps/dashboard-api
 COPY \
     --link \
     "." "/app/"
@@ -34,7 +34,7 @@ COPY \
     --from=install \
     --link \
     "/app/node_modules" "/app/node_modules"
-RUN bun build --compile src/server.ts --outfile=api
+RUN bun build --compile src/server.ts --outfile=dashboard-api
 
 # runtime
 FROM oven/bun@sha256:e10577f0db68676a7024391c6e5cb4b879ebd17188ab750cf10024a6d700e5c4 AS runtime
@@ -43,7 +43,7 @@ COPY \
     --from=build \
     --chown=1000:1000 \
     --link \
-    "/app/apps/api/api" "/home/bun/app/api"
+    "/app/apps/dashboard-api/dashboard-api" "/home/bun/app/dashboard-api"
 USER 1000:1000
 EXPOSE 3002
 HEALTHCHECK \
@@ -52,4 +52,4 @@ HEALTHCHECK \
     --start-period=30s \
     --retries=3 \
     CMD bun -e 'fetch("http://localhost:3002/status").then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))'
-ENTRYPOINT ["/home/bun/app/api"]
+ENTRYPOINT ["/home/bun/app/dashboard-api"]

@@ -11,7 +11,7 @@ structured logging, OpenTelemetry, Sentry, Drizzle migrations, and a Biome +
 - **Runtime / tooling** — Bun (version pinned in `mise.toml`), Turborepo,
   Biome, TypeScript (strict), Bun workspaces with a shared version **catalog**
   and `isolated` linker.
-- **API** (`apps/api`) — Hono, `@hono/zod-openapi`, Scalar API reference,
+- **API** (`apps/dashboard-api`) — Hono, `@hono/zod-openapi`, Scalar API reference,
   OpenTelemetry via `@hono/otel`, Drizzle + `postgres.js`. Builds to a single
   compiled binary (`bun build --compile`).
 - **Dashboard** (`apps/dashboard`) — SvelteKit 2, Svelte 5, Vite 8, Tailwind 4,
@@ -34,7 +34,7 @@ study/       reference material, not part of the build
 
 | App              | What it is                                                              |
 | ---------------- | ----------------------------------------------------------------------- |
-| `apps/api`       | Hono + Bun HTTP API. OpenAPI (zod) + Scalar docs, OTel-instrumented.     |
+| `apps/dashboard-api`       | Hono + Bun HTTP API. OpenAPI (zod) + Scalar docs, OTel-instrumented.     |
 | `apps/dashboard` | SvelteKit admin dashboard (Svelte 5, Vite, Tailwind 4, `adapter-node`). |
 
 ### Packages

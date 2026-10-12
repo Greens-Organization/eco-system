@@ -12,30 +12,6 @@
         "typescript": "6.0.3",
       },
     },
-    "apps/api": {
-      "name": "api",
-      "dependencies": {
-        "@hono/otel": "1.2.0",
-        "@hono/zod-openapi": "1.6.3",
-        "@pack/auth": "workspace:*",
-        "@pack/cache": "workspace:*",
-        "@pack/db": "workspace:*",
-        "@pack/email": "workspace:*",
-        "@pack/observability": "workspace:*",
-        "@pack/testing": "workspace:*",
-        "@scalar/hono-api-reference": "0.11.3",
-        "hono": "catalog:",
-        "zod": "catalog:",
-      },
-      "devDependencies": {
-        "@pack/tsconfig": "workspace:*",
-        "@types/bun": "1.4.3",
-        "concurrently": "10.0.5",
-        "drizzle-orm": "0.45.2",
-        "pino-pretty": "catalog:",
-        "postgres": "3.4.9",
-      },
-    },
     "apps/dashboard": {
       "name": "@app/dashboard-svelte",
       "version": "0.0.0",
@@ -66,6 +42,30 @@
         "svelte-check": "4.7.6",
         "tailwindcss": "catalog:",
         "vite": "catalog:",
+      },
+    },
+    "apps/dashboard-api": {
+      "name": "@app/dashboard-api",
+      "dependencies": {
+        "@hono/otel": "1.2.0",
+        "@hono/zod-openapi": "1.6.3",
+        "@pack/auth": "workspace:*",
+        "@pack/cache": "workspace:*",
+        "@pack/db": "workspace:*",
+        "@pack/email": "workspace:*",
+        "@pack/observability": "workspace:*",
+        "@pack/testing": "workspace:*",
+        "@scalar/hono-api-reference": "0.11.3",
+        "hono": "catalog:",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@pack/tsconfig": "workspace:*",
+        "@types/bun": "1.4.3",
+        "concurrently": "10.0.5",
+        "drizzle-orm": "0.45.2",
+        "pino-pretty": "catalog:",
+        "postgres": "3.4.9",
       },
     },
     "packages/auth": {
@@ -266,6 +266,8 @@
   },
   "packages": {
     "@alloc/quick-lru": ["@alloc/quick-lru@5.2.0", "", {}, "sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw=="],
+
+    "@app/dashboard-api": ["@app/dashboard-api@workspace:apps/dashboard-api"],
 
     "@app/dashboard-svelte": ["@app/dashboard-svelte@workspace:apps/dashboard"],
 
@@ -660,8 +662,6 @@
     "ansi-regex": ["ansi-regex@6.2.2", "", {}, "sha512-Bq3SmSpyFHaWjPk8If9yc6svM8c56dB5BAtW4Qbw5jHTwwXXcTLoRMkpDJp6VL0XzlWaCHTXrkFURMYmD0sLqg=="],
 
     "ansi-styles": ["ansi-styles@6.2.3", "", {}, "sha512-4Dj6M28JB+oAH8kFkTLUo+a2jwOFkuqb3yucU0CANcRRUbxS0cP0nZYCGjcc3BNXwRIsUVmDGgzawme7zvJHvg=="],
-
-    "api": ["api@workspace:apps/api"],
 
     "aria-query": ["aria-query@5.3.1", "", {}, "sha512-Z/ZeOgVl7bcSYZ/u/rh0fOpvEpq//LZmdbkXyc7syVzjPAhfOa9ebsdTSjEBDU4vs5nC98Kfduj1uFo0qyET3g=="],
 

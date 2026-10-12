@@ -1,11 +1,11 @@
-# `apps/api/test`
+# `apps/dashboard-api/test`
 
 Testes da API com o **Bun test runner**. Dois tiers.
 
 ## Rodar
 
 ```bash
-cd apps/api
+cd apps/dashboard-api
 
 bun run test            # tier unit (rápido, SEM docker) — também roda no `turbo test`
 bun run test:watch      # unit em watch

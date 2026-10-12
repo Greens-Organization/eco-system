@@ -15,7 +15,7 @@
 
 ## 🆕 Pedidos do dono (2026-10-11)
 
-### N1. Renomear `apps/api` → `apps/dashboard-api`
+### N1. ✅ Renomear `apps/api` → `apps/dashboard-api` (fase 2, 2026-10-12)
 
 Mais semântico: a API existe para servir o dashboard.
 
@@ -44,6 +44,14 @@ para o repo da Unkey, não um caminho nosso.
   atualizar exemplos em docs/tasks que citam `service.name=api`.
 - Binário compilado: segue o nome do app (`dashboard-api`) — `turbo.json`
   outputs, `.gitignore`, `dofigen.yml`.
+
+**Feito:** pasta movida (com o `.env` local), pacote `@app/dashboard-api`,
+binário `dashboard-api` (build, `turbo.json`, `.gitignore`, `dofigen.yml`,
+Dockerfile regenerado com `dofigen generate --offline`), `SERVICE_NAME` no
+`.env.example` e no `.env` local, `--filter` do `test:e2e`, referências do
+`tsconfig` raiz, aliases `@api/*` do dashboard, docs. Verificado: `verify`
+(11 tarefas), e2e 45/45 pelo filtro novo, API sobe da pasta nova e loga
+`service: dashboard-api`. O `git grep "apps/api"` fora de `tasks/` volta vazio.
 
 **Aceite:** `git grep -n "apps/api"` só retorna `tasks/done/` e o crédito da
 Unkey; typecheck/lint/test iguais ao baseline; `bun run dev` sobe as duas apps;
@@ -654,7 +662,7 @@ no mesmo commit da mudança de comportamento.
 | --- | --- | --- |
 | 0 ✅ | Rede de segurança | zerar lint, **G1** CI, **G5** scripts da raiz, corrigir o drift de `CLAUDE.md`/`README` — feito 2026-10-12 (CI ainda não rodou no GitHub) |
 | 1 ✅ | Bugs visíveis | 🔴 1 (logout 5 min), 🔴 2 (proxy `/auth` 500) + testes em **G2** — feito 2026-10-12 |
-| 2 | Rename | **N1** `@app/dashboard-api` |
+| 2 ✅ | Rename | **N1** `@app/dashboard-api` — feito 2026-10-12 |
 | 3 | Segurança | **N7** ✅ dispositivos conectados; **N6** ✅ (API escondida, rate limit por IP e por conta, sessões no Redis, cookies, MFA opcional) — sobram itens de deploy (fase 6) e reset de senha (G3); 🔴 3 ✅, 🔴 5/6 reset e seed, 🔴 7 json-ld, validação de env, scrub do Sentry, `redact`, **G8** hardening |
 | 4 | Correção da API | `route` no log, shutdown, `HOST`, 404 vs 401, `HTTPException` 5xx, Scalar em prod |
 | 5 | Bun-first | **N3** (tipos/config/docs, `NodeTracerProvider`, `Bun.spawnSync`) |

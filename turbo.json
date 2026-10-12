@@ -7,7 +7,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build", "test"],
-      "outputs": [".svelte-kit/**", "build/**", "api"]
+      "outputs": [".svelte-kit/**", "build/**", "dashboard-api"]
     },
     "test": {
       "dependsOn": ["^test"]

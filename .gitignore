@@ -268,7 +268,7 @@ $RECYCLE.BIN/
 .github/copilot-instructions.md
 
 # Compiled API binary (bun build --compile --outfile=api)
-apps/api/api
+apps/dashboard-api/dashboard-api
 
 # react.email
 .react-email

@@ -12,7 +12,7 @@ commit that changed the behavior.
 ## 1. Layout
 
 ```
-apps/api           Hono + Bun HTTP API, OpenAPI (zod) + Scalar, OTel
+apps/dashboard-api Hono + Bun HTTP API, OpenAPI (zod) + Scalar, OTel
 apps/dashboard     SvelteKit 2 / Svelte 5 admin dashboard
 packages/*         @pack/* shared libraries
 infra/docker       compose stacks: infra, observability, test
@@ -77,7 +77,7 @@ The `typescript` package (6.0.3, root devDependency) is only for
 (`bun -p process.versions.typescript`), so the editor can in rare cases
 disagree with it; aligning the two is part of the dependency majors (H1).
 
-`api`, `@app/dashboard-svelte`, `@pack/auth`, `@pack/db`,
+`@app/dashboard-api`, `@app/dashboard-svelte`, `@pack/auth`, `@pack/db`,
 `@pack/observability`, `@pack/tools` and `@pack/testing` define `test`. The
 dashboard's run under plain `bun test` (no Vite), so they cover `src/lib`
 modules that do not import `$env`/`$app`; keep server logic there
@@ -94,7 +94,7 @@ the schema imports `bun`, so a bare `bunx drizzle-kit` fails to resolve it.
 | --- | --- |
 | 3000 | dashboard (vite dev, `vite.config.ts`) |
 | 3001 | Grafana (`docker-compose.observability.yml`, published off its native 3000) |
-| 3002 | API (`apps/api/.env` → `PORT`) |
+| 3002 | API (`apps/dashboard-api/.env` → `PORT`) |
 | 4317 / 4318 | OTLP gRPC / HTTP |
 | 5432 | postgres |
 | 6379 | redis |
@@ -148,7 +148,7 @@ look at it. For behavior changes, exercise the endpoint or route.
 
 ### API
 
-- Routes live in `apps/api/src/main/routes/v1/<name>/` as
+- Routes live in `apps/dashboard-api/src/main/routes/v1/<name>/` as
   `schema.ts` + `get.ts` + `index.ts`, registered on the v1 router with an
   OpenAPI tag.
 - Errors go through `AppError` and the central handler in
@@ -177,7 +177,7 @@ look at it. For behavior changes, exercise the endpoint or route.
   `@pack/auth/client-ip`), overwriting anything the caller passed: the API
   rate-limits by that IP, and every call comes from the dashboard's own
   address. `CLIENT_IP_SECRET` (≥ 32 chars) must be the same in
-  `apps/api/.env` and `apps/dashboard/.env.local`.
+  `apps/dashboard-api/.env` and `apps/dashboard/.env.local`.
 - `hooks.server.ts` composes `logHandle → localeHandle → sessionHandle →
   i18nHandle`, and redirects unauthenticated requests to `/{locale}/sign-in`.
 - `sessionHandle` → `resolveSession`: a valid cookie cache resolves locally;
@@ -201,7 +201,7 @@ look at it. For behavior changes, exercise the endpoint or route.
 
 `better-auth` with email/password and argon2 (`@pack/tools`), Drizzle adapter.
 The API mounts it at `/auth`. Policy (owner decisions, 2026-10-12; tested in
-`apps/api/test/e2e/routes/auth-security.e2e.test.ts`):
+`apps/dashboard-api/test/e2e/routes/auth-security.e2e.test.ts`):
 
 - **Sessions** last 24 h from sign-in and are never extended
   (`expiresIn` + `disableSessionRefresh`). They live in Redis
@@ -278,7 +278,7 @@ measured or debugged; changing one regresses something.
 - **No `[Symbol.asyncDispose]` on the `db` / `cache` singletons** — a consumer's
   `await using` would close the shared pool for everyone. `disconnectDatabase()`
   and `disconnectCache()` are the teardown path for a global singleton.
-- **`apps/api/test/e2e/setup.ts` assigns `DATABASE_URL` with `=`, not `||=`** —
+- **`apps/dashboard-api/test/e2e/setup.ts` assigns `DATABASE_URL` with `=`, not `||=`** —
   Bun auto-loads `packages/db/.env`, so the override must be unconditional or
   e2e points at the dev database. The `eco_test` check in `runMigrations()` is
   defense-in-depth, not the primary guard.

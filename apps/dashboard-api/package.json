@@ -1,10 +1,10 @@
 {
-  "name": "api",
+  "name": "@app/dashboard-api",
   "private": true,
   "scripts": {
     "dev": "bun run --hot ./src/server.ts | pino-pretty",
-    "build": "bun build src/server.ts --compile --outfile=api",
-    "preview": "./api",
+    "build": "bun build src/server.ts --compile --outfile=dashboard-api",
+    "preview": "./dashboard-api",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "test": "bun test test/unit --preload @pack/testing/preload --preload ./test/unit/setup.ts",
     "test:watch": "bun test test/unit --watch --preload @pack/testing/preload --preload ./test/unit/setup.ts",

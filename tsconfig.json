@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/tsconfig",
   "files": [],
   "references": [
-    { "path": "./apps/api" },
+    { "path": "./apps/dashboard-api" },
     { "path": "./packages/auth" },
     { "path": "./packages/cache" },
     { "path": "./packages/db" },

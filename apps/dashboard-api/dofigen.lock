@@ -1,7 +1,7 @@
 effective: |
   ignore:
   - node_modules
-  - /apps/api/.env*
+  - /apps/dashboard-api/.env*
   builders:
     install:
       fromImage:
@@ -17,8 +17,8 @@ effective: |
         source: bunfig.toml
       - target: package.json
         source: package.json
-      - target: apps/api/package.json
-        source: apps/api/package.json
+      - target: apps/dashboard-api/package.json
+        source: apps/dashboard-api/package.json
       - target: packages/auth/package.json
         source: packages/auth/package.json
       - target: packages/cache/package.json
@@ -47,7 +47,7 @@ effective: |
       fromImage:
         path: oven/bun
         digest: sha256:e10577f0db68676a7024391c6e5cb4b879ebd17188ab750cf10024a6d700e5c4
-      workdir: /app/apps/api
+      workdir: /app/apps/dashboard-api
       copy:
       - paths:
         - .
@@ -57,7 +57,7 @@ effective: |
         - /app/node_modules
         target: /app/node_modules
       run:
-      - bun build --compile src/server.ts --outfile=api
+      - bun build --compile src/server.ts --outfile=dashboard-api
   fromImage:
     path: oven/bun
     digest: sha256:e10577f0db68676a7024391c6e5cb4b879ebd17188ab750cf10024a6d700e5c4
@@ -65,10 +65,10 @@ effective: |
   copy:
   - fromBuilder: build
     paths:
-    - /app/apps/api/api
-    target: /home/bun/app/api
+    - /app/apps/dashboard-api/dashboard-api
+    target: /home/bun/app/dashboard-api
   entrypoint:
-  - /home/bun/app/api
+  - /home/bun/app/dashboard-api
   expose:
   - port: 3002
   healthcheck:
@@ -85,11 +85,11 @@ images:
           digest: sha256:e10577f0db68676a7024391c6e5cb4b879ebd17188ab750cf10024a6d700e5c4
 resources:
   dofigen.yml:
-    hash: 497e31dc8ffe357fc8795ffb7c100dcaddc8e579c402d7fd70674b2a2af5b64b
+    hash: 9f7fbde8926a484ac676e2cd37d44f93e64c8d24585c991c5a295f92ede8c9d0
     content: |
       ignore:
         - node_modules
-        - /apps/api/.env*
+        - /apps/dashboard-api/.env*
 
       builders:
         install:
@@ -100,7 +100,7 @@ resources:
           bind:
             - bunfig.toml
             - package.json
-            - apps/api/package.json
+            - apps/dashboard-api/package.json
             - packages/auth/package.json
             - packages/cache/package.json
             - packages/db/package.json
@@ -119,7 +119,7 @@ resources:
 
         build:
           fromImage: oven/bun:1.3.14
-          workdir: /app/apps/api
+          workdir: /app/apps/dashboard-api
           labels:
             org.opencontainers.image.stage: build
           copy:
@@ -127,7 +127,7 @@ resources:
             - fromBuilder: install
               source: /app/node_modules
               target: /app/node_modules
-          run: bun build --compile src/server.ts --outfile=api
+          run: bun build --compile src/server.ts --outfile=dashboard-api
 
       fromImage: oven/bun:1.3.14
 
@@ -140,8 +140,8 @@ resources:
 
       copy:
         - fromBuilder: build
-          source: /app/apps/api/api
-          target: /home/bun/app/api
+          source: /app/apps/dashboard-api/dashboard-api
+          target: /home/bun/app/dashboard-api
 
       expose: "3002"
 
@@ -152,4 +152,4 @@ resources:
         retries: 3
         cmd: "bun -e 'fetch(\"http://localhost:3002/status\").then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))'"
 
-      entrypoint: /home/bun/app/api
+      entrypoint: /home/bun/app/dashboard-api
