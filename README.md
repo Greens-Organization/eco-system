@@ -59,21 +59,16 @@ subpath `exports`; runtime config lives in a per-package `pack-env.ts`.
 
 ## Getting started
 
-**Prerequisites:** Bun (version pinned in `.tool-versions`) and Docker.
+**Prerequisites:** Bun (version pinned in `mise.toml`) and Docker.
 
 ```bash
-bun install
+# 1. Configure env — each app/package reads its own .env via pack-env.
+#    Copy the .env.example files; at minimum DATABASE_URL for @pack/db.
 
-# 1. Bring up Postgres and Redis
-bun run docker:infra:up
+# 2. Install, start Postgres + Redis (waits until healthy), migrate, seed
+bun run setup
 
-# 2. Configure env — each app/package reads its own .env via pack-env.
-#    At minimum set DATABASE_URL for @pack/db.
-
-# 3. Apply migrations (and optionally seed an admin user)
-cd packages/db && bun run db:migrate && bun run db:seed && cd -
-
-# 4. Run everything (api + dashboard) through turbo
+# 3. Run everything (api + dashboard) through turbo
 bun run dev
 ```
 
@@ -108,13 +103,16 @@ Root scripts fan out across the workspace via Turborepo:
 | `bun run dev`                | Run all apps in watch mode.                          |
 | `bun run build`              | Build every workspace (runs `test` first).           |
 | `bun run test`               | Run the test suites.                                 |
+| `bun run test:e2e`           | API e2e suite on an ephemeral Postgres.              |
+| `bun run typecheck`          | Typecheck every workspace.                           |
 | `bun run lint` / `format`    | Biome check (and `--write` to fix).                  |
-| `bun run docker:infra:up`    | Start Postgres + Redis.                              |
+| `bun run check`              | Lint, then typecheck + test — the pre-commit check.  |
+| `bun run setup`              | Install, start infra, migrate and seed.              |
+| `bun run db:<task>`          | `generate`, `migrate`, `seed`, `reset`, `studio` in `@pack/db`. |
+| `bun run docker:infra:up`    | Start Postgres + Redis and wait until healthy.       |
 | `bun run docker:obs:up`      | Start the observability stack (Grafana, OTLP).       |
 
-Typecheck has no root alias — call `bunx turbo run typecheck`. Per-package:
-`bun run typecheck`, and in `apps/api` the e2e suite via `bun run test:e2e`
-(uses `infra/docker/docker-compose.test.yml`).
+The e2e suite uses `infra/docker/docker-compose.test.yml`.
 
 ## Observability
 
@@ -149,9 +147,8 @@ instead.
 - **Versions** are centralized in the root `package.json` `catalog` — reference
   them with `"catalog:"` instead of pinning per package.
 - **Verification is manual.** There is no CI and no commit hook: run
-  `bunx turbo run typecheck`, `bun run lint` and `bun run test` yourself before
-  calling a change done. `CLAUDE.md` §4 lists the checks and the currently
-  known failures.
+  `bun run check` yourself before calling a change done. `CLAUDE.md` §4 lists
+  the checks.
 
 ## License
 

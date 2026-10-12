@@ -32,32 +32,33 @@ reads its own runtime config from a per-package `pack-env.ts`.
 
 ```bash
 bun install
+bun run setup                # install + infra up (--wait) + db:migrate + db:seed
 bun run dev                  # turbo dev — api + dashboard
 bun run build                # turbo build (note: build dependsOn test)
 bun run test                 # turbo test
+bun run typecheck            # turbo typecheck
 bun run lint                 # biome check ./
 bun run format               # biome check --write ./
-bunx turbo run typecheck     # no root alias; call turbo directly
+bun run check                # lint, then turbo typecheck + test
 
-bun run docker:infra:up      # postgres + redis
+bun run docker:infra:up      # postgres + redis, waits for healthchecks
 bun run docker:obs:up        # grafana/otel-lgtm
 
-cd packages/db
+bun run db:generate          # these fan out to @pack/db via bun --filter
 bun run db:migrate           # drizzle-kit migrate
 bun run db:seed              # creates ADMIN_EMAIL/ADMIN_PASSWORD user
 bun run db:reset
 bun run db:studio
 
-cd apps/api
-bun run test:e2e             # ephemeral compose, gated by E2E=1
+bun run test:e2e             # API e2e on an ephemeral compose, gated by E2E=1
 ```
 
 Per-package: `typecheck` (`tsc --noEmit` in packages, `svelte-check` in the
-dashboard). Only `api`, `@pack/observability`, `@pack/tools` and `@pack/testing`
-define `test`.
+dashboard). `api`, `@pack/auth`, `@pack/db`, `@pack/observability`,
+`@pack/tools` and `@pack/testing` define `test`.
 
-**Broken script:** `apps/api` `docker:infra:up|down` points at
-`apps/api/docker-compose.local.yml`, which does not exist. Use the root scripts.
+`drizzle-kit` must run under Bun (`bun x --bun`, as the `@pack/db` scripts do):
+the schema imports `bun`, so a bare `bunx drizzle-kit` fails to resolve it.
 
 ---
 

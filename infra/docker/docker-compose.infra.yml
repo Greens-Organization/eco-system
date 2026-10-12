@@ -13,6 +13,11 @@ services:
     volumes:
       - "pg:/var/lib/postgresql/data"
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d postgres"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
   redis:
     image: redis:7-alpine
     container_name: eco-system-redis-local
@@ -26,6 +31,11 @@ services:
     volumes:
       - "redis_data:/data"
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "eco_system_redis", "--no-auth-warning", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
 
 volumes:
   pg: {}
