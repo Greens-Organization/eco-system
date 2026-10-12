@@ -255,7 +255,7 @@ Head sampling only, via the standard env vars (verified:
 Content-aware ("keep all errors + slow traces") is **tail sampling** and belongs
 in a Collector, not the SDK — the SDK decides at the root span, before the trace
 exists. The bundled `otel-lgtm` collector is a fixed forward pipeline and cannot
-do it. Full strategy: `tasks/todo/sampling-strategy.md`.
+do it. Full strategy: `tasks/done/sampling-strategy.md`.
 
 ---
 
@@ -277,18 +277,16 @@ do it. Full strategy: `tasks/todo/sampling-strategy.md`.
 
 ## 8. Current state
 
-Branch `alpha/eco-system-v2`, 87 commits ahead of `main`, no upstream.
+Branch `alpha/eco-system-v2`, 96 commits ahead of `main`, no upstream.
 
-Open work, largest first:
+The whole open backlog is one card, `tasks/todo/full-sweep-2026-10-11.md`,
+executed in phases (one verified commit per slice). The only other card,
+`i18n-paraglide-migration.md`, is deliberately parked. Largest open items:
 
-1. **No CI.** `.github/` has templates only. 55 tests exist and nothing runs
+1. **No CI.** `.github/` has templates only. 70 tests exist and nothing runs
    them.
-2. **Test coverage is concentrated** in 4 of 14 packages. The dashboard has no
-   tests.
-3. **60 outdated dependencies** and a toolchain mismatch (`.tool-versions` bun
-   1.3.13 vs `packageManager` bun 1.3.14). See
-   `tasks/todo/health-and-upgrade-audit.md`.
-4. **`tasks/todo/`** — `observability-followups.md` (F3 DB spans, F7 dashboard
-   observability + k8s) is live; `boilerplate-gaps-audit.md` is stale and
-   overstates what is missing; `i18n-paraglide-migration.md` is deliberately
-   parked; `sampling-strategy.md` is reference, not a task.
+2. **Test coverage is concentrated** in 6 of 13 workspaces. The dashboard has
+   no tests.
+3. **Known bugs**: forced re-login every ~5 min (cookie cache vs the
+   authenticated layout) and the dashboard `/auth/*` proxy returning 500 under
+   Node — see the card's 🔴 list.
