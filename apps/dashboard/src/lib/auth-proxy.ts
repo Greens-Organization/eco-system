@@ -1,8 +1,15 @@
 /**
- * Helpers for proxying form-action requests to the better-auth endpoints
- * on the Hono API. Centralizes timeout handling, error classification, and
+ * Helpers for calling the better-auth endpoints on the Hono API from form
+ * actions and hooks — the browser never talks to the API itself. Centralizes timeout handling, error classification, and
  * PII redaction so each form action stays small.
  */
+
+import { isIP } from 'node:net';
+import {
+  CLIENT_IP_HEADER,
+  CLIENT_IP_SIGNATURE_HEADER,
+  signClientIp,
+} from '@pack/auth/client-ip';
 
 export type AuthFetchFailure = {
   ok: false;
@@ -18,16 +25,42 @@ export type AuthFetchResult =
  * Wraps `fetch` with a hard timeout and converts every transport-level
  * failure into a typed result. Never throws — callers branch on `ok`.
  *
+ * `clientIp` (from `event.getClientAddress()`) is required: every call
+ * reaches the API from this server, so it is the only way the API's rate
+ * limiter can tell users apart. It goes signed with `clientIpSecret` (the API
+ * drops an unsigned one) and overwrites whatever the caller passed.
+ *
+ * `userAgent` is the browser's: better-auth labels the session it opens with
+ * it (the device list), and without it every session would read as this
+ * server.
+ *
  * Pass `requestId` to forward `x-request-id` to the API so its logs
  * share the same correlation id as the dashboard's `logHandle`.
  */
 export async function authFetch(
   url: string,
-  init: RequestInit & { requestId?: string },
+  init: RequestInit & {
+    clientIp: string;
+    clientIpSecret: string;
+    userAgent?: string | null;
+    requestId?: string;
+  },
   timeoutMs = 10_000
 ): Promise<AuthFetchResult> {
-  const { requestId, headers, ...rest } = init;
+  const { clientIp, clientIpSecret, userAgent, requestId, headers, ...rest } =
+    init;
   const merged = new Headers(headers);
+  merged.delete(CLIENT_IP_HEADER);
+  merged.delete(CLIENT_IP_SIGNATURE_HEADER);
+  // Not an address (never from adapter-node): send none rather than throw.
+  if (isIP(clientIp)) {
+    for (const [name, value] of Object.entries(
+      signClientIp(clientIp, clientIpSecret)
+    )) {
+      merged.set(name, value);
+    }
+  }
+  if (userAgent) merged.set('user-agent', userAgent);
   if (requestId) merged.set('x-request-id', requestId);
 
   try {
@@ -56,8 +89,8 @@ export function userMessageFor(
  * Maps better-auth's English error response to a localized message.
  * better-auth ships English-only `message`s — we dispatch on the
  * stable `code` field (or HTTP status when no code is present, e.g.
- * the rate-limiter response) and fall back to the API's raw message,
- * then to a generic "unknown" string.
+ * the rate-limiter response). Anything else is the generic "unknown"
+ * string: the API's raw message is English and may say too much.
  *
  * Error code reference:
  * `node_modules/@better-auth/core/dist/error/codes.mjs` (BASE_ERROR_CODES).
@@ -71,6 +104,11 @@ export type AuthErrorCopy = {
   passwordTooLong: string;
   emailNotVerified: string;
   tooManyRequests: string;
+  wrongPassword: string;
+  invalidCode: string;
+  invalidBackupCode: string;
+  twoFactorLocked: string;
+  twoFactorExpired: string;
 };
 
 export function localizeAuthError(
@@ -82,9 +120,11 @@ export function localizeAuthError(
 
   switch (body.code) {
     case 'INVALID_EMAIL_OR_PASSWORD':
-    case 'INVALID_PASSWORD':
     case 'INVALID_USER':
       return copy.invalidCredentials;
+    // Only asked of a signed-in user (enabling or disabling 2FA).
+    case 'INVALID_PASSWORD':
+      return copy.wrongPassword;
     case 'INVALID_EMAIL':
       return copy.invalidEmail;
     case 'USER_ALREADY_EXISTS':
@@ -96,8 +136,17 @@ export function localizeAuthError(
       return copy.passwordTooLong;
     case 'EMAIL_NOT_VERIFIED':
       return copy.emailNotVerified;
+    case 'INVALID_CODE':
+      return copy.invalidCode;
+    case 'INVALID_BACKUP_CODE':
+      return copy.invalidBackupCode;
+    case 'ACCOUNT_TEMPORARILY_LOCKED':
+    case 'TOO_MANY_ATTEMPTS_REQUEST_NEW_CODE':
+      return copy.twoFactorLocked;
+    case 'INVALID_TWO_FACTOR_COOKIE':
+      return copy.twoFactorExpired;
     default:
-      return body.message ?? copy.unknown;
+      return copy.unknown;
   }
 }
 

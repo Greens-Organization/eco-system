@@ -1,3 +1,4 @@
+import { disconnectCache } from '@pack/cache';
 import { disconnectDatabase } from '@pack/db';
 import { shutdownObservability } from '@pack/observability/instrumentation';
 import { log } from '@pack/observability/logger';
@@ -51,6 +52,9 @@ export function createGracefulShutdown(
       log.info('Closing database...');
       await disconnectDatabase();
       log.info('Database closed');
+
+      disconnectCache();
+      log.info('Redis closed');
 
       log.info('Flushing observability...');
       await shutdownObservability();

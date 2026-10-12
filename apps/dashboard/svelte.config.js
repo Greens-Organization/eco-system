@@ -7,7 +7,6 @@ const config = {
   kit: {
     adapter: adapter(),
     alias: {
-      '@pack/*': '../../packages/*',
       '@api/*': '../api/src/*',
       // Transitive API path aliases (needed to typecheck AppType imports)
       '@/core/*': '../api/src/core/*',

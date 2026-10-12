@@ -7,9 +7,24 @@
 // resolves session state internally. Authenticated routes (/v1/*) get
 // session via `authMiddleware`.
 
+import { stripUnverifiedClientIp } from '@pack/auth/client-ip';
 import { auth as bAuth } from '@pack/auth/server';
+import { log } from '@pack/observability/logger';
 import { Hono } from 'hono';
+import { env } from '@/core/env';
 
 export const auth = new Hono();
 
-auth.on(['POST', 'GET'], '/*', (c) => bAuth.handler(c.req.raw));
+// better-auth keys its rate limits on the client IP header. Only a header the
+// dashboard signed gets through; anything else is dropped, so the request
+// falls into the shared "no trusted IP" bucket instead of picking its own key.
+auth.on(['POST', 'GET'], '/*', (c) => {
+  const { verified, claimed } = stripUnverifiedClientIp(
+    c.req.raw,
+    env.CLIENT_IP_SECRET
+  );
+  if (claimed && !verified) {
+    log.warn({ path: c.req.path }, 'auth.client_ip.rejected');
+  }
+  return bAuth.handler(c.req.raw);
+});

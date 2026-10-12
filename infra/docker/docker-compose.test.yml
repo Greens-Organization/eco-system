@@ -1,6 +1,6 @@
-# Postgres efêmero pros testes e2e do apps/api. Dados em tmpfs (RAM) — some no
-# `down`. Porta 5436 pra não colidir com o dev (5432). Subido/derrubado pelo
-# runner `apps/api/test/e2e/run.ts`.
+# Postgres e Redis efêmeros pros testes e2e do apps/api. Sem persistência — some
+# no `down`. Portas 5436 e 6380 pra não colidir com o dev (5432, 6379).
+# Subidos/derrubados pelo runner `apps/api/test/e2e/run.ts`.
 name: eco-api-test
 
 services:
@@ -22,3 +22,15 @@ services:
       timeout: 3s
       retries: 15
       start_period: 3s
+
+  redis-test:
+    image: redis:7-alpine
+    container_name: eco-api-redis-test
+    ports:
+      - '6380:6379'
+    command: redis-server --save '' --appendonly no
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 2s
+      timeout: 3s
+      retries: 15

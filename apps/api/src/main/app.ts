@@ -1,6 +1,5 @@
 import { httpInstrumentationMiddleware } from '@hono/otel';
 import { Hono } from 'hono';
-import { cors } from 'hono/cors';
 import { showRoutes } from 'hono/dev';
 import { prettyJSON } from 'hono/pretty-json';
 import { requestId } from 'hono/request-id';
@@ -18,20 +17,6 @@ import { v1 } from './routes/v1';
  */
 export function buildApp() {
   const app = new Hono<{ Variables: AppVariables }>({ strict: false });
-
-  /**
-   * Global CORS middleware. Must be first to handle preflight OPTIONS requests.
-   */
-  app.use(
-    '*',
-    cors({
-      origin: env.ORIGIN_ALLOWED,
-      credentials: true,
-      allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowHeaders: ['Content-Type', 'Authorization', 'Cookie'],
-      exposeHeaders: ['Set-Cookie'],
-    })
-  );
 
   /**
    * Observability — order matters. `requestId()` seeds the id; `@hono/otel`

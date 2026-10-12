@@ -17,7 +17,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-  default: async ({ request, locals, url }) => {
+  default: async ({ request, locals, url, getClientAddress }) => {
     const data = await request.formData();
     const name = data.get('name');
     const email = data.get('email');
@@ -46,6 +46,8 @@ export const actions: Actions = {
     const result = await authFetch(`${env.API_URL}/auth/sign-up/email`, {
       method: 'POST',
       requestId: locals.requestId,
+      clientIp: getClientAddress(),
+      clientIpSecret: env.CLIENT_IP_SECRET,
       headers: {
         'Content-Type': 'application/json',
         Cookie: request.headers.get('cookie') ?? '',

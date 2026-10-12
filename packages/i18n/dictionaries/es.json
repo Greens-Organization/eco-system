@@ -21,7 +21,6 @@
     },
     "navigation": {
       "dashboard": "Panel",
-      "settings": "Configuración",
       "help": "Ayuda",
       "customers": "Clientes",
       "employees": "Empleados"
@@ -62,7 +61,40 @@
       "language": "Idioma",
       "languageDescription": "Elige tu idioma preferido.",
       "account": "Cuenta",
-      "accountDescription": "Los detalles de tu cuenta."
+      "accountDescription": "Los detalles de tu cuenta.",
+      "security": {
+        "title": "Seguridad",
+        "description": "Añade un segundo paso al inicio de sesión con una app de autenticación.",
+        "twoFactor": "Verificación en dos pasos",
+        "on": "Activada",
+        "off": "Desactivada",
+        "enable": "Activar",
+        "disable": "Desactivar",
+        "confirmPassword": "Confirma tu contraseña",
+        "scan": "Escanea este código QR con tu app de autenticación o escribe la clave de configuración.",
+        "setupKey": "Clave de configuración",
+        "backupCodes": "Códigos de respaldo",
+        "backupCodesHint": "Guarda estos códigos en un lugar seguro. Si pierdes el teléfono, cada uno te permite entrar una vez.",
+        "confirmCode": "Introduce el código de la app para terminar.",
+        "confirm": "Activar",
+        "enabled": "La verificación en dos pasos está activada.",
+        "disabled": "La verificación en dos pasos está desactivada."
+      },
+      "devices": {
+        "title": "Dispositivos conectados",
+        "description": "Dónde tienes la sesión iniciada ahora.",
+        "device": "{browser} en {system}",
+        "unknownDevice": "Dispositivo desconocido",
+        "unknownBrowser": "Navegador",
+        "signedIn": "inició sesión {when}",
+        "thisDevice": "Este dispositivo",
+        "signOut": "Cerrar sesión",
+        "signOutOthers": "Cerrar sesión en todos los demás dispositivos",
+        "signedOutOne": "Listo. Se cerró la sesión en ese dispositivo.",
+        "signedOutOthers": "Listo. Se cerró la sesión en los demás dispositivos.",
+        "delayNote": "Un dispositivo desconectado puede seguir abierto hasta un minuto.",
+        "listFailed": "No se pudieron cargar tus dispositivos."
+      }
     },
     "profile": {
       "title": "Perfil",
@@ -89,7 +121,13 @@
       "passwordTooShort": "La contraseña es demasiado corta",
       "passwordTooLong": "La contraseña es demasiado larga",
       "emailNotVerified": "Por favor verifica tu correo antes de iniciar sesión",
-      "tooManyRequests": "Demasiados intentos. Por favor, inténtalo de nuevo más tarde."
+      "tooManyRequests": "Demasiados intentos. Por favor, inténtalo de nuevo más tarde.",
+      "wrongPassword": "Contraseña incorrecta",
+      "invalidCode": "Código inválido. Revisa tu app de autenticación e inténtalo de nuevo.",
+      "invalidBackupCode": "Código de respaldo inválido o ya usado",
+      "twoFactorLocked": "Demasiados códigos incorrectos. Espera unos minutos e inténtalo de nuevo.",
+      "twoFactorExpired": "Tu inicio de sesión expiró. Vuelve a iniciar sesión.",
+      "deviceNotFound": "Ese dispositivo ya no tiene la sesión iniciada."
     },
     "auth": {
       "signIn": {
@@ -104,7 +142,18 @@
       "email": "Correo electrónico",
       "password": "Contraseña",
       "noAccount": "¿No tienes una cuenta?",
-      "hasAccount": "¿Ya tienes una cuenta?"
+      "hasAccount": "¿Ya tienes una cuenta?",
+      "twoFactor": {
+        "title": "Verificación en dos pasos",
+        "description": "Introduce el código de 6 dígitos de tu app de autenticación.",
+        "backupDescription": "Introduce uno de tus códigos de respaldo. Cada uno funciona una sola vez.",
+        "code": "Código",
+        "backupCode": "Código de respaldo",
+        "verify": "Verificar",
+        "useBackup": "Usar un código de respaldo",
+        "useApp": "Usar la app de autenticación",
+        "backToSignIn": "Volver al inicio de sesión"
+      }
     }
   }
 }

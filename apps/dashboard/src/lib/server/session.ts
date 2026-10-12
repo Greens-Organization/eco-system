@@ -1,4 +1,4 @@
-import { getCookieCache, getSessionCookie } from '@pack/auth/cookies';
+import { getSessionCookie, readSessionCache } from '@pack/auth/cookies';
 import z from 'zod';
 import type { AuthFetchResult } from '$lib/auth-proxy';
 
@@ -33,17 +33,22 @@ export type SessionDeps = {
 };
 
 /**
- * The cookie cache (`session_data`) is signed and short-lived (5 min); the
+ * The cookie cache (`session_data`) is signed and short-lived (60 s); the
  * session token outlives it. A cache hit costs nothing. On a miss with a token
- * present, the API revalidates the session against the DB and answers with a
+ * present, the API revalidates the session and answers with a
  * fresh `session_data` cookie, which the caller must forward to the browser —
- * otherwise every request after the 5 minutes misses again.
+ * otherwise every request after that minute misses again.
  */
 export async function resolveSession(
   request: Request,
   deps: SessionDeps
 ): Promise<ResolvedSession> {
-  const cached = await getCookieCache(request, { secret: deps.secret });
+  // Over https the API names the cache `__Secure-…`: its BETTER_AUTH_URL is
+  // this dashboard's public origin.
+  const cached = await readSessionCache(request, {
+    secret: deps.secret,
+    secure: new URL(request.url).protocol === 'https:',
+  });
   if (cached) {
     const parsed = SessionPayloadSchema.safeParse(cached);
     if (parsed.success) return { kind: 'cached', ...parsed.data };

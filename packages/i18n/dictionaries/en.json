@@ -21,7 +21,6 @@
     },
     "navigation": {
       "dashboard": "Dashboard",
-      "settings": "Settings",
       "help": "Help",
       "customers": "Customers",
       "employees": "Employees"
@@ -62,7 +61,40 @@
       "language": "Language",
       "languageDescription": "Choose your preferred language.",
       "account": "Account",
-      "accountDescription": "Your account details."
+      "accountDescription": "Your account details.",
+      "security": {
+        "title": "Security",
+        "description": "Add a second step to sign-in with an authenticator app.",
+        "twoFactor": "Two-factor authentication",
+        "on": "On",
+        "off": "Off",
+        "enable": "Enable",
+        "disable": "Disable",
+        "confirmPassword": "Confirm your password",
+        "scan": "Scan this QR code with your authenticator app, or type the setup key.",
+        "setupKey": "Setup key",
+        "backupCodes": "Backup codes",
+        "backupCodesHint": "Save these codes somewhere safe. If you lose your phone, each one signs you in once.",
+        "confirmCode": "Enter the code from the app to finish.",
+        "confirm": "Turn on",
+        "enabled": "Two-factor authentication is on.",
+        "disabled": "Two-factor authentication is off."
+      },
+      "devices": {
+        "title": "Signed-in devices",
+        "description": "Where your account is signed in right now.",
+        "device": "{browser} on {system}",
+        "unknownDevice": "Unknown device",
+        "unknownBrowser": "Browser",
+        "signedIn": "signed in {when}",
+        "thisDevice": "This device",
+        "signOut": "Sign out",
+        "signOutOthers": "Sign out of all other devices",
+        "signedOutOne": "Done. That device was signed out.",
+        "signedOutOthers": "Done. Every other device was signed out.",
+        "delayNote": "A signed-out device can stay open for up to a minute.",
+        "listFailed": "Could not load your devices."
+      }
     },
     "profile": {
       "title": "Profile",
@@ -89,7 +121,13 @@
       "passwordTooShort": "Password is too short",
       "passwordTooLong": "Password is too long",
       "emailNotVerified": "Please verify your email before signing in",
-      "tooManyRequests": "Too many attempts. Please try again later."
+      "tooManyRequests": "Too many attempts. Please try again later.",
+      "wrongPassword": "Incorrect password",
+      "invalidCode": "Invalid code. Check your authenticator app and try again.",
+      "invalidBackupCode": "Invalid or already used backup code",
+      "twoFactorLocked": "Too many wrong codes. Wait a few minutes and try again.",
+      "twoFactorExpired": "Your sign-in expired. Please sign in again.",
+      "deviceNotFound": "That device is no longer signed in."
     },
     "auth": {
       "signIn": {
@@ -104,7 +142,18 @@
       "email": "Email",
       "password": "Password",
       "noAccount": "Don't have an account?",
-      "hasAccount": "Already have an account?"
+      "hasAccount": "Already have an account?",
+      "twoFactor": {
+        "title": "Two-factor authentication",
+        "description": "Enter the 6-digit code from your authenticator app.",
+        "backupDescription": "Enter one of your backup codes. Each one works only once.",
+        "code": "Code",
+        "backupCode": "Backup code",
+        "verify": "Verify",
+        "useBackup": "Use a backup code instead",
+        "useApp": "Use the authenticator app instead",
+        "backToSignIn": "Back to sign in"
+      }
     }
   }
 }

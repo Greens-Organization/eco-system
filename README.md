@@ -41,7 +41,7 @@ study/       reference material, not part of the build
 
 | Package                | Responsibility                                                        |
 | ---------------------- | --------------------------------------------------------------------- |
-| `@pack/auth`           | `better-auth` server/client + cookies; session config.                |
+| `@pack/auth`           | `better-auth` server + shared cookie config; sessions in Redis.       |
 | `@pack/db`             | Drizzle ORM + `postgres.js`, schema, migrations, seeds.               |
 | `@pack/observability`  | pino logging, OTel traces/metrics, Sentry, ALS request context.       |
 | `@pack/design-system`  | Svelte 5 UI components, providers, Tailwind styles.                   |
@@ -104,11 +104,11 @@ Root scripts fan out across the workspace via Turborepo:
 | `bun run dev`                | Run all apps in watch mode.                          |
 | `bun run build`              | Build every workspace (runs `test` first).           |
 | `bun run test`               | Run the test suites.                                 |
-| `bun run test:e2e`           | API e2e suite on an ephemeral Postgres.              |
+| `bun run test:e2e`           | API e2e suite on an ephemeral Postgres + Redis.      |
 | `bun check`                  | Type check the TypeScript workspaces (Bun's checker). |
 | `bun run check:svelte`       | `svelte-check` in the dashboard and design system.   |
 | `bun run lint` / `format`    | Biome check (and `--write` to fix).                  |
-| `bun run verify`             | Lint, type check and test — the pre-commit check.    |
+| `bun run verify`             | Lint, type check, test and build — the pre-commit check. |
 | `bun run setup`              | Install, start infra, migrate and seed.              |
 | `bun run db:<task>`          | `generate`, `migrate`, `seed`, `reset`, `studio` in `@pack/db`. |
 | `bun run docker:infra:up`    | Start Postgres + Redis and wait until healthy.       |

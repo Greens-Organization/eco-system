@@ -1,3 +1,4 @@
+import { signClientIp } from '@pack/auth/client-ip';
 import type { TestApp } from './app';
 
 const SESSION_COOKIE = 'better-auth.session_token';
@@ -6,6 +7,27 @@ export interface TestUser {
   email: string;
   password: string;
   name: string;
+}
+
+const octet = () => Math.floor(Math.random() * 254) + 1;
+
+/**
+ * A random client IP. The rate limiter keys on `x-real-ip` (set by the
+ * dashboard), so tests that are not about throttling each get their own.
+ */
+export function clientIp(): string {
+  return `10.${octet()}.${octet()}.${octet()}`;
+}
+
+/**
+ * Headers for a JSON auth request from one client, with the IP signed the
+ * way the dashboard signs it (the API drops an unsigned one).
+ */
+export function authHeaders(ip = clientIp()): Record<string, string> {
+  return {
+    'content-type': 'application/json',
+    ...signClientIp(ip, process.env.CLIENT_IP_SECRET ?? ''),
+  };
 }
 
 /** A unique user payload (email collision-free across tests). */
@@ -28,15 +50,16 @@ export async function authenticate(
   app: TestApp,
   user: TestUser = randomUser()
 ): Promise<{ user: TestUser; cookie: string }> {
+  const headers = authHeaders();
   await app.request('/auth/sign-up/email', {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers,
     body: JSON.stringify(user),
   });
 
   const res = await app.request('/auth/sign-in/email', {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers,
     body: JSON.stringify({ email: user.email, password: user.password }),
   });
 

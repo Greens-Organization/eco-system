@@ -42,7 +42,7 @@ bun check                    # TypeScript type check (Bun's built-in checker)
 bun run check:svelte         # svelte-check in the dashboard and design-system
 bun run lint                 # biome check ./
 bun run format               # biome check --write ./
-bun run verify               # lint, bun check, then turbo check:svelte + test
+bun run verify               # lint, bun check, then turbo check:svelte + build (build runs test)
 
 bun run docker:infra:up      # postgres + redis, waits for healthchecks
 bun run docker:obs:up        # grafana/otel-lgtm
@@ -98,13 +98,14 @@ the schema imports `bun`, so a bare `bunx drizzle-kit` fails to resolve it.
 | 4317 / 4318 | OTLP gRPC / HTTP |
 | 5432 | postgres |
 | 6379 | redis |
+| 5436 / 6380 | e2e postgres / redis (`docker-compose.test.yml`) |
 
 ---
 
 ## 4. Verification
 
 `.github/workflows/ci.yml` runs `biome ci`, `bun check`, `turbo check:svelte
-test` and the API
+build` (`build` depends on `test`) and the API
 e2e suite on pull requests and on pushes to `main`, with bun/node from
 `mise.toml`. It has not run on GitHub yet — this branch has no upstream — and
 there is no local hook. Before claiming work is done, run the checks yourself
@@ -112,9 +113,10 @@ there is no local hook. Before claiming work is done, run the checks yourself
 
 ```bash
 bunx biome check .                    # 0 errors
-bun check                             # 0 errors, 189 files across 11 projects
+bun check                             # 0 errors, 220 files across 11 projects
 bunx turbo run check:svelte --force   # 0 errors in dashboard + design-system
-bunx turbo run test --force           # 110 pass / 0 fail
+bunx turbo run build --force          # api binary + dashboard vite build
+bunx turbo run test --force           # 142 pass / 0 fail
 ```
 
 `bun check` is not cached by turbo and takes about half a second.
@@ -160,25 +162,89 @@ look at it. For behavior changes, exercise the endpoint or route.
 - Routes are `[locale]/(authenticated)/…` and `[locale]/(unauthenticated)/…`.
   Route groups do not appear in the URL: the panel is `/{locale}`, not
   `/dashboard`. Locales: `en` (default), `pt`, `es`.
-- `hooks.server.ts` composes `logHandle → authHandle → localeHandle →
-  sessionHandle → i18nHandle`, and redirects unauthenticated requests to
-  `/{locale}/sign-in`.
-- `authHandle` proxies `/auth/*` through `proxyRequest`, which returns a new
-  `Response`: under Node the headers of a `fetch` response are immutable and
-  `logHandle` writes `x-request-id` on it.
+- Account settings live on **Profile** (`/{locale}/profile`): profile data,
+  appearance, language, 2FA and signed-in devices on one page, reached from
+  the user menu. There is no separate Settings page (owner decision,
+  2026-10-12: fewer places to configure things).
+- **The browser never talks to the API.** The dashboard is a BFF: sign-in,
+  sign-up and sign-out are form actions that call the API server-to-server
+  through `authFetch`, and there is no `/auth/*` proxy (a request there just
+  falls through to the locale redirect). The API has no CORS and belongs on an
+  internal network. New flows (password reset, 2FA) follow the same shape.
+- `authFetch` requires `clientIp` (`event.getClientAddress()`) and
+  `clientIpSecret`, and sends the IP **signed** (`x-real-ip` +
+  `x-client-ip-signature`, HMAC-SHA256 with a timestamp, valid 60 s;
+  `@pack/auth/client-ip`), overwriting anything the caller passed: the API
+  rate-limits by that IP, and every call comes from the dashboard's own
+  address. `CLIENT_IP_SECRET` (≥ 32 chars) must be the same in
+  `apps/api/.env` and `apps/dashboard/.env.local`.
+- `hooks.server.ts` composes `logHandle → localeHandle → sessionHandle →
+  i18nHandle`, and redirects unauthenticated requests to `/{locale}/sign-in`.
 - `sessionHandle` → `resolveSession`: a valid cookie cache resolves locally;
   a stale one with a session token is revalidated on `/auth/get-session` and
   the fresh `session_data` is forwarded to the browser. A rejected token
   clears the cookies; an unreachable API is a 503 on protected routes. Loads
-  read the user from `locals.user`, never by calling the API again.
+  read the user from `locals.user`, never by calling the API again. Over https
+  the cache cookie is `__Secure-better-auth.session_data`, so `resolveSession`
+  reads it by the request's protocol (`readSessionCache` in
+  `@pack/auth/cookies`).
+- Sign-out clears the browser's cookies even when the API is unreachable.
+- Form actions and loads that call better-auth go through
+  `callAuth(event, path, body?)` (`$lib/server/auth-api`; POST with a body, GET
+  without), which sends the browser's cookies and user agent, the origin, the
+  client IP and the request id.
 - Server loads fetch the API through `createApiClient(cookieHeader, requestId)`
   and validate every response with `safeFetch` + a zod schema. A `401` clears
   the `better-auth.*` cookies and redirects to sign-in.
 
 ### Auth
 
-`better-auth` with email/password and argon2 (`@pack/tools`), Drizzle adapter,
-5-minute session cookie cache. The API mounts it at `/auth`.
+`better-auth` with email/password and argon2 (`@pack/tools`), Drizzle adapter.
+The API mounts it at `/auth`. Policy (owner decisions, 2026-10-12; tested in
+`apps/api/test/e2e/routes/auth-security.e2e.test.ts`):
+
+- **Sessions** last 24 h from sign-in and are never extended
+  (`expiresIn` + `disableSessionRefresh`). They live in Redis
+  (`secondaryStorage`) with a copy in Postgres (`storeSessionInDatabase`).
+- **Cookie cache** 60 s: a revoked session keeps working in the dashboard for
+  at most that long. Bump `AUTH_COOKIE.version` to invalidate every cache.
+- **Cookies** are `HttpOnly` + `SameSite=Strict`. `BETTER_AUTH_URL` is the
+  dashboard's public URL; when it is https, better-auth adds `Secure` and the
+  `__Secure-` prefix.
+- **Rate limit** on in every environment, stored in Redis, keyed by
+  `x-real-ip` (3 sign-ins / 10 s per client). The API's `/auth` route
+  (`stripUnverifiedClientIp`) keeps that header only with a fresh, valid
+  signature; anything else is dropped (logged as `auth.client_ip.rejected`)
+  and lands in better-auth's shared `no-trusted-ip` bucket. Network isolation
+  is the first wall; the signature holds if the API is ever exposed.
+- **Per-account limit** on the password step (`account-throttle.ts`, a local
+  better-auth plugin): 5 free wrong passwords per email, then a doubling wait
+  (2 s … 20 min) answered with the same 429, for any client. It slows the
+  account instead of locking it, counts unknown emails too, keys Redis by a
+  hash of the lowercased email, and resets on a correct password. About 86
+  guesses fit in a day, under NIST's 100.
+- **Sign-up** does not sign in (`autoSignIn: false`), so a duplicate email gets
+  the same answer as a new one.
+- **2FA (TOTP) is optional**, turned on per user in Profile (`twoFactor`
+  plugin, table `two_factor`, tested in `two-factor.e2e.test.ts`). For such a
+  user the password step returns `twoFactorRedirect` plus a `two_factor`
+  cookie and no session; `/{locale}/sign-in/two-factor` finishes it with a
+  TOTP or a single-use backup code. Enabling and disabling ask for the
+  password and **rotate the session** — forward the new cookies or the user
+  is signed out. `/two-factor/*` allows 3 requests / 10 s per client.
+- **Signed-in devices** (Profile): better-auth core `list-sessions`,
+  `revoke-session`, `revoke-other-sessions` (`sessions.e2e.test.ts`). The list
+  carries each session's token, which is the credential: the dashboard maps it
+  to `{ id, browser, system, ip, signedInAt, current }` (`$lib/server/devices`)
+  and turns an id back into a token only server-side, from the user's own
+  list. `callAuth` forwards the browser's `user-agent`, or every session would
+  be labeled with the dashboard server's. A signed-out device stays open until
+  its cookie cache expires (≤ 60 s).
+- Settings both sides must agree on (`AUTH_COOKIE`, `CLIENT_IP_HEADER`) live in
+  `@pack/auth/cookies`, which has no env access so the dashboard can import it.
+
+The API now needs Redis to authenticate anything; a Redis outage is a 500 on
+`/auth/*` and a 503 on the dashboard's protected routes.
 
 When forwarding `Set-Cookie` from the API to the browser, use
 `forwardSetCookies` / `clearAuthCookies` (`$lib/server/auth-cookies`). They
@@ -189,6 +255,14 @@ better-auth's base64 payload and breaks HMAC verification on the next request.
 
 Things that look like leftovers or cleanup targets but are deliberate. Each was
 measured or debugged; changing one regresses something.
+
+- **`stripUnverifiedClientIp` edits `request.headers` in place** — never
+  copy a request as `new Request(request, { headers })`: under Bun an empty
+  `headers` init is ignored and the original headers survive
+  (oven-sh/bun#41994; Node follows the spec), which let a request carrying
+  only a spoofed `x-real-ip` keep it. The Biome plugin
+  `biome-plugins/no-request-copy-with-headers.grit` fails the lint on that
+  pattern (a URL input — string, template or `x.url` — is allowed).
 
 - **`vite.config.ts` `optimizeDeps.include`** — the transitive deps use the
   nested `@pack/design-system > dep` form because Bun's isolated linker does not
@@ -327,9 +401,9 @@ executed in phases (one verified commit per slice). The only other card,
 1. **CI is written but unproven** — the workflow has never run on GitHub.
    Unit tests used to depend on the local `.env`; they now pass in a clean
    checkout (verified in a worktree with no `.env` files).
-2. **Test coverage is concentrated** in 7 of 13 workspaces (110 unit + 7
+2. **Test coverage is concentrated** in 7 of 13 workspaces (142 unit + 44
    e2e). `bun test --coverage` only lists files a test imported, so
    per-workspace percentages overstate it. Gaps and plan: card item N5.
-3. **Known bugs**: the remaining 🔴 items on the card (rate limit, Dockerfile,
-   `db:reset` guard, seed, json-ld XSS). The 5-minute logout and the `/auth/*`
-   500 under Node were fixed in phase 1.
+3. **Known bugs**: the remaining 🔴 items on the card (Dockerfile, `db:reset`
+   guard, seed, json-ld XSS). The 5-minute logout and the `/auth/*` 500 under
+   Node were fixed in phase 1; the ineffective rate limit in N6.

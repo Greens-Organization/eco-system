@@ -10,7 +10,10 @@ process.env.NODE_ENV = 'test';
 // nunca toque o dev. O guard em runMigrations() é defesa-em-profundidade.
 process.env.DATABASE_URL =
   'postgresql://eco_user:eco_password@localhost:5436/eco_test';
+// Mesmo motivo: o Redis de teste (sessões e rate limit do better-auth).
+process.env.REDIS_URL = 'redis://localhost:6380';
 process.env.BETTER_AUTH_SECRET ||= 'test-secret-not-for-prod-0123456789';
+process.env.CLIENT_IP_SECRET ||= 'e2e-client-ip-secret-not-for-prod-0123456789';
 process.env.BETTER_AUTH_URL ||= 'http://localhost:3002';
 process.env.ORIGIN_ALLOWED ||= 'http://localhost:3000';
 process.env.SMTP_FROM ||= 'test@eco.local';
@@ -32,13 +35,16 @@ if (isE2E) {
   });
 
   afterEach(async () => {
-    const { truncateAll } = await import('./helpers/reset');
+    const { flushRedis, truncateAll } = await import('./helpers/reset');
     await truncateAll();
+    await flushRedis();
   });
 
   afterAll(async () => {
     const { disconnectDatabase } = await import('@pack/db');
+    const { disconnectCache } = await import('@pack/cache');
     await disconnectDatabase().catch(() => undefined);
+    disconnectCache();
   });
 }
 

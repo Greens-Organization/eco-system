@@ -8,11 +8,12 @@
   },
   "exports": {
     "./server": "./src/server.ts",
-    "./client.svelte": "./src/client.svelte.ts",
     "./cookies": "./src/cookies.ts",
+    "./client-ip": "./src/client-ip.ts",
     "./pack-env": "./pack-env.ts"
   },
   "dependencies": {
+    "@pack/cache": "workspace:*",
     "@pack/db": "workspace:*",
     "@pack/tools": "workspace:*",
     "better-auth": "1.7.6",

@@ -11,7 +11,6 @@ import { sequence } from '@sveltejs/kit/hooks';
 import { authFetch } from '$lib/auth-proxy';
 import { env } from '$lib/env';
 import { clearAuthCookies, forwardSetCookies } from '$lib/server/auth-cookies';
-import { proxyRequest } from '$lib/server/proxy';
 import { resolveSession } from '$lib/server/session';
 
 const unauthenticatedPaths = ['/sign-in', '/sign-up'];
@@ -53,24 +52,6 @@ const logHandle: Handle = async ({ event, resolve }) => {
   return response;
 };
 
-/** Proxy /auth/* requests transparently to the Hono API */
-const authHandle: Handle = async ({ event, resolve }) => {
-  const { pathname } = event.url;
-
-  if (pathname.startsWith('/auth')) {
-    // Forward the per-request id so the API logs share our correlation
-    // chain (same id appears in dashboard logHandle output and Hono's
-    // requestLogger output).
-    return proxyRequest(
-      event.request,
-      `${env.API_URL}${pathname}${event.url.search}`,
-      { requestId: event.locals.requestId }
-    );
-  }
-
-  return resolve(event);
-};
-
 /** Detect locale from URL segment or Accept-Language header */
 const localeHandle: Handle = async ({ event, resolve }) => {
   const { pathname } = event.url;
@@ -94,10 +75,10 @@ const localeHandle: Handle = async ({ event, resolve }) => {
 /**
  * Resolve the session and guard protected routes.
  *
- * Fast path: the signed cookie cache (`session_data`, 5 min) is validated
+ * Fast path: the signed cookie cache (`session_data`, 60 s) is validated
  * locally, with no network hop. When it is stale but a session token is
- * present, the API revalidates against the DB and its fresh cookie cache is
- * forwarded to the browser, so only one request per 5 minutes pays the hop.
+ * present, the API revalidates the session and its fresh cookie cache is
+ * forwarded to the browser, so only one request per minute pays the hop.
  * A token the API rejects is cleared. An unreachable API fails protected
  * routes with 503 instead of pretending the user is signed out.
  */
@@ -108,6 +89,8 @@ const sessionHandle: Handle = async ({ event, resolve }) => {
       authFetch(`${env.API_URL}/auth/get-session`, {
         headers: { cookie },
         requestId: event.locals.requestId,
+        clientIp: event.getClientAddress(),
+        clientIpSecret: env.CLIENT_IP_SECRET,
       }),
   });
 
@@ -154,7 +137,6 @@ const i18nHandle: Handle = async ({ event, resolve }) => {
 
 export const handle = sequence(
   logHandle,
-  authHandle,
   localeHandle,
   sessionHandle,
   i18nHandle

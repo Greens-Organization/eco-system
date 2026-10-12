@@ -19,3 +19,17 @@ export async function truncateAll(): Promise<void> {
     sql.raw(`TRUNCATE TABLE ${tables} RESTART IDENTITY CASCADE`)
   );
 }
+
+/**
+ * Esvazia o Redis de teste entre testes (sessões e contadores do rate limit).
+ * Guard: só a porta do compose de teste, nunca o Redis de dev.
+ */
+export async function flushRedis(): Promise<void> {
+  if (!process.env.REDIS_URL?.endsWith(':6380')) {
+    throw new Error(
+      `REDIS_URL precisa apontar pro Redis de teste. Recebido: ${process.env.REDIS_URL}`
+    );
+  }
+  const { cache } = await import('@pack/cache');
+  await cache.send('FLUSHDB', []);
+}

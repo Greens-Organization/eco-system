@@ -21,7 +21,6 @@
     },
     "navigation": {
       "dashboard": "Painel",
-      "settings": "Configurações",
       "help": "Ajuda",
       "customers": "Clientes",
       "employees": "Funcionários"
@@ -62,7 +61,40 @@
       "language": "Idioma",
       "languageDescription": "Escolha seu idioma preferido.",
       "account": "Conta",
-      "accountDescription": "Os detalhes da sua conta."
+      "accountDescription": "Os detalhes da sua conta.",
+      "security": {
+        "title": "Segurança",
+        "description": "Adicione uma segunda etapa ao login com um app autenticador.",
+        "twoFactor": "Verificação em duas etapas",
+        "on": "Ativada",
+        "off": "Desativada",
+        "enable": "Ativar",
+        "disable": "Desativar",
+        "confirmPassword": "Confirme sua senha",
+        "scan": "Escaneie este QR code com seu app autenticador ou digite a chave de configuração.",
+        "setupKey": "Chave de configuração",
+        "backupCodes": "Códigos de backup",
+        "backupCodesHint": "Guarde estes códigos em um lugar seguro. Se perder o celular, cada um permite entrar uma vez.",
+        "confirmCode": "Digite o código do app para concluir.",
+        "confirm": "Ativar",
+        "enabled": "A verificação em duas etapas está ativada.",
+        "disabled": "A verificação em duas etapas está desativada."
+      },
+      "devices": {
+        "title": "Dispositivos conectados",
+        "description": "Onde sua conta está conectada agora.",
+        "device": "{browser} no {system}",
+        "unknownDevice": "Dispositivo desconhecido",
+        "unknownBrowser": "Navegador",
+        "signedIn": "entrou {when}",
+        "thisDevice": "Este dispositivo",
+        "signOut": "Sair",
+        "signOutOthers": "Sair de todos os outros dispositivos",
+        "signedOutOne": "Pronto. O dispositivo foi desconectado.",
+        "signedOutOthers": "Pronto. Os outros dispositivos foram desconectados.",
+        "delayNote": "Um dispositivo desconectado pode continuar aberto por até um minuto.",
+        "listFailed": "Não foi possível carregar seus dispositivos."
+      }
     },
     "profile": {
       "title": "Perfil",
@@ -89,7 +121,13 @@
       "passwordTooShort": "Senha muito curta",
       "passwordTooLong": "Senha muito longa",
       "emailNotVerified": "Verifique seu e-mail antes de entrar",
-      "tooManyRequests": "Muitas tentativas. Tente novamente mais tarde."
+      "tooManyRequests": "Muitas tentativas. Tente novamente mais tarde.",
+      "wrongPassword": "Senha incorreta",
+      "invalidCode": "Código inválido. Confira o app autenticador e tente de novo.",
+      "invalidBackupCode": "Código de backup inválido ou já usado",
+      "twoFactorLocked": "Muitos códigos errados. Aguarde alguns minutos e tente de novo.",
+      "twoFactorExpired": "Seu login expirou. Entre novamente.",
+      "deviceNotFound": "Esse dispositivo já não está conectado."
     },
     "auth": {
       "signIn": {
@@ -104,7 +142,18 @@
       "email": "E-mail",
       "password": "Senha",
       "noAccount": "Não tem uma conta?",
-      "hasAccount": "Já tem uma conta?"
+      "hasAccount": "Já tem uma conta?",
+      "twoFactor": {
+        "title": "Verificação em duas etapas",
+        "description": "Digite o código de 6 dígitos do seu app autenticador.",
+        "backupDescription": "Digite um dos seus códigos de backup. Cada um funciona uma única vez.",
+        "code": "Código",
+        "backupCode": "Código de backup",
+        "verify": "Verificar",
+        "useBackup": "Usar um código de backup",
+        "useApp": "Usar o app autenticador",
+        "backToSignIn": "Voltar ao login"
+      }
     }
   }
 }

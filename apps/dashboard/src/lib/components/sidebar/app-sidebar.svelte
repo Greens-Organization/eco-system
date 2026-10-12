@@ -1,6 +1,5 @@
 <script lang="ts">
 import LayoutDashboard from '@lucide/svelte/icons/layout-dashboard';
-import Settings from '@lucide/svelte/icons/settings';
 import Trees from '@lucide/svelte/icons/trees';
 import UserRound from '@lucide/svelte/icons/user-round';
 import Users from '@lucide/svelte/icons/users';
@@ -28,11 +27,6 @@ const navItems = $derived([
     title: t.app.navigation.employees,
     href: `/${locale}/employees`,
     icon: UserRound,
-  },
-  {
-    title: t.app.navigation.settings,
-    href: `/${locale}/settings`,
-    icon: Settings,
   },
 ]);
 

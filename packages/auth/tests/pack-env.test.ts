@@ -5,11 +5,13 @@ import { describe, expect, test } from 'bun:test';
 process.env.DATABASE_URL ??= 'postgresql://user:pass@localhost:5432/eco_test';
 process.env.BETTER_AUTH_SECRET ??= 'test-secret-not-for-prod';
 process.env.ORIGIN_ALLOWED ??= 'http://localhost:3000';
+process.env.CLIENT_IP_SECRET ??= 'test-client-ip-secret-not-for-prod-0123';
 const { schema } = await import('../pack-env');
 
 const base = {
   DATABASE_URL: 'postgresql://user:pass@localhost:5432/eco',
   BETTER_AUTH_SECRET: 'secret',
+  CLIENT_IP_SECRET: 'x'.repeat(32),
   ORIGIN_ALLOWED: 'http://localhost:3000',
 };
 
@@ -38,12 +40,12 @@ describe('@pack/auth pack-env schema', () => {
     ).toEqual(['']);
   });
 
-  test('BETTER_AUTH_URL defaults to the local API, BETTER_AUTH_SECRET does not', () => {
-    expect(schema.parse(base).BETTER_AUTH_URL).toBe('http://localhost:3002/');
+  test('BETTER_AUTH_URL defaults to the local dashboard, BETTER_AUTH_SECRET does not', () => {
+    expect(schema.parse(base).BETTER_AUTH_URL).toBe('http://localhost:3000');
     expect(
-      schema.parse({ ...base, BETTER_AUTH_URL: 'https://api.test' })
+      schema.parse({ ...base, BETTER_AUTH_URL: 'https://app.test' })
         .BETTER_AUTH_URL
-    ).toBe('https://api.test');
+    ).toBe('https://app.test');
     expect(schema.safeParse({ ...base, BETTER_AUTH_SECRET: '' }).success).toBe(
       false
     );

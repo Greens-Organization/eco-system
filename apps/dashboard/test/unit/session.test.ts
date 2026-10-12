@@ -26,7 +26,11 @@ const session = {
 };
 
 /** Same encoding better-auth's `setCookieCache` uses (compact strategy). */
-function signedCacheCookie(expiresAt: number, secret = SECRET): string {
+function signedCacheCookie(
+  expiresAt: number,
+  secret = SECRET,
+  name = 'better-auth.session_data'
+): string {
   const payload = { session, user, updatedAt: now };
   const signature = createHmac('sha256', secret)
     .update(JSON.stringify({ ...payload, expiresAt }))
@@ -34,11 +38,11 @@ function signedCacheCookie(expiresAt: number, secret = SECRET): string {
   const value = Buffer.from(
     JSON.stringify({ session: payload, expiresAt, signature })
   ).toString('base64url');
-  return `better-auth.session_data=${value}`;
+  return `${name}=${value}`;
 }
 
-const requestWith = (cookie?: string) =>
-  new Request('http://dash.test/en', {
+const requestWith = (cookie?: string, origin = 'http://dash.test') =>
+  new Request(`${origin}/en`, {
     headers: cookie ? { cookie } : {},
   });
 
@@ -146,5 +150,36 @@ describe('resolveSession', () => {
       kind: 'unavailable',
       reason: 'get-session 500',
     });
+  });
+
+  // Over https the API names the cache `__Secure-better-auth.session_data`.
+  // Reading the plain name there made every request miss and pay the hop.
+  test('over https the cache is read from the __Secure- cookie', async () => {
+    const fetchSession = apiAnswers(null);
+    const secureCache = signedCacheCookie(
+      now + 60_000,
+      SECRET,
+      '__Secure-better-auth.session_data'
+    );
+    const result = await resolveSession(
+      requestWith(`__Secure-${TOKEN}; ${secureCache}`, 'https://dash.test'),
+      { secret: SECRET, fetchSession }
+    );
+
+    expect(result.kind).toBe('cached');
+    expect(fetchSession).not.toHaveBeenCalled();
+  });
+
+  test('over https a cache without the prefix is not trusted', async () => {
+    const fetchSession = apiAnswers(null);
+    await resolveSession(
+      requestWith(
+        `__Secure-${TOKEN}; ${signedCacheCookie(now + 60_000)}`,
+        'https://dash.test'
+      ),
+      { secret: SECRET, fetchSession }
+    );
+
+    expect(fetchSession).toHaveBeenCalledTimes(1);
   });
 });
