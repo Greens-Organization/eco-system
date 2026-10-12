@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "@pack/tsconfig": "workspace:*",
-    "@types/bun": "1.4.2",
+    "@types/bun": "1.4.3",
     "concurrently": "10.0.5",
     "drizzle-orm": "0.45.2",
     "pino-pretty": "catalog:",

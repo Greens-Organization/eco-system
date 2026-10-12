@@ -7,7 +7,7 @@
       "devDependencies": {
         "@biomejs/biome": "2.5.14",
         "@pack/tsconfig": "workspace:*",
-        "@types/bun": "1.4.2",
+        "@types/bun": "1.4.3",
         "turbo": "2.11.5",
         "typescript": "6.0.3",
       },
@@ -28,7 +28,7 @@
       },
       "devDependencies": {
         "@pack/tsconfig": "workspace:*",
-        "@types/bun": "1.4.2",
+        "@types/bun": "1.4.3",
         "concurrently": "10.0.5",
         "drizzle-orm": "0.45.2",
         "pino-pretty": "catalog:",
@@ -87,7 +87,7 @@
       },
       "devDependencies": {
         "@pack/tsconfig": "workspace:*",
-        "@types/bun": "1.4.2",
+        "@types/bun": "1.4.3",
         "@types/node": "catalog:dev",
       },
     },
@@ -180,7 +180,7 @@
       "devDependencies": {
         "@pack/testing": "workspace:*",
         "@pack/tsconfig": "workspace:*",
-        "@types/bun": "1.4.2",
+        "@types/bun": "1.4.3",
         "@types/node": "catalog:dev",
       },
     },
@@ -203,7 +203,7 @@
       },
       "devDependencies": {
         "@pack/tsconfig": "workspace:*",
-        "@types/bun": "1.4.2",
+        "@types/bun": "1.4.3",
         "@types/node": "catalog:dev",
       },
     },
@@ -212,7 +212,7 @@
       "version": "0.0.0",
       "devDependencies": {
         "@pack/tsconfig": "workspace:*",
-        "@types/bun": "1.4.2",
+        "@types/bun": "1.4.3",
         "@types/node": "catalog:dev",
       },
     },
@@ -634,7 +634,7 @@
 
     "@turbo/windows-arm64": ["@turbo/windows-arm64@2.11.5", "", { "os": "win32", "cpu": "arm64" }, "sha512-52ziXYP3snGOxjv19xA3WL1WDKv9Q6uDAa/7EKIR5j4hocMlYURkrOHbJ2ZZI+VfPU5MwKpcGeRfHxHJu7Y/Pw=="],
 
-    "@types/bun": ["@types/bun@1.4.2", "", { "dependencies": { "bun-types": "1.4.2" } }, "sha512-GimotNn7+ZV0uVArItBbriZsR1oNf0+WTzPkdcFrzShI7k2norL0uzEaJT8T33dWr7O/c9ZDuAFQrctKCi72oQ=="],
+    "@types/bun": ["@types/bun@1.4.3", "", { "dependencies": { "bun-types": "1.4.3" } }, "sha512-N67Pqy8JXbAY/j0tNraS3V5mubGvc6rrrNDmDCtZLlFzccbUJPDb0tvgUBC5q4m8ybkP93Jcn1QB+RYQ6PvBhw=="],
 
     "@types/cookie": ["@types/cookie@0.6.0", "", {}, "sha512-4Kh9a6B2bQciAhf7FSuMRRkUWecJgJu9nPnx3yzpsfXX/c50REIqpHY4C82bXP90qrLtXtkDxTZosYO3UpOwlA=="],
 
@@ -672,7 +672,7 @@
 
     "buffer-from": ["buffer-from@1.1.2", "", {}, "sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ=="],
 
-    "bun-types": ["bun-types@1.4.2", "", { "dependencies": { "@types/node": "*" } }, "sha512-bxV1FgK7yBIzjRe5zBozIM4Bem11ZJcCXSrjWRG3YWLt8yFDePu4cLjpebO8OvPeIE9trbyPF4fuj3Cia4Fj3w=="],
+    "bun-types": ["bun-types@1.4.3", "", { "dependencies": { "@types/node": "*", "undici-types": "*" } }, "sha512-tinRJNGOmUN+tEAsn2y2e942n9JHRHR42iUYzDH75NmhJqVBokGSQkkfSFdNWwsANIdrK6ACH9t01M452YyTwg=="],
 
     "chalk": ["chalk@5.6.2", "", {}, "sha512-7NzBL0rN6fMUW+f7A6Io4h40qQlG+xGmtMxfbnH/K7TAtt8JQWVQK+6g0UXKMeVJoyV5EkkNsErQ8pVD3bLHbA=="],
 
