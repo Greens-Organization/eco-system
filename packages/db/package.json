@@ -4,7 +4,8 @@
   "exports": {
     ".": "./index.ts",
     "./schema": "./schema/index.ts",
-    "./pack-env": "./pack-env.ts"
+    "./pack-env": "./pack-env.ts",
+    "./seed/admin": "./src/seed/admin.seed.ts"
   },
   "scripts": {
     "test": "bun test",

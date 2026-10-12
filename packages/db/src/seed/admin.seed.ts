@@ -22,7 +22,9 @@ export async function seedAdmin() {
   }
 
   await db.insert(account).values({
-    accountId: email,
+    // better-auth matches the credential account by `accountId === user.id`;
+    // anything else (the email, say) reads as "user not found" at sign-in.
+    accountId: newUser.id,
     providerId: 'credential',
     userId: newUser.id,
     password: passwordHashed,
