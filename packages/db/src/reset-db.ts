@@ -1,18 +1,16 @@
 import { reset } from 'drizzle-seed';
+import { connectionString } from '../pack-env';
 import * as schema from '../schema';
-import { db } from '.';
+import { db, disconnectDatabase } from '.';
+import { resetRefusal } from './reset-guard';
 
-if (process.env.NODE_ENV === 'local') {
-  console.log('Initializing data reset...');
-
-  await reset(db, schema);
-
-  console.log('Data eeset completed!');
-} else {
-  console.error(
-    `THIS SCRIPT CAN NOT BE EXECUTED ON "${process.env.NODE_ENV?.toUpperCase()}" ENVIRONMENT!`
-  );
+const refusal = resetRefusal(connectionString, process.env.NODE_ENV);
+if (refusal) {
+  console.error(`db:reset refused: ${refusal}.`);
   process.exit(1);
 }
 
-process.exit(0);
+console.log('Initializing data reset...');
+await reset(db, schema);
+await disconnectDatabase();
+console.log('Data reset completed!');
