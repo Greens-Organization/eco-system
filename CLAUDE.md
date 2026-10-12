@@ -23,8 +23,10 @@ study/             reference material — not part of the build
 `@pack/*`: `auth`, `cache`, `db`, `design-system`, `email`, `i18n`,
 `observability`, `seo`, `storage`, `testing`, `tools`, `tsconfig`.
 
-Each package keeps source under `src/`, exposes explicit subpath `exports`, and
-reads its own runtime config from a per-package `pack-env.ts`.
+Each package keeps source under `src/` (except `design-system`, which uses
+`components/`, `hooks/`, `lib/`, `styles/`, and `tsconfig`, which is config
+only), exposes explicit subpath `exports`, and reads its own runtime config
+from a per-package `pack-env.ts`.
 
 ---
 
@@ -102,9 +104,12 @@ look at it. For behavior changes, exercise the endpoint or route.
 
 ## 5. Conventions
 
-- **Versions** live in the root `package.json` `catalog` / `catalogs.dev`.
-  Reference them as `"catalog:"` — never pin a version inside a package.
-  All versions are exact (no `^`), so `bun update` is a no-op by design.
+- **Versions** live in the root `package.json` `workspaces.catalog` /
+  `workspaces.catalogs.dev`. Reference them as `"catalog:"` — never pin a
+  version inside a package. The tree does not follow this yet (~42 literal
+  pins, cleanup is phase 12 of the backlog card); new deps go through the
+  catalog. All versions are exact (no `^`), so `bun update` is a no-op by
+  design.
 - **Runtime config** is a per-package `pack-env.ts` with a zod schema. Invalid
   env fails loudly at startup; no silent fallbacks.
 - **No silent fallbacks** generally — invalid state should throw, not degrade.
@@ -276,7 +281,7 @@ do it. Full strategy: `tasks/done/sampling-strategy.md`.
 
 ## 8. Current state
 
-Branch `alpha/eco-system-v2`, 96 commits ahead of `main`, no upstream.
+Branch `alpha/eco-system-v2`, ahead of `main`, no upstream.
 
 The whole open backlog is one card, `tasks/todo/full-sweep-2026-10-11.md`,
 executed in phases (one verified commit per slice). The only other card,

@@ -8,7 +8,7 @@ structured logging, OpenTelemetry, Sentry, Drizzle migrations, and a Biome +
 
 ## Stack
 
-- **Runtime / tooling** — Bun (version pinned in `.tool-versions`), Turborepo,
+- **Runtime / tooling** — Bun (version pinned in `mise.toml`), Turborepo,
   Biome, TypeScript (strict), Bun workspaces with a shared version **catalog**
   and `isolated` linker.
 - **API** (`apps/api`) — Hono, `@hono/zod-openapi`, Scalar API reference,
@@ -49,12 +49,13 @@ study/       reference material, not part of the build
 | `@pack/email`          | SMTP sending over nodemailer; templating is the caller's choice.      |
 | `@pack/storage`        | Storage abstraction (configured via `pack-env`).                     |
 | `@pack/cache`          | Cache helpers (one module per function).                              |
-| `@pack/seo`            | Metadata + JSON-LD helpers.                                           |
+| `@pack/seo`            | JSON-LD helper (no importers by design; for forks).                   |
 | `@pack/tools`          | Shared framework-agnostic utilities.                                  |
 | `@pack/testing`        | Shared Bun test preload / helpers.                                    |
 | `@pack/tsconfig`       | Shared TypeScript configs.                                            |
 
-Each package keeps its TypeScript source under `src/` and exposes explicit
+Each package keeps its TypeScript source under `src/` (the design system uses
+`components/`, `hooks/`, `lib/`, `styles/`) and exposes explicit
 subpath `exports`; runtime config lives in a per-package `pack-env.ts`.
 
 ## Getting started
@@ -144,7 +145,7 @@ instead.
 
 ## Conventions
 
-- **Versions** are centralized in the root `package.json` `catalog` — reference
+- **Versions** are centralized in the root `package.json` `workspaces.catalog` — reference
   them with `"catalog:"` instead of pinning per package.
 - **Verification.** CI (`.github/workflows/ci.yml`) runs lint, typecheck,
   unit and e2e tests on pull requests. There is no commit hook: run

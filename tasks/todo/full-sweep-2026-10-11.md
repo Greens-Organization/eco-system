@@ -258,14 +258,11 @@ tradução.
 
 ## Docs desatualizados
 
-- `CLAUDE.md`: §2 (6 pacotes com `test`, script `docker:infra` já removido),
-  §4 (70 pass), §5 (pins; catálogo fica em `workspaces.catalog`), §8 (96
-  commits, toolchain resolvido, 32 deps). §8 e as referências a
-  `tasks/todo/*` já apontam para este card (2026-10-12).
-- `README` cita `.tool-versions` (hoje `mise.toml`) e "Metadata" no seo (só
-  `json-ld`).
-- Backlog consolidado em 2026-10-12: os 4 cards antigos foram para
-  `tasks/done/` (ver topo).
+- [x] **Feito (2026-10-12):** `CLAUDE.md` §1 (exceções ao `src/`), §2
+  (comandos novos, 6 pacotes com `test`, script quebrado removido), §4 (CI,
+  lint 0, 70 pass), §5 (catálogo em `workspaces.catalog`, pins existentes
+  admitidos), §8 (aponta para este card, sem contagem de commits que
+  envelhece). `README`: `mise.toml`, `@pack/seo` só json-ld, scripts, CI.
 
 ---
 
@@ -357,7 +354,7 @@ no mesmo commit da mudança de comportamento.
 
 | # | Fase | Itens |
 | --- | --- | --- |
-| 0 | Rede de segurança | zerar lint, **G1** CI, **G5** scripts da raiz, corrigir o drift de `CLAUDE.md`/`README` |
+| 0 ✅ | Rede de segurança | zerar lint, **G1** CI, **G5** scripts da raiz, corrigir o drift de `CLAUDE.md`/`README` — feito 2026-10-12 (CI ainda não rodou no GitHub) |
 | 1 | Bugs visíveis | 🔴 1 (logout 5 min), 🔴 2 (proxy `/auth` 500) + testes em **G2** |
 | 2 | Rename | **N1** `@app/dashboard-api` |
 | 3 | Segurança | 🔴 3 rate limit, 🔴 5/6 reset e seed, 🔴 7 json-ld, validação de env, scrub do Sentry, `redact`, `ip` confiável, cookies `__Secure-*`, **G8** hardening |
