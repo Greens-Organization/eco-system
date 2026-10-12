@@ -21,6 +21,6 @@
   },
   "devDependencies": {
     "@pack/tsconfig": "workspace:*",
-    "@types/node": "catalog:dev"
+    "@types/bun": "catalog:dev"
   }
 }

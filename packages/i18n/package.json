@@ -15,7 +15,7 @@
   },
   "devDependencies": {
     "@pack/tsconfig": "workspace:*",
-    "@types/negotiator": "0.6.4",
-    "@types/node": "catalog:dev"
+    "@types/bun": "catalog:dev",
+    "@types/negotiator": "0.6.4"
   }
 }

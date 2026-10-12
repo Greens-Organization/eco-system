@@ -37,7 +37,7 @@
     "@sveltejs/vite-plugin-svelte": "catalog:",
     "@tailwindcss/typography": "catalog:",
     "@tailwindcss/vite": "4.3.3",
-    "@types/node": "catalog:dev",
+    "@types/bun": "catalog:dev",
     "svelte": "catalog:",
     "svelte-check": "4.7.6",
     "tailwindcss": "catalog:",

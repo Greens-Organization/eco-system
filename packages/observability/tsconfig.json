@@ -1,7 +1,7 @@
 {
   "extends": "@pack/tsconfig/svelte.json",
   "compilerOptions": {
-    "types": ["bun", "node"]
+    "types": ["bun"]
   },
   "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]

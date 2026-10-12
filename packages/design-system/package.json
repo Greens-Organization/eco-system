@@ -26,7 +26,7 @@
     "@sveltejs/vite-plugin-svelte": "catalog:",
     "@tailwindcss/postcss": "catalog:",
     "@tailwindcss/typography": "catalog:",
-    "@types/node": "catalog:dev",
+    "@types/bun": "catalog:dev",
     "postcss": "catalog:",
     "svelte-check": "4.7.6",
     "tailwind-variants": "3.3.1",

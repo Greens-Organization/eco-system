@@ -36,7 +36,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.5.14",
     "@pack/tsconfig": "workspace:*",
-    "@types/bun": "1.4.3",
+    "@types/bun": "catalog:dev",
     "turbo": "2.11.5",
     "typescript": "6.0.3"
   },
@@ -78,7 +78,7 @@
     },
     "catalogs": {
       "dev": {
-        "@types/node": "25.9.3"
+        "@types/bun": "1.4.3"
       }
     }
   }

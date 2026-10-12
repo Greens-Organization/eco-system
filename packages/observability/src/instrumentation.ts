@@ -1,6 +1,12 @@
 import os from 'node:os';
-import { metrics } from '@opentelemetry/api';
+import { context, metrics, propagation, trace } from '@opentelemetry/api';
 import { logs } from '@opentelemetry/api-logs';
+import { AsyncLocalStorageContextManager } from '@opentelemetry/context-async-hooks';
+import {
+  CompositePropagator,
+  W3CBaggagePropagator,
+  W3CTraceContextPropagator,
+} from '@opentelemetry/core';
 import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
@@ -15,9 +21,9 @@ import {
   PeriodicExportingMetricReader,
 } from '@opentelemetry/sdk-metrics';
 import {
+  BasicTracerProvider,
   BatchSpanProcessor,
-  NodeTracerProvider,
-} from '@opentelemetry/sdk-trace-node';
+} from '@opentelemetry/sdk-trace-base';
 import * as Sentry from '@sentry/bun';
 import { env } from '../pack-env';
 import { scrubPii } from './sentry';
@@ -36,7 +42,7 @@ import { settleWithin } from './settle';
 const sentryDsn = env.SENTRY_DSN;
 const otlpEndpoint = env.OTEL_EXPORTER_OTLP_ENDPOINT;
 
-let provider: NodeTracerProvider | undefined;
+let provider: BasicTracerProvider | undefined;
 let meterProvider: MeterProvider | undefined;
 let loggerProvider: LoggerProvider | undefined;
 
@@ -65,11 +71,25 @@ if (otlpEndpoint) {
 
   // OTel 2.x: span processors go in the constructor (no addSpanProcessor).
   // Sampling is controlled by the standard OTEL_TRACES_SAMPLER[_ARG] env vars.
-  provider = new NodeTracerProvider({
+  provider = new BasicTracerProvider({
     resource,
     spanProcessors: [new BatchSpanProcessor(new OTLPTraceExporter())],
   });
-  provider.register();
+  // What NodeTracerProvider.register() did, spelled out (no Node-specific
+  // SDK): the global provider, AsyncLocalStorage for the active span (Bun
+  // implements node:async_hooks), and W3C traceparent + baggage propagation.
+  trace.setGlobalTracerProvider(provider);
+  context.setGlobalContextManager(
+    new AsyncLocalStorageContextManager().enable()
+  );
+  propagation.setGlobalPropagator(
+    new CompositePropagator({
+      propagators: [
+        new W3CTraceContextPropagator(),
+        new W3CBaggagePropagator(),
+      ],
+    })
+  );
 
   meterProvider = new MeterProvider({
     resource,
