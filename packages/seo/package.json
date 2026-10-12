@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
+    "test": "bun test",
     "clean": "git clean -xdf .cache .turbo dist node_modules"
   },
   "exports": {
@@ -13,6 +14,7 @@
   },
   "devDependencies": {
     "@pack/tsconfig": "workspace:*",
+    "@types/bun": "1.4.3",
     "@types/node": "catalog:dev"
   }
 }
