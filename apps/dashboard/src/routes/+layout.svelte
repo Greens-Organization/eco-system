@@ -2,6 +2,7 @@
 import '../app.css';
 import { DesignSystemProvider } from '@pack/design-system/providers';
 import type { Snippet } from 'svelte';
+import { CSP_NONCE_PLACEHOLDER } from '$lib/csp';
 
 interface Props {
   children?: Snippet;
@@ -9,6 +10,6 @@ interface Props {
 let { children }: Props = $props();
 </script>
 
-<DesignSystemProvider>
+<DesignSystemProvider nonce={CSP_NONCE_PLACEHOLDER}>
     {@render children?.()}
 </DesignSystemProvider>

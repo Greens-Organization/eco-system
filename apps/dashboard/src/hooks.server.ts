@@ -11,6 +11,7 @@ import { sequence } from '@sveltejs/kit/hooks';
 import { authFetch } from '$lib/auth-proxy';
 import { env } from '$lib/env';
 import { clearAuthCookies, forwardSetCookies } from '$lib/server/auth-cookies';
+import { injectCspNonce, SECURITY_HEADERS } from '$lib/server/security-headers';
 import { resolveSession } from '$lib/server/session';
 
 const unauthenticatedPaths = ['/sign-in', '/sign-up'];
@@ -49,6 +50,18 @@ const logHandle: Handle = async ({ event, resolve }) => {
 
   reqLog.info(`${event.request.method} ${response.status} ${dur}ms`);
   response.headers.set('x-request-id', requestId);
+  return response;
+};
+
+/**
+ * Outermost: security headers on every response (Kit sets the CSP itself),
+ * and the CSP nonce swapped into server-rendered markup that needs it.
+ */
+const securityHandle: Handle = async ({ event, resolve }) => {
+  const response = await injectCspNonce(await resolve(event));
+  for (const [name, value] of Object.entries(SECURITY_HEADERS)) {
+    response.headers.set(name, value);
+  }
   return response;
 };
 
@@ -136,6 +149,7 @@ const i18nHandle: Handle = async ({ event, resolve }) => {
 };
 
 export const handle = sequence(
+  securityHandle,
   logHandle,
   localeHandle,
   sessionHandle,

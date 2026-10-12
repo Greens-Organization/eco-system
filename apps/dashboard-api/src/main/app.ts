@@ -1,10 +1,13 @@
 import { httpInstrumentationMiddleware } from '@hono/otel';
 import { Hono } from 'hono';
+import { bodyLimit } from 'hono/body-limit';
 import { showRoutes } from 'hono/dev';
 import { prettyJSON } from 'hono/pretty-json';
 import { requestId } from 'hono/request-id';
+import { secureHeaders } from 'hono/secure-headers';
 import { env, isProduction } from '@/core/env';
 import { CONSTANTS } from '@/infra/common/constants';
+import { OpenStatusApiError } from '@/main/infra/openapi/utils';
 import { handleError } from './infra/error-handler';
 import { type AppVariables, observability } from './middleware';
 import { publicRoute } from './routes/public';
@@ -15,6 +18,8 @@ import { v1 } from './routes/v1';
  * below; tests call `buildApp()` to get a fresh, isolated app with no shared
  * state, so each e2e file can run the real stack in isolation.
  */
+const MAX_BODY_BYTES = 1024 * 1024;
+
 export function buildApp() {
   const app = new Hono<{ Variables: AppVariables }>({ strict: false });
 
@@ -29,6 +34,27 @@ export function buildApp() {
   app.use('*', httpInstrumentationMiddleware());
   app.use('*', observability());
   app.use('*', prettyJSON());
+
+  /**
+   * Hardening. The API only answers the dashboard server (never a browser),
+   * so these are defence in depth: standard security headers, and a body cap
+   * so one request cannot hold memory hostage (auth and v1 bodies are tiny).
+   * No hono/csrf: there is no browser session to forge here, and better-auth
+   * checks the Origin of its own state-changing routes.
+   */
+  app.use('*', secureHeaders());
+  app.use(
+    '*',
+    bodyLimit({
+      maxSize: MAX_BODY_BYTES,
+      onError: () => {
+        throw new OpenStatusApiError({
+          code: 'PAYLOAD_TOO_LARGE',
+          message: `Request body over ${MAX_BODY_BYTES} bytes`,
+        });
+      },
+    })
+  );
 
   /**
    * Public routes (no auth) + REST API v1.

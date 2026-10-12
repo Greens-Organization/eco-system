@@ -13,6 +13,7 @@ export const ErrorCodes = [
   'UNAUTHORIZED',
   'METHOD_NOT_ALLOWED',
   'UNPROCESSABLE_ENTITY',
+  'PAYLOAD_TOO_LARGE',
   'TOO_MANY_REQUESTS',
 ] as const;
 

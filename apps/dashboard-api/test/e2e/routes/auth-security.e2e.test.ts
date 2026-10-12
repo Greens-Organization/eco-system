@@ -336,6 +336,23 @@ describe('session lifetime and storage', () => {
 });
 
 describe('exposure', () => {
+  test('a body over 1 MiB is refused with 413 before reaching auth', async () => {
+    const res = await buildTestApp().request('/auth/sign-in/email', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ email: 'a@b.c', password: 'x'.repeat(1_100_000) }),
+    });
+    expect(res.status).toBe(413);
+    expect(await res.json()).toMatchObject({ code: 'PAYLOAD_TOO_LARGE' });
+  });
+
+  test('responses carry the standard security headers', async () => {
+    const res = await buildTestApp().request('/status');
+    expect(res.headers.get('x-content-type-options')).toBe('nosniff');
+    expect(res.headers.get('x-frame-options')).toBe('SAMEORIGIN');
+    expect(res.headers.get('strict-transport-security')).toContain('max-age');
+  });
+
   // The browser never calls the API; only the dashboard server does.
   test('the API sends no CORS headers to a browser origin', async () => {
     const app = buildTestApp();

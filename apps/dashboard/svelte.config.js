@@ -6,6 +6,26 @@ const config = {
   preprocess: vitePreprocess(),
   kit: {
     adapter: adapter(),
+    // Kit adds a per-request nonce to its own scripts; ModeWatcher's inline
+    // theme script gets it through `injectCspNonce` (hooks.server.ts).
+    csp: {
+      mode: 'nonce',
+      directives: {
+        'default-src': ['self'],
+        'script-src': ['self'],
+        // Svelte and bits-ui set inline style attributes.
+        'style-src': ['self', 'unsafe-inline'],
+        // genericAvatar() draws placeholder avatars from DiceBear.
+        'img-src': ['self', 'data:', 'https://api.dicebear.com'],
+        'font-src': ['self'],
+        'connect-src': ['self'],
+        'object-src': ['none'],
+        'base-uri': ['self'],
+        'form-action': ['self'],
+        // The admin panel is never framed (clickjacking).
+        'frame-ancestors': ['none'],
+      },
+    },
     alias: {
       '@api/*': '../dashboard-api/src/*',
       // Transitive API path aliases (needed to typecheck AppType imports)

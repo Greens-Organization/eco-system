@@ -15,6 +15,7 @@ describe('error codes <-> status', () => {
     expect(statusToCode(400)).toBe('BAD_REQUEST');
     expect(statusToCode(404)).toBe('NOT_FOUND');
     expect(statusToCode(429)).toBe('TOO_MANY_REQUESTS');
+    expect(statusToCode(413)).toBe('PAYLOAD_TOO_LARGE');
     expect(statusToCode(500)).toBe('INTERNAL_SERVER_ERROR');
     expect(statusToCode(418)).toBe('INTERNAL_SERVER_ERROR');
   });
@@ -22,6 +23,7 @@ describe('error codes <-> status', () => {
   test('codeToStatus is the inverse incl. 429', () => {
     expect(codeToStatus('BAD_REQUEST')).toBe(400);
     expect(codeToStatus('TOO_MANY_REQUESTS')).toBe(429);
+    expect(codeToStatus('PAYLOAD_TOO_LARGE')).toBe(413);
     expect(codeToStatus('INTERNAL_SERVER_ERROR')).toBe(500);
   });
 });
