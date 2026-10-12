@@ -276,11 +276,14 @@ origem, agora em `tasks/done/`.
 
 ### De `boilerplate-gaps-audit.md`
 
-- **G1 — CI** (era P0 #1). Workflow rodando `turbo typecheck`, `biome check`,
-  `turbo test` nas versões do `mise.toml`. Só vira bloqueante depois de zerar
-  o lint (4 renames em `packages/db/schema/User/*` + override do favicon em
-  `apps/dashboard/static/**`). Depois: budget de bundle via `ANALYZE=1` (era
-  §15).
+- [x] **G1 — CI** (era P0 #1). **Feito (2026-10-12):** lint zerado
+  (`80935ea`); `.github/workflows/ci.yml` com job `check` (`biome ci` +
+  `turbo typecheck test`) e job `e2e`, bun/node via `mise-action`. Achado no
+  caminho: os unitários da API dependiam do `.env` local (falhavam sem ele) —
+  corrigido com preload próprio (`0b553b6`). Verificado numa worktree limpa
+  sem `.env`: 19/19 tasks; e2e 7/7 local. **Pendente:** o workflow nunca rodou
+  no GitHub (branch sem upstream) — conferir na primeira PR. Budget de bundle
+  via `ANALYZE=1` (era §15) segue aberto.
 - **G2 — Testes do dashboard** (era P0 #3). Lógica pura, sem infra:
   `src/lib/auth-proxy.ts` (`localizeAuthError`, `redactEmail`,
   `userMessageFor`), `src/lib/api/safe-fetch.ts` (erro + zod),
@@ -296,8 +299,12 @@ origem, agora em `tasks/done/`.
   (`svelte-sonner`). Os demais (`alert`, `tabs`, `switch`/`checkbox`/
   `radio-group`, `popover`, `command`, `progress`) só se alguma tela pedir.
   Tirar o código do design system do ignore do biome antes (ver Infra).
-- **G5 — Scripts agregados na raiz** (era §8): `check`, `typecheck`,
-  `db:migrate|seed|reset|studio`, `setup`, `docker:test:*`.
+- [x] **G5 — Scripts agregados na raiz** (era §8). **Feito (2026-10-12,
+  `80b18d0`):** `check`, `typecheck`, `setup`, `test:e2e`,
+  `db:generate|migrate|seed|reset|studio` (via `bun --filter`);
+  `docker:infra:up --wait` com healthchecks novos no compose. `setup`
+  verificado de ponta a ponta. `docker:test:*` não foi criado — o runner do
+  e2e já sobe e derruba o compose de teste.
 - **G6 — Gestão de env** (era §9). Documentar que `BETTER_AUTH_SECRET` tem de
   bater entre API e dashboard; corrigir o `.env.example` "genergia".
 - **G7 — Receita de deploy** (era §10). Dockerfile do dashboard

@@ -77,8 +77,11 @@ the schema imports `bun`, so a bare `bunx drizzle-kit` fails to resolve it.
 
 ## 4. Verification
 
-There is **no CI and no verification hook**. Nothing runs automatically. Before
-claiming work is done, run the checks yourself:
+`.github/workflows/ci.yml` runs `biome ci`, `turbo typecheck test` and the API
+e2e suite on pull requests and on pushes to `main`, with bun/node from
+`mise.toml`. It has not run on GitHub yet — this branch has no upstream — and
+there is no local hook. Before claiming work is done, run the checks yourself
+(`bun run check` does all three):
 
 ```bash
 bunx turbo run typecheck --force   # 13/13 packages green
@@ -279,8 +282,9 @@ The whole open backlog is one card, `tasks/todo/full-sweep-2026-10-11.md`,
 executed in phases (one verified commit per slice). The only other card,
 `i18n-paraglide-migration.md`, is deliberately parked. Largest open items:
 
-1. **No CI.** `.github/` has templates only. 70 tests exist and nothing runs
-   them.
+1. **CI is written but unproven** — the workflow has never run on GitHub.
+   Unit tests used to depend on the local `.env`; they now pass in a clean
+   checkout (verified in a worktree with no `.env` files).
 2. **Test coverage is concentrated** in 6 of 13 workspaces. The dashboard has
    no tests.
 3. **Known bugs**: forced re-login every ~5 min (cookie cache vs the

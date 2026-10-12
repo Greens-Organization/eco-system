@@ -146,9 +146,10 @@ instead.
 
 - **Versions** are centralized in the root `package.json` `catalog` — reference
   them with `"catalog:"` instead of pinning per package.
-- **Verification is manual.** There is no CI and no commit hook: run
-  `bun run check` yourself before calling a change done. `CLAUDE.md` §4 lists
-  the checks.
+- **Verification.** CI (`.github/workflows/ci.yml`) runs lint, typecheck,
+  unit and e2e tests on pull requests. There is no commit hook: run
+  `bun run check` before calling a change done. `CLAUDE.md` §4 lists the
+  checks.
 
 ## License
 
