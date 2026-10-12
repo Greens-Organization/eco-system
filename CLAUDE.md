@@ -49,8 +49,8 @@ bun run docker:obs:up        # grafana/otel-lgtm
 
 bun run db:generate          # these fan out to @pack/db via bun --filter
 bun run db:migrate           # drizzle-kit migrate
-bun run db:seed              # creates ADMIN_EMAIL/ADMIN_PASSWORD user
-bun run db:reset
+bun run db:seed              # creates the ADMIN_EMAIL/ADMIN_PASSWORD user (8+ chars, no default)
+bun run db:reset             # wipes every table; refused unless DATABASE_URL is localhost
 bun run db:studio
 
 bun run test:e2e             # API e2e on an ephemeral compose, gated by E2E=1
@@ -78,7 +78,8 @@ The `typescript` package (6.0.3, root devDependency) is only for
 disagree with it; aligning the two is part of the dependency majors (H1).
 
 `@app/dashboard-api`, `@app/dashboard-svelte`, `@pack/auth`, `@pack/db`,
-`@pack/observability`, `@pack/tools` and `@pack/testing` define `test`. The
+`@pack/observability`, `@pack/tools`, `@pack/testing`, `@pack/email` and
+`@pack/seo` define `test`. The
 dashboard's run under plain `bun test` (no Vite), so they cover `src/lib`
 modules that do not import `$env`/`$app`; keep server logic there
 (`src/lib/server/*`) and inject what touches the network.
@@ -113,10 +114,10 @@ there is no local hook. Before claiming work is done, run the checks yourself
 
 ```bash
 bunx biome check .                    # 0 errors
-bun check                             # 0 errors, 220 files across 11 projects
+bun check                             # 0 errors, 226 files across 11 projects
 bunx turbo run check:svelte --force   # 0 errors in dashboard + design-system
 bunx turbo run build --force          # api binary + dashboard vite build
-bunx turbo run test --force           # 142 pass / 0 fail
+bunx turbo run test --force           # 163 pass / 0 fail
 ```
 
 `bun check` is not cached by turbo and takes about half a second.
@@ -141,7 +142,13 @@ look at it. For behavior changes, exercise the endpoint or route.
   catalog. All versions are exact (no `^`), so `bun update` is a no-op by
   design.
 - **Runtime config** is a per-package `pack-env.ts` with a zod schema. Invalid
-  env fails loudly at startup; no silent fallbacks.
+  env fails loudly at startup; no silent fallbacks. Secrets have a minimum
+  length (`BETTER_AUTH_SECRET`, `CLIENT_IP_SECRET`: 32), URLs have no
+  localhost default (`BETTER_AUTH_URL`, the dashboard's `API_URL`),
+  `ORIGIN_ALLOWED` must hold real URLs, the API's `NODE_ENV` is one of
+  `local|development|test|production`, and `SMTP_HOST` requires `SMTP_PORT`.
+  `.env` files write unset values as `KEY=`; schemas that allow "unset" treat
+  `''` as unset.
 - **No silent fallbacks** generally — invalid state should throw, not degrade.
 - **Comments** only where the reason is not obvious from the code.
 - Match the surrounding style before introducing a new pattern.
@@ -153,6 +160,9 @@ look at it. For behavior changes, exercise the endpoint or route.
   OpenAPI tag.
 - Errors go through `AppError` and the central handler in
   `main/infra/error-handler.ts`.
+- `secureHeaders()` and a 1 MiB `bodyLimit` (413 `PAYLOAD_TOO_LARGE`) run on
+  every route. No `hono/csrf`: no browser talks to the API, and better-auth
+  checks the Origin of its own state-changing routes.
 - `v1.use('/*', authMiddleware)` protects every v1 route. Hono applies
   middleware in registration order, so `/v1/openapi` and the Scalar UI —
   registered earlier — stay public by design.
@@ -178,8 +188,14 @@ look at it. For behavior changes, exercise the endpoint or route.
   rate-limits by that IP, and every call comes from the dashboard's own
   address. `CLIENT_IP_SECRET` (≥ 32 chars) must be the same in
   `apps/dashboard-api/.env` and `apps/dashboard/.env.local`.
-- `hooks.server.ts` composes `logHandle → localeHandle → sessionHandle →
-  i18nHandle`, and redirects unauthenticated requests to `/{locale}/sign-in`.
+- `hooks.server.ts` composes `securityHandle → logHandle → localeHandle →
+  sessionHandle → i18nHandle`, and redirects unauthenticated requests to
+  `/{locale}/sign-in`.
+- **CSP** is Kit's (`svelte.config.js` `kit.csp`, nonce mode): scripts only
+  from self or with the per-request nonce, `frame-ancestors 'none'`, images
+  also from DiceBear (`genericAvatar`). `securityHandle` adds
+  `nosniff`, `X-Frame-Options`, `Referrer-Policy` and `Permissions-Policy`.
+  Checked in Chromium (build and `vite dev`): no violations.
 - `sessionHandle` → `resolveSession`: a valid cookie cache resolves locally;
   a stale one with a session token is revalidated on `/auth/get-session` and
   the fresh `session_data` is forwarded to the browser. A rejected token
@@ -255,6 +271,13 @@ better-auth's base64 payload and breaks HMAC verification on the next request.
 
 Things that look like leftovers or cleanup targets but are deliberate. Each was
 measured or debugged; changing one regresses something.
+
+- **`CSP_NONCE_PLACEHOLDER` in the root layout** — Kit only fills
+  `%sveltekit.nonce%` in app.html and never hands the nonce to components,
+  but ModeWatcher's inline theme script needs it. The layout renders the
+  placeholder and `injectCspNonce` (`securityHandle`) swaps in the nonce Kit
+  wrote into the response's CSP header. Without it the theme script is
+  blocked and the page flashes the wrong theme.
 
 - **`stripUnverifiedClientIp` edits `request.headers` in place** — never
   copy a request as `new Request(request, { headers })`: under Bun an empty
@@ -333,7 +356,12 @@ with traces automatically.
 `defaultClassification(status)` derives it when unset: 400/422 →
 `validation_error`, ≥500 → `technical_error`, else `business_error`. Sentry tags
 carry `support_id`, `error_code`, `classification`; `extra` is PII-allowlisted
-(`sentry/scrub`).
+(`sentry/scrub`). `beforeSend` (`scrubPii`) is an **allowlist** too: an event
+keeps only the request method, the URL without its query string and a few
+headers (`accept`, `content-type`, `content-length`, `x-request-id`);
+breadcrumbs keep category/level/timestamp/type. A new field is dropped by
+default. The pino logger `redact`s `password`, `token`, `secret` and
+authorization/cookie headers (one level deep) as `[redacted]`.
 
 `generateSupportId()` → `SUP-` + 12 uppercase hex. Set once per request,
 returned to the client, sent to Sentry as a tag.
@@ -401,9 +429,10 @@ executed in phases (one verified commit per slice). The only other card,
 1. **CI is written but unproven** — the workflow has never run on GitHub.
    Unit tests used to depend on the local `.env`; they now pass in a clean
    checkout (verified in a worktree with no `.env` files).
-2. **Test coverage is concentrated** in 7 of 13 workspaces (142 unit + 44
+2. **Test coverage is concentrated** in 9 of 13 workspaces (163 unit + 49
    e2e). `bun test --coverage` only lists files a test imported, so
    per-workspace percentages overstate it. Gaps and plan: card item N5.
-3. **Known bugs**: the remaining 🔴 items on the card (Dockerfile, `db:reset`
-   guard, seed, json-ld XSS). The 5-minute logout and the `/auth/*` 500 under
-   Node were fixed in phase 1; the ineffective rate limit in N6.
+3. **Known bugs**: the remaining 🔴 item on the card is the Dockerfile
+   (phase 6). Fixed: the 5-minute logout and the `/auth/*` 500 (phase 1), the
+   rate limit (N6), the `db:reset` guard, the seed and the json-ld XSS
+   (phase 3).

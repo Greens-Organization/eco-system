@@ -230,7 +230,7 @@ itens abaixo, a fase em que cada um entra:
 - [x] Fase 1: teste do proxy `/auth` (headers imutáveis) e do layout
   autenticado com cookie cache expirado. Isso abre o G2 no dashboard
   (`bun test` puro sobre `src/lib`, sem Vite).
-- [ ] Fase 3: testes de `json-ld` (escape de `</script>`), do guard do
+- [x] Fase 3: testes de `json-ld` (escape de `</script>`), do guard do
   `db:reset`, do seed e do rate limit (e2e, 429).
 - [ ] Fase 4: `error-handler` nos ramos `ZodError`/`HTTPException`,
   `auth-middleware` unitário (sem sessão → 401, sessão → `c.var.user`) e o
@@ -476,22 +476,31 @@ camada do BFF:
    `apps/dashboard/package.json`; `linker = "isolated"` mas só copia
    `/app/node_modules`. Imagem em **bun 1.3.14** (`dofigen.lock`) vs 1.4.2 no
    `mise.toml`.
-5. **`db:reset` sem guarda real.** `reset-db.ts:5` só checa
+5. ✅ **(fase 3, 2026-10-12)** **`db:reset` sem guarda real.** `reset-db.ts:5` só checa
    `NODE_ENV === 'local'`, que o próprio `packages/db/.env` define e o Bun
    auto-carrega. `DATABASE_URL` de prod no shell passa. Checar host/nome do
    banco. (Typo "eeset" na linha 10.)
+   **Feito:** `resetRefusal` (`src/reset-guard.ts`): só host local
+   (localhost/127.0.0.1/::1) e nunca `NODE_ENV=production`; 6 testes; recusa
+   conferida em runtime (host remoto e produção → exit 1). Typo corrigido.
 6. **Seed inseguro** (`admin.seed.ts`). ✅ parcial (2026-10-12): o admin
    semeado **não conseguia entrar** — gravava `account.accountId = email`, e o
    better-auth 1.7 só aceita a credencial com `accountId === user.id` ("User
    not found" → 401). Corrigido (`accountId: newUser.id`), com e2e
    `seed-admin.e2e.test.ts` que roda o seed e faz login (mutação: com o e-mail
-   no `accountId`, falha). O resto continua aberto: fallback `admin@example.com`/`admin`
+   no `accountId`, falha). ✅ **Resto feito (fase 3):** sem credencial padrão
+   (e-mail e senha de 8–128 exigidos só ao criar, então um admin já existente
+   segue intacto), user + account numa transação, senha fora do log, erro →
+   exit 1; `.env.example` sem senha; e2e (cria e entra, re-run não mexe, senha
+   curta/ausente recusada sem gravar nada). Texto original: fallback `admin@example.com`/`admin`
    (abaixo do `minPasswordLength: 8`), loga a senha em claro (`:34`), inserts
    sem transação (user sem credential em re-run), `seed/index.ts:13`
    `.catch(console.error)` sai com 0.
-7. **XSS latente em `@pack/seo`** — `json-ld.ts:14` é `JSON.stringify` puro
+7. ✅ **(fase 3, 2026-10-12)** **XSS latente em `@pack/seo`** — `json-ld.ts:14` é `JSON.stringify` puro
    dentro de `{@html <script>}`; `</script>` num valor escapa. Escapar `<`,
    `>`, `&`, U+2028/2029.
+   **Feito:** escape como `\u003c` etc. (o JSON continua idêntico para o
+   parser); 4 testes, 3 falham no código antigo.
 
 ## 🟡 Médio
 
@@ -500,11 +509,13 @@ camada do BFF:
   `x-forwarded-for` sem proxy confiável.
 - Shutdown: `server.stop()` não aguardado (`graceful-shutdown.ts:48`) antes de
   fechar o pool; crash termina com `exit(0)`; grace de 3s.
-- Env sem validação: `BETTER_AUTH_SECRET` `min(1)` (aceita o placeholder
+- ✅ (fase 3) Env sem validação: `BETTER_AUTH_SECRET` `min(1)` (aceita o placeholder
   `32-length`); `BETTER_AUTH_URL` com default localhost (desliga secure
   cookies em prod); `NODE_ENV ?? ''` em `apps/api/src/core/env.ts:25`;
   `ORIGIN_ALLOWED` aceita `''`; `API_URL` do dashboard com default; SMTP
-  opcional → `port: NaN` só no primeiro envio.
+  opcional → `port: NaN` só no primeiro envio. **Feito:** segredos com 32+,
+  sem default de URL, `ORIGIN_ALLOWED` com URLs reais, `NODE_ENV` enum na API,
+  `SMTP_HOST` exige porta válida, `''` = não definido; testes em auth e email.
 - ✅ (fase 1) Limpeza de cookie no 401 usava `startsWith('better-auth.')` e
   ignorava `__Secure-better-auth.*` (HTTPS), copiada em 3 `+page.server.ts`.
   Agora é `clearAuthCookies` em `src/lib/server/auth-cookies.ts`.
@@ -514,10 +525,17 @@ camada do BFF:
   request erra o cache e paga o hop do `get-session`: não quebra mais desde a
   fase 1, mas fica lento. Plano em **N6** (config de cookie única
   em `@pack/auth`, fase 3).
-- Scrub do Sentry é denylist: `request.data`, `query_string`,
-  `x-forwarded-for`, `set-cookie` e breadcrumbs passam.
-- Logger sem `redact`; bridge OTel envia `ip`/`user_agent` ao Loki.
-- Dashboard sem CSP nem `frame-ancestors` (clickjacking no painel admin).
+- ✅ (fase 3) Scrub do Sentry era denylist: `request.data`, `query_string`,
+  `x-forwarded-for`, `set-cookie` e breadcrumbs passavam. Agora allowlist
+  (método, URL sem query, 4 headers; breadcrumbs sem `message`/`data`).
+- ✅ (fase 3) Logger sem `redact`: agora censura `password`, `token`,
+  `secret` e headers de credencial. O bridge OTel mandando `ip`/`user_agent`
+  ao Loki fica **por design**: é o mesmo contrato do log (§6 do CLAUDE.md), e
+  o Loki é nosso — só o Sentry (terceiro) é allowlist.
+- ✅ (fase 3) Dashboard sem CSP nem `frame-ancestors`: agora `kit.csp` com
+  nonce, `frame-ancestors 'none'`, `X-Frame-Options`, `nosniff`,
+  `Referrer-Policy`, `Permissions-Policy`; Chromium sem violações (build e
+  dev); o tema do mode-watcher recebe o nonce via placeholder.
 - `apps/api/.env.example` com credenciais "genergia" que não batem com o
   compose — fork novo não conecta. (✅ parcial: `REDIS_URL` corrigido no N6;
   falta o `DATABASE_URL`, que ainda aponta `genergia_*@db-pg`.)
@@ -613,9 +631,11 @@ origem, agora em `tasks/done/`.
 - **G7 — Receita de deploy** (era §10). Dockerfile do dashboard
   (`adapter-node`, decisão N3) + compose prod-like (postgres + api +
   dashboard). Documentar a troca de adapter para quem forka (era §16).
-- **G8 — Hardening** (era §11–13). `hono/secure-headers`, `hono/csrf`,
-  `hono/body-limit` na API; `kit.csp` + `frame-ancestors` no dashboard;
-  better-auth em prod (`useSecureCookies`, `cookieCache.maxAge`).
+- ✅ **G8 — Hardening** (fase 3, 2026-10-12). `secureHeaders` e `bodyLimit`
+  de 1 MiB (413 `PAYLOAD_TOO_LARGE`, código novo) na API, com e2e; CSP no
+  dashboard (ver 🟡). `hono/csrf` **não**: a API não fala com navegador e o
+  better-auth checa o Origin das próprias rotas. better-auth em prod: feito
+  no N6 (secure cookies via `BETTER_AUTH_URL` https, cache de 60 s).
 - **G9 — `/metrics`** (era §14). **Fora deste card (2026-10-12):** nada de
   Prometheus/OTLP aqui; o dono vai tratar métricas numa frente própria.
 - **G10 — Release do template** (era §17) — **sempre o último commit**:
@@ -663,7 +683,7 @@ no mesmo commit da mudança de comportamento.
 | 0 ✅ | Rede de segurança | zerar lint, **G1** CI, **G5** scripts da raiz, corrigir o drift de `CLAUDE.md`/`README` — feito 2026-10-12 (CI ainda não rodou no GitHub) |
 | 1 ✅ | Bugs visíveis | 🔴 1 (logout 5 min), 🔴 2 (proxy `/auth` 500) + testes em **G2** — feito 2026-10-12 |
 | 2 ✅ | Rename | **N1** `@app/dashboard-api` — feito 2026-10-12 |
-| 3 | Segurança | **N7** ✅ dispositivos conectados; **N6** ✅ (API escondida, rate limit por IP e por conta, sessões no Redis, cookies, MFA opcional) — sobram itens de deploy (fase 6) e reset de senha (G3); 🔴 3 ✅, 🔴 5/6 reset e seed, 🔴 7 json-ld, validação de env, scrub do Sentry, `redact`, **G8** hardening |
+| 3 ✅ | Segurança | **N7** ✅ dispositivos conectados; **N6** ✅ (API escondida, rate limit por IP e por conta, sessões no Redis, cookies, MFA opcional) — sobram itens de deploy (fase 6) e reset de senha (G3); 🔴 3 ✅, 🔴 5/6 ✅ reset e seed, 🔴 7 ✅ json-ld, ✅ validação de env, ✅ scrub do Sentry, ✅ `redact`, ✅ **G8** hardening — fase fechada 2026-10-12 |
 | 4 | Correção da API | `route` no log, shutdown, `HOST`, 404 vs 401, `HTTPException` 5xx, Scalar em prod |
 | 5 | Bun-first | **N3** (tipos/config/docs, `NodeTracerProvider`, `Bun.spawnSync`) |
 | 6 | Deploy | 🔴 4 Dockerfile da API em bun 1.4.2 buildado, **G7**, **G6**, pins das imagens |
