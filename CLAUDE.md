@@ -81,20 +81,15 @@ claiming work is done, run the checks yourself:
 
 ```bash
 bunx turbo run typecheck --force   # 13/13 packages green
-bunx biome check .                 # 5 known errors, see below
-bunx turbo run test --force        # 55 pass / 0 fail
+bunx biome check .                 # 0 errors
+bunx turbo run test --force        # 70 pass / 0 fail
 ```
 
 Turbo caches aggressively — pass `--force` when you need a real signal, or a
 green run may just be a replay.
 
-Known lint failures (pre-existing, not caused by your change):
-
-- `packages/db/schema/User/{Account,Session,User,Verification}.ts` —
-  `useFilenamingConvention` wants kebab-case. Only 6 references, all inside
-  `@pack/db`.
-- `apps/dashboard/static/favicon.svg` — `noSvgWithoutTitle` firing on a static
-  asset. Fix with a `biome.json` override, not by editing the favicon.
+`apps/dashboard/static/**` has a `biome.json` override that turns off
+`noSvgWithoutTitle` — the rule targets inline SVG, not static assets.
 
 Do not claim completion from inspection alone. For UI work, render the page and
 look at it. For behavior changes, exercise the endpoint or route.

@@ -37,6 +37,16 @@
           }
         }
       }
+    },
+    {
+      "includes": ["apps/dashboard/static/**"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "noSvgWithoutTitle": "off"
+          }
+        }
+      }
     }
   ],
   "assist": { "actions": { "source": { "organizeImports": "on" } } },
