@@ -315,8 +315,10 @@ executed in phases (one verified commit per slice). The only other card,
 1. **CI is written but unproven** — the workflow has never run on GitHub.
    Unit tests used to depend on the local `.env`; they now pass in a clean
    checkout (verified in a worktree with no `.env` files).
-2. **Test coverage is concentrated** in 6 of 13 workspaces. The dashboard has
-   no tests.
+2. **Test coverage is concentrated** in 6 of 13 workspaces (70 unit + 7 e2e).
+   The dashboard has no tests, and `bun test --coverage` only lists files a
+   test imported, so per-workspace percentages overstate it. Gaps and plan:
+   card item N5.
 3. **Known bugs**: forced re-login every ~5 min (cookie cache vs the
    authenticated layout) and the dashboard `/auth/*` proxy returning 500 under
    Node — see the card's 🔴 list.

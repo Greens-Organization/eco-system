@@ -168,6 +168,81 @@ tradução.
 
 ---
 
+### N5. Maturidade da suíte de testes (avaliada em 2026-10-12)
+
+**Medido:** 77 testes no total, todos passando: 70 unitários em 6 workspaces
+e 7 e2e. O e2e roda contra um Postgres efêmero em ~0,7 s. A base é boa: testes
+determinísticos, rápidos e sem `.env`, deps injetadas (`/ready`, middleware de
+observabilidade), regressões nomeadas (D5 do graceful shutdown) e um harness
+e2e que limpa os containers mesmo quando falha.
+
+A cobertura é estreita e engana: o `--coverage` do Bun só lista arquivos que
+algum teste importou. Rodado por workspace, mostra auth e db a 100% e a API a
+81,7%, mas fora do relatório ficam:
+
+- **API**: `auth-middleware.ts` (protege todo o `/v1`), `app.ts`/`setup.ts`
+  (ordem dos middlewares, que define o que é público), as rotas `customers`
+  e `employees` (nem o e2e chama), `error-handler.ts` nos ramos de
+  `ZodError` e `HTTPException` (linhas 58-68 e 89-97), `openapi/utils.ts` em
+  43%. `graceful-shutdown.ts` está em 11%: só o booleano de registro é
+  testado, o dreno não.
+- **`@pack/auth`**: só o `pack-env`. `server.ts` (config do better-auth:
+  cookie cache, argon2, sessão) e `cookies.ts` sem teste. O 🔴 1 (logout em
+  5 min) mora nessa fronteira e nenhum teste o pegaria.
+- **Sem nenhum teste**: o dashboard (35 arquivos, inclusive o proxy `/auth` do
+  🔴 2 e o `safeFetch`), o design-system (105), cache, email, storage, i18n e
+  seo (o XSS do 🔴 7 está em `json-ld.ts`).
+- **`@pack/db`**: `reset-db.ts` e seed sem teste. Os dois são exatamente os
+  🔴 5/6.
+
+Asserções fracas no e2e:
+
+- O sign-up aceita `[200, 201]`.
+- A senha curta só exige `>= 400`.
+- O `/v1/stats` confere `typeof` em vez de validar com o schema zod da própria
+  rota.
+
+Faltam casos e2e de sign-out, de sessão expirada e de cookie adulterado.
+
+Infra de teste:
+
+- Nenhum limite de cobertura (`coverageThreshold`) e nenhuma cobertura no CI.
+- O log pino de nível 40/50 vaza no output dos testes de observabilidade. Só
+  ruído, mas esconde falhas reais.
+- O `turbo test` tem `dependsOn: ["^test"]`, o que serializa sem
+  necessidade: teste não consome artefato de teste.
+- Layout misto: `apps/api/test/` contra `packages/*/tests/`.
+- O comentário do `@pack/testing/src/index.ts` aponta para
+  `tasks/todo/observability.md`, que não existe mais.
+
+**Plano.** A regra geral é que cada fase traz os testes do que muda. Nos
+itens abaixo, a fase em que cada um entra:
+
+- [ ] Fase 1: teste do proxy `/auth` (headers imutáveis) e do layout
+  autenticado com cookie cache expirado. Isso abre o G2 no dashboard
+  (`bun test` puro sobre `src/lib`, sem Vite).
+- [ ] Fase 3: testes de `json-ld` (escape de `</script>`), do guard do
+  `db:reset`, do seed e do rate limit (e2e, 429).
+- [ ] Fase 4: `error-handler` nos ramos `ZodError`/`HTTPException`,
+  `auth-middleware` unitário (sem sessão → 401, sessão → `c.var.user`) e o
+  dreno do graceful shutdown.
+- [ ] Fase 4: no e2e, status exatos, shape validado com o schema zod da rota,
+  `customers`/`employees`, sign-out e cookie adulterado.
+- [ ] Fase 7: `/v1/me` no e2e. Testes de cache contra o redis do compose de
+  teste.
+- [ ] Fase 12:
+  - `coverageThreshold` por workspace no `bunfig.toml`, começando pelo valor
+    medido para só subir;
+  - cobertura no CI;
+  - `LOG_LEVEL=silent` no preload;
+  - remover o `^test` do turbo;
+  - padronizar `test/`;
+  - corrigir o comentário do `@pack/testing`.
+- [ ] Fora de escopo, salvo decisão do dono: testes de componente do
+  design-system e e2e de browser (Playwright) no dashboard.
+
+---
+
 ## 🔴 Bugs e segurança (achados da varredura)
 
 1. **Logout forçado a cada ~5 min.** `(authenticated)/+layout.server.ts:6`
