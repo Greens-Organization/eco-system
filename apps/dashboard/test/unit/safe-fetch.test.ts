@@ -56,4 +56,31 @@ describe('safeFetch', () => {
       status: 500,
     });
   });
+
+  // These used to vanish: the page showed a generic error and nothing was
+  // logged.
+  test('every failure is logged with its cause', async () => {
+    const lines: [string, string, object][] = [];
+    const log = {
+      warn: (obj: object, msg: string) => lines.push(['warn', msg, obj]),
+      error: (obj: object, msg: string) => lines.push(['error', msg, obj]),
+    };
+
+    await safeFetch(respond('{"total":"3"}'), Schema, log);
+    await safeFetch(respond('{"message":"Nope"}', 403), Schema, log);
+    await safeFetch(
+      Promise.reject(new Error('ECONNREFUSED')) as Promise<
+        ClientResponse<Body>
+      >,
+      Schema,
+      log
+    );
+
+    expect(lines.map(([level, msg]) => `${level} ${msg}`)).toEqual([
+      'error api.response.schema_mismatch',
+      'warn api.request.rejected',
+      'error api.request.failed',
+    ]);
+    expect(lines[2]?.[2]).toEqual({ reason: 'ECONNREFUSED' });
+  });
 });

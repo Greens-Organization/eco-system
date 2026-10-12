@@ -77,12 +77,17 @@ const localeHandle: Handle = async ({ event, resolve }) => {
 
   event.locals.locale = locale;
 
-  // Redirect to locale-prefixed URL if missing
+  // Redirect to locale-prefixed URL if missing, keeping the query string.
   if (!isValidLocale(segment) && pathname !== '/') {
-    redirect(307, `/${locale}${pathname}`);
+    redirect(307, `/${locale}${pathname}${event.url.search}`);
   }
 
-  return resolve(event);
+  // app.html ships lang="en"; swap in the page's language so screen readers
+  // and the browser's translate prompt get it right.
+  return resolve(event, {
+    transformPageChunk: ({ html }) =>
+      html.replace('<html lang="en">', `<html lang="${locale}">`),
+  });
 };
 
 /**

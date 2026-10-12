@@ -26,7 +26,8 @@ export const load: PageServerLoad = async ({ request, locals, cookies }) => {
   const api = createApiClient(cookieHeader, locals.requestId);
   const result = await safeFetch<Employees>(
     api.employees.$get(),
-    EmployeesSchema
+    EmployeesSchema,
+    locals.log
   );
 
   if (!result.success && result.status === 401) {

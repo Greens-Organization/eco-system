@@ -1,5 +1,11 @@
 import type { ClientResponse } from 'hono/client';
-import type { ZodType } from 'zod';
+import { ZodError, type ZodType } from 'zod';
+
+/** The slice of a pino logger used here (`locals.log` in a load). */
+type Log = {
+  warn(obj: object, msg: string): void;
+  error(obj: object, msg: string): void;
+};
 
 type Success<T> = { success: true; data: T };
 type Failure = { success: false; error: string; status: number };
@@ -30,18 +36,38 @@ async function failure(res: {
  * Typed fetch wrapper over a Hono client call. Pass a Zod `schema` to validate
  * the response body at the boundary (guards against API/client type drift);
  * without one the body is trusted as `T` (the Hono client's declared type).
+ *
+ * Failures come back as values, never thrown — and every one is logged on
+ * `log` with its cause, so a drifted schema or a dead API is not a silent
+ * "Internal server error" on the page.
  */
 export async function safeFetch<T>(
   request: Promise<ClientResponse<T>>,
-  schema?: ZodType<T>
+  schema?: ZodType<T>,
+  log?: Log
 ): Promise<Result<T>> {
   try {
     const res = await request;
-    if (!res.ok) return failure(res);
+    if (!res.ok) {
+      const result = await failure(res);
+      log?.warn(
+        { status: result.status, error: result.error },
+        'api.request.rejected'
+      );
+      return result;
+    }
     const body: unknown = await res.json();
     const data = schema ? schema.parse(body) : (body as T);
     return { success: true, data };
-  } catch {
+  } catch (error) {
+    if (error instanceof ZodError) {
+      log?.error({ issues: error.issues }, 'api.response.schema_mismatch');
+    } else {
+      log?.error(
+        { reason: error instanceof Error ? error.message : String(error) },
+        'api.request.failed'
+      );
+    }
     return { success: false, error: 'Internal server error', status: 500 };
   }
 }
