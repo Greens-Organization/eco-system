@@ -12,6 +12,7 @@
     ".svelte-kit/types/**/$types.d.ts",
     "src/**/*.ts",
     "src/**/*.svelte",
+    "test/**/*.ts",
     "vite.config.ts",
     "svelte.config.js"
   ],

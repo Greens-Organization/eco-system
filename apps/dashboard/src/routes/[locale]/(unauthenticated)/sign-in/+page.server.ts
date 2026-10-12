@@ -1,4 +1,3 @@
-import { parseSetCookieHeader, toCookieOptions } from '@pack/auth/cookies';
 import { defaultLocale } from '@pack/i18n';
 import { fail, redirect } from '@sveltejs/kit';
 import {
@@ -9,6 +8,7 @@ import {
   userMessageFor,
 } from '$lib/auth-proxy';
 import { env } from '$lib/env';
+import { forwardSetCookies } from '$lib/server/auth-cookies';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -84,18 +84,7 @@ export const actions: Actions = {
 
     locals.log.info({ status: res.status, dur_ms }, 'auth.signin.success');
 
-    // Forward Set-Cookie headers from the API. `encode: v => v` is critical:
-    // SvelteKit's default `encodeURIComponent` would re-encode better-auth's
-    // base64 payload, breaking the HMAC verification on subsequent requests.
-    for (const raw of res.headers.getSetCookie()) {
-      for (const [name, attrs] of parseSetCookieHeader(raw)) {
-        cookies.set(name, attrs.value, {
-          ...toCookieOptions(attrs),
-          encode: (v) => v,
-          path: attrs.path ?? '/',
-        });
-      }
-    }
+    forwardSetCookies(cookies, res.headers.getSetCookie());
 
     const locale = locals.locale ?? defaultLocale;
     redirect(303, `/${locale}`);

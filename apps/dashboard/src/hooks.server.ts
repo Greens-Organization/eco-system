@@ -1,4 +1,3 @@
-import { getCookieCache, getSessionCookie } from '@pack/auth/cookies';
 import {
   defaultLocale,
   getDictionary,
@@ -7,9 +6,13 @@ import {
 } from '@pack/i18n';
 import { log } from '@pack/observability/logger';
 import type { Handle, HandleServerError } from '@sveltejs/kit';
-import { redirect } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
+import { authFetch } from '$lib/auth-proxy';
 import { env } from '$lib/env';
+import { clearAuthCookies, forwardSetCookies } from '$lib/server/auth-cookies';
+import { proxyRequest } from '$lib/server/proxy';
+import { resolveSession } from '$lib/server/session';
 
 const unauthenticatedPaths = ['/sign-in', '/sign-up'];
 
@@ -55,23 +58,14 @@ const authHandle: Handle = async ({ event, resolve }) => {
   const { pathname } = event.url;
 
   if (pathname.startsWith('/auth')) {
-    const target = `${env.API_URL}${pathname}${event.url.search}`;
     // Forward the per-request id so the API logs share our correlation
     // chain (same id appears in dashboard logHandle output and Hono's
     // requestLogger output).
-    const headers = new Headers(event.request.headers);
-    if (event.locals.requestId) {
-      headers.set('x-request-id', event.locals.requestId);
-    }
-    return fetch(target, {
-      method: event.request.method,
-      headers,
-      body: ['GET', 'HEAD'].includes(event.request.method)
-        ? undefined
-        : event.request.body,
-      // @ts-expect-error — duplex required for streaming bodies
-      duplex: 'half',
-    });
+    return proxyRequest(
+      event.request,
+      `${env.API_URL}${pathname}${event.url.search}`,
+      { requestId: event.locals.requestId }
+    );
   }
 
   return resolve(event);
@@ -98,36 +92,53 @@ const localeHandle: Handle = async ({ event, resolve }) => {
 };
 
 /**
- * Guard protected routes.
+ * Resolve the session and guard protected routes.
  *
- * Fast path: `getCookieCache` validates the HMAC-signed session data cookie
- * locally (no DB hop). When fresh, populates `locals.session` and
- * `locals.user` with real data — load functions can use them directly.
- *
- * Fallback: cookie cache stale or missing. We still trust the presence of
- * `session_token` to keep the request flowing; downstream API calls will
- * re-validate against the api server (which itself hits the DB on cache
- * miss) and refresh the cookie cache as a side-effect.
- *
- * No cookie at all → redirect to sign-in.
+ * Fast path: the signed cookie cache (`session_data`, 5 min) is validated
+ * locally, with no network hop. When it is stale but a session token is
+ * present, the API revalidates against the DB and its fresh cookie cache is
+ * forwarded to the browser, so only one request per 5 minutes pays the hop.
+ * A token the API rejects is cleared. An unreachable API fails protected
+ * routes with 503 instead of pretending the user is signed out.
  */
 const sessionHandle: Handle = async ({ event, resolve }) => {
-  const cached = await getCookieCache(event.request, {
+  const resolved = await resolveSession(event.request, {
     secret: env.BETTER_AUTH_SECRET,
+    fetchSession: (cookie) =>
+      authFetch(`${env.API_URL}/auth/get-session`, {
+        headers: { cookie },
+        requestId: event.locals.requestId,
+      }),
   });
 
-  if (cached) {
-    event.locals.session = cached.session;
-    event.locals.user = cached.user;
-  } else {
-    event.locals.session = null;
-    event.locals.user = null;
+  event.locals.session = null;
+  event.locals.user = null;
+
+  switch (resolved.kind) {
+    case 'refreshed':
+      forwardSetCookies(event.cookies, resolved.setCookie);
+      event.locals.session = resolved.session;
+      event.locals.user = resolved.user;
+      break;
+    case 'cached':
+      event.locals.session = resolved.session;
+      event.locals.user = resolved.user;
+      break;
+    case 'anonymous':
+      if (resolved.staleCookies) clearAuthCookies(event.cookies);
+      break;
+    case 'unavailable':
+      event.locals.log.error(
+        { reason: resolved.reason },
+        'auth.session.unavailable'
+      );
+      if (isProtectedPath(event.url.pathname)) {
+        error(503, 'Authentication service unavailable');
+      }
+      break;
   }
 
-  const authenticated =
-    cached !== null || getSessionCookie(event.request) !== null;
-
-  if (isProtectedPath(event.url.pathname) && !authenticated) {
+  if (isProtectedPath(event.url.pathname) && !event.locals.session) {
     const locale = event.locals.locale ?? defaultLocale;
     redirect(307, `/${locale}/sign-in`);
   }

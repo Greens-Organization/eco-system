@@ -52,6 +52,7 @@
         "zod": "catalog:",
       },
       "devDependencies": {
+        "@pack/testing": "workspace:*",
         "@pack/tsconfig": "workspace:*",
         "@sveltejs/adapter-node": "catalog:",
         "@sveltejs/kit": "catalog:",

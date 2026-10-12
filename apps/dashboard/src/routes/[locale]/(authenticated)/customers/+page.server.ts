@@ -2,6 +2,7 @@ import { redirect } from '@sveltejs/kit';
 import z from 'zod';
 import { createApiClient } from '$lib/api/hono-client';
 import { safeFetch } from '$lib/api/safe-fetch';
+import { clearAuthCookies } from '$lib/server/auth-cookies';
 import type { PageServerLoad } from './$types';
 
 const CustomersSchema = z.object({
@@ -28,10 +29,7 @@ export const load: PageServerLoad = async ({ request, locals, cookies }) => {
   );
 
   if (!result.success && result.status === 401) {
-    for (const cookie of cookieHeader.split(';')) {
-      const name = cookie.trim().split('=')[0] ?? '';
-      if (name.startsWith('better-auth.')) cookies.delete(name, { path: '/' });
-    }
+    clearAuthCookies(cookies);
     redirect(307, `/${locals.locale}/sign-in`);
   }
 

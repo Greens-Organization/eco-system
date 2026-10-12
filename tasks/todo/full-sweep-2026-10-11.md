@@ -218,7 +218,7 @@ Infra de teste:
 **Plano.** A regra geral é que cada fase traz os testes do que muda. Nos
 itens abaixo, a fase em que cada um entra:
 
-- [ ] Fase 1: teste do proxy `/auth` (headers imutáveis) e do layout
+- [x] Fase 1: teste do proxy `/auth` (headers imutáveis) e do layout
   autenticado com cookie cache expirado. Isso abre o G2 no dashboard
   (`bun test` puro sobre `src/lib`, sem Vite).
 - [ ] Fase 3: testes de `json-ld` (escape de `</script>`), do guard do
@@ -245,16 +245,25 @@ itens abaixo, a fase em que cada um entra:
 
 ## 🔴 Bugs e segurança (achados da varredura)
 
-1. **Logout forçado a cada ~5 min.** `(authenticated)/+layout.server.ts:6`
+1. ✅ **(fase 1, 2026-10-12)** **Logout forçado a cada ~5 min.** `(authenticated)/+layout.server.ts:6`
    redireciona se `locals.session` é nulo, mas ele só vem do cookie cache
    (`maxAge: 60*5`, `packages/auth/src/server.ts:16`). O fallback de
    `hooks.server.ts:127` (`getSessionCookie`) é anulado pelo layout, e nada
    renova o cache: `createApiClient` e o fetch do layout descartam o
    `Set-Cookie` da API.
-2. **Proxy `/auth/*` do dashboard → 500 sob Node.** `hooks.server.ts:49` faz
+   **Feito:** `sessionHandle` usa `resolveSession`
+   (`src/lib/server/session.ts`): no cache miss com token, revalida via
+   `/auth/get-session` e repassa o `session_data` novo ao browser; token
+   rejeitado → cookies limpos; API fora → 503 nas rotas protegidas. O layout
+   lê `locals.user` (saiu um fetch por navegação). Conferido em `node build` e
+   `vite dev`.
+2. ✅ **(fase 1, 2026-10-12)** **Proxy `/auth/*` do dashboard → 500 sob Node.** `hooks.server.ts:49` faz
    `response.headers.set` num `Response` de `fetch` (headers imutáveis no
    undici). Reproduzido com `node build`. Bun não quebra, mas o adapter-node
    fica (N3) → corrigir criando um `new Response(body, { headers })` mutável.
+   **Feito:** `proxyRequest` (`src/lib/server/proxy.ts`) devolve um
+   `Response` novo, descarta headers hop-by-hop e `content-encoding`, e não
+   segue redirect (`redirect: 'manual'`). Antes 500, agora 200 em `node build`.
 3. **Rate limit do login ineficaz.** Sem `rateLimit` no better-auth: default
    só em `production`, storage em memória por processo, IP do primeiro
    `x-forwarded-for` (forjável); sem header → IP `null` → limite pulado. O
@@ -289,8 +298,15 @@ itens abaixo, a fase em que cada um entra:
   cookies em prod); `NODE_ENV ?? ''` em `apps/api/src/core/env.ts:25`;
   `ORIGIN_ALLOWED` aceita `''`; `API_URL` do dashboard com default; SMTP
   opcional → `port: NaN` só no primeiro envio.
-- Limpeza de cookie no 401 usa `startsWith('better-auth.')` e ignora
-  `__Secure-better-auth.*` (HTTPS). Bloco copiado em 3 `+page.server.ts`.
+- ✅ (fase 1) Limpeza de cookie no 401 usava `startsWith('better-auth.')` e
+  ignorava `__Secure-better-auth.*` (HTTPS), copiada em 3 `+page.server.ts`.
+  Agora é `clearAuthCookies` em `src/lib/server/auth-cookies.ts`.
+- Nome do cookie cache no dashboard: `getCookieCache` procura
+  `__Secure-better-auth.session_data` quando `NODE_ENV=production`, mas a API
+  só põe o prefixo se o `BETTER_AUTH_URL` dela for https. Se divergirem, todo
+  request erra o cache e paga o hop do `get-session`: não quebra mais desde a
+  fase 1, mas fica lento. Passar `isSecure` explícito ou validar os dois envs
+  juntos (fase 3).
 - Scrub do Sentry é denylist: `request.data`, `query_string`,
   `x-forwarded-for`, `set-cookie` e breadcrumbs passam.
 - Logger sem `redact`; bridge OTel envia `ip`/`user_agent` ao Loki.
@@ -356,7 +372,10 @@ origem, agora em `tasks/done/`.
   sem `.env`: 19/19 tasks; e2e 7/7 local. **Pendente:** o workflow nunca rodou
   no GitHub (branch sem upstream) — conferir na primeira PR. Budget de bundle
   via `ANALYZE=1` (era §15) segue aberto.
-- **G2 — Testes do dashboard** (era P0 #3). Lógica pura, sem infra:
+- **G2 — Testes do dashboard** (era P0 #3). **Feito em grande parte (fase 1):**
+  40 testes em `apps/dashboard/test/unit` (`bun test` puro, sem Vite) para
+  `auth-proxy`, `safe-fetch`, sessão, proxy e cookies; `test/**` entrou no
+  `svelte-check`. Falta `packages/i18n/src/format.ts`. Texto original: Lógica pura, sem infra:
   `src/lib/auth-proxy.ts` (`localizeAuthError`, `redactEmail`,
   `userMessageFor`), `src/lib/api/safe-fetch.ts` (erro + zod),
   `packages/i18n/src/format.ts`. Somar: o fix do logout de 5 min (🔴 1) e a
@@ -431,7 +450,7 @@ no mesmo commit da mudança de comportamento.
 | # | Fase | Itens |
 | --- | --- | --- |
 | 0 ✅ | Rede de segurança | zerar lint, **G1** CI, **G5** scripts da raiz, corrigir o drift de `CLAUDE.md`/`README` — feito 2026-10-12 (CI ainda não rodou no GitHub) |
-| 1 | Bugs visíveis | 🔴 1 (logout 5 min), 🔴 2 (proxy `/auth` 500) + testes em **G2** |
+| 1 ✅ | Bugs visíveis | 🔴 1 (logout 5 min), 🔴 2 (proxy `/auth` 500) + testes em **G2** — feito 2026-10-12 |
 | 2 | Rename | **N1** `@app/dashboard-api` |
 | 3 | Segurança | 🔴 3 rate limit, 🔴 5/6 reset e seed, 🔴 7 json-ld, validação de env, scrub do Sentry, `redact`, `ip` confiável, cookies `__Secure-*`, **G8** hardening |
 | 4 | Correção da API | `route` no log, shutdown, `HOST`, 404 vs 401, `HTTPException` 5xx, Scalar em prod |

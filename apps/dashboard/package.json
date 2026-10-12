@@ -9,6 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "prepare": "svelte-kit sync || echo ''",
+    "test": "bun test test/unit --preload @pack/testing/preload",
     "check:svelte": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "analyze": "ANALYZE=1 vite build",
     "clean": "git clean -xdf .cache .svelte-kit build",
@@ -28,6 +29,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@pack/testing": "workspace:*",
     "@pack/tsconfig": "workspace:*",
     "@sveltejs/adapter-node": "catalog:",
     "@sveltejs/kit": "catalog:",

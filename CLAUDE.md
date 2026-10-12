@@ -77,8 +77,11 @@ The `typescript` package (6.0.3, root devDependency) is only for
 (`bun -p process.versions.typescript`), so the editor can in rare cases
 disagree with it; aligning the two is part of the dependency majors (H1).
 
-`api`, `@pack/auth`, `@pack/db`, `@pack/observability`, `@pack/tools` and
-`@pack/testing` define `test`.
+`api`, `@app/dashboard-svelte`, `@pack/auth`, `@pack/db`,
+`@pack/observability`, `@pack/tools` and `@pack/testing` define `test`. The
+dashboard's run under plain `bun test` (no Vite), so they cover `src/lib`
+modules that do not import `$env`/`$app`; keep server logic there
+(`src/lib/server/*`) and inject what touches the network.
 
 `drizzle-kit` must run under Bun (`bun x --bun`, as the `@pack/db` scripts do):
 the schema imports `bun`, so a bare `bunx drizzle-kit` fails to resolve it.
@@ -111,7 +114,7 @@ there is no local hook. Before claiming work is done, run the checks yourself
 bunx biome check .                    # 0 errors
 bun check                             # 0 errors, 189 files across 11 projects
 bunx turbo run check:svelte --force   # 0 errors in dashboard + design-system
-bunx turbo run test --force           # 70 pass / 0 fail
+bunx turbo run test --force           # 110 pass / 0 fail
 ```
 
 `bun check` is not cached by turbo and takes about half a second.
@@ -160,6 +163,14 @@ look at it. For behavior changes, exercise the endpoint or route.
 - `hooks.server.ts` composes `logHandle → authHandle → localeHandle →
   sessionHandle → i18nHandle`, and redirects unauthenticated requests to
   `/{locale}/sign-in`.
+- `authHandle` proxies `/auth/*` through `proxyRequest`, which returns a new
+  `Response`: under Node the headers of a `fetch` response are immutable and
+  `logHandle` writes `x-request-id` on it.
+- `sessionHandle` → `resolveSession`: a valid cookie cache resolves locally;
+  a stale one with a session token is revalidated on `/auth/get-session` and
+  the fresh `session_data` is forwarded to the browser. A rejected token
+  clears the cookies; an unreachable API is a 503 on protected routes. Loads
+  read the user from `locals.user`, never by calling the API again.
 - Server loads fetch the API through `createApiClient(cookieHeader, requestId)`
   and validate every response with `safeFetch` + a zod schema. A `401` clears
   the `better-auth.*` cookies and redirects to sign-in.
@@ -169,8 +180,9 @@ look at it. For behavior changes, exercise the endpoint or route.
 `better-auth` with email/password and argon2 (`@pack/tools`), Drizzle adapter,
 5-minute session cookie cache. The API mounts it at `/auth`.
 
-When forwarding `Set-Cookie` from the API to the browser, keep
-`encode: v => v` — SvelteKit's default `encodeURIComponent` re-encodes
+When forwarding `Set-Cookie` from the API to the browser, use
+`forwardSetCookies` / `clearAuthCookies` (`$lib/server/auth-cookies`). They
+keep `encode: v => v` — SvelteKit's default `encodeURIComponent` re-encodes
 better-auth's base64 payload and breaks HMAC verification on the next request.
 
 ### Load-bearing oddities
@@ -315,10 +327,9 @@ executed in phases (one verified commit per slice). The only other card,
 1. **CI is written but unproven** — the workflow has never run on GitHub.
    Unit tests used to depend on the local `.env`; they now pass in a clean
    checkout (verified in a worktree with no `.env` files).
-2. **Test coverage is concentrated** in 6 of 13 workspaces (70 unit + 7 e2e).
-   The dashboard has no tests, and `bun test --coverage` only lists files a
-   test imported, so per-workspace percentages overstate it. Gaps and plan:
-   card item N5.
-3. **Known bugs**: forced re-login every ~5 min (cookie cache vs the
-   authenticated layout) and the dashboard `/auth/*` proxy returning 500 under
-   Node — see the card's 🔴 list.
+2. **Test coverage is concentrated** in 7 of 13 workspaces (110 unit + 7
+   e2e). `bun test --coverage` only lists files a test imported, so
+   per-workspace percentages overstate it. Gaps and plan: card item N5.
+3. **Known bugs**: the remaining 🔴 items on the card (rate limit, Dockerfile,
+   `db:reset` guard, seed, json-ld XSS). The 5-minute logout and the `/auth/*`
+   500 under Node were fixed in phase 1.
