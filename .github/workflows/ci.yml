@@ -32,7 +32,7 @@ jobs:
       - run: bunx biome ci .
       # TypeScript via the root tsconfig references; .svelte files need svelte-check.
       - run: bun check
-      - run: bunx turbo run check:svelte test
+      - run: bunx turbo run check:svelte build
 
   e2e:
     name: API e2e

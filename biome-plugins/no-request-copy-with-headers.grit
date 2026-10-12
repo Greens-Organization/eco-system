@@ -1,0 +1,14 @@
+language js
+
+// Copying a Request with new headers: under Bun an empty `headers` init is
+// ignored and the original headers survive (oven-sh/bun#41994). A URL input
+// (string, template or `x.url`) has no headers to keep, so it is fine.
+`new Request($input, $init)` where {
+  $init <: contains `headers`,
+  $input <: not or {
+    JsStringLiteralExpression(),
+    JsTemplateExpression(),
+    `$_.url`
+  },
+  register_diagnostic(span=$init, message="Under Bun, new Request(request, { headers }) keeps the original headers when the new ones are empty (oven-sh/bun#41994). Edit request.headers in place, or build from request.url.", severity="error")
+}
