@@ -7,9 +7,9 @@
     "preview": "./api",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
-    "test": "bun test test/unit --preload @pack/testing/preload",
-    "test:watch": "bun test test/unit --watch --preload @pack/testing/preload",
-    "test:coverage": "bun test test/unit --coverage --preload @pack/testing/preload",
+    "test": "bun test test/unit --preload @pack/testing/preload --preload ./test/unit/setup.ts",
+    "test:watch": "bun test test/unit --watch --preload @pack/testing/preload --preload ./test/unit/setup.ts",
+    "test:coverage": "bun test test/unit --coverage --preload @pack/testing/preload --preload ./test/unit/setup.ts",
     "test:e2e": "bun run test/e2e/run.ts"
   },
   "dependencies": {
