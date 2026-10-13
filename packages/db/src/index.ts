@@ -45,3 +45,4 @@ export async function disconnectDatabase() {
 export async function pingDatabase(): Promise<void> {
   await db.$client`select 1`;
 }
+export { traced } from './traced';
