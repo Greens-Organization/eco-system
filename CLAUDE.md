@@ -581,7 +581,7 @@ Head sampling only, via the standard env vars (verified:
 Content-aware ("keep all errors + slow traces") is **tail sampling** and belongs
 in a Collector, not the SDK — the SDK decides at the root span, before the trace
 exists. The bundled `otel-lgtm` collector is a fixed forward pipeline and cannot
-do it. Full strategy: `tasks/done/sampling-strategy.md`.
+do it.
 
 ---
 
@@ -605,7 +605,6 @@ do it. Full strategy: `tasks/done/sampling-strategy.md`.
 
 Branch `alpha/eco-system-v2`, ahead of `main`, no upstream.
 
-The 2026-10-11 sweep is closed (`tasks/done/full-sweep-2026-10-11.md`).
 No open cards in `tasks/todo`. Largest open items:
 
 1. **CI is written but unproven** — the workflow has never run on GitHub.
@@ -615,7 +614,4 @@ No open cards in `tasks/todo`. Largest open items:
    API e2e + 20 browser); `cache`, `storage` and `design-system` have none.
    Per-file coverage floors guard against regressions, not gaps: a file no
    test imports is not measured at all.
-3. **Known bugs**: none open. Fixed: the Dockerfile (phase 6),
-   the 5-minute logout and the `/auth/*` 500 (phase 1), the
-   rate limit (N6), the `db:reset` guard, the seed and the json-ld XSS
-   (phase 3).
+3. **Known bugs**: none open.

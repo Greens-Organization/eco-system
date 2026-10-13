@@ -1,6 +1,6 @@
 # Production-like stack: the dashboard is the only service with a published
-# port. The API, Postgres and Redis live on the compose network only (card
-# N6: the browser never reaches the API).
+# port. The API, Postgres and Redis live on the compose network only (the
+# browser never reaches the API).
 #
 #   cp infra/docker/.env.prod.example infra/docker/.env.prod   # fill it in
 #   docker compose -f infra/docker/docker-compose.prod.yml --env-file infra/docker/.env.prod up -d --build

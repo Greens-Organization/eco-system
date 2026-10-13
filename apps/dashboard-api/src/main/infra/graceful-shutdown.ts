@@ -13,9 +13,6 @@ export function isServerShuttingDown(): boolean {
 /**
  * Whether to register the graceful-shutdown handlers. Runs in ALL environments
  * unless explicitly opted out via SKIP_GRACEFUL — the prod-safe default.
- *
- * Prior bug: only registered when `(isLocal || isDevelopment) && SKIP_GRACEFUL`,
- * so production never drained on SIGTERM. See tasks/todo/observability.md D5.
  */
 export function shouldRegisterGracefulShutdown(opts: {
   skip: boolean;

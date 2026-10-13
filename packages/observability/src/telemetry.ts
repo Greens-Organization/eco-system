@@ -35,7 +35,7 @@ import { settleWithin } from './settle';
  * for the dashboard: `@sentry/bun` patches `Bun.serve` and fails under Node).
  * No-op without SENTRY_DSN / OTEL endpoint.
  *
- * Topology is DECOUPLED (D12): Sentry handles ERRORS only; OpenTelemetry sends
+ * Topology is DECOUPLED: Sentry handles ERRORS only; OpenTelemetry sends
  * traces + metrics + logs to Grafana via OTLP (independent providers). Nothing
  * relies on require-hook auto-instrumentation (HTTP spans come from `@hono/otel`,
  * logs are bridged in-process from pino — see logger/otel-stream), so import

@@ -10,7 +10,7 @@ import {
   type TestUser,
 } from '../helpers/auth';
 
-// Security properties of the auth wiring (card item N6). Each test states the
+// Security properties of the auth wiring. Each test states the
 // behavior we want; they were written to fail against the original config.
 
 const DAY_MS = 24 * 60 * 60 * 1000;

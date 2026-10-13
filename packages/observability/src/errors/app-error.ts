@@ -22,7 +22,7 @@ export interface AppErrorOptions {
 /**
  * Framework-agnostic application error. Carries everything the central error
  * handler needs to log structured, decide Sentry routing, and shape the
- * response body (see tasks/todo/observability.md §4, D3).
+ * response body.
  */
 export class AppError extends BaseError {
   public readonly name: string = 'AppError';

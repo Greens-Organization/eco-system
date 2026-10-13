@@ -6,7 +6,7 @@ import { isIP } from 'node:net';
  * from the dashboard server, so the API cannot see the visitor's address; the
  * dashboard forwards it, signed with a secret both share (`CLIENT_IP_SECRET`).
  * The API trusts only a fresh, valid signature: a header written by anyone
- * else, or replayed later, is dropped. Network isolation (N6) is the first
+ * else, or replayed later, is dropped. Network isolation is the first
  * wall; this one holds if the API is ever reachable by mistake.
  *
  * No env access: the dashboard imports this module.

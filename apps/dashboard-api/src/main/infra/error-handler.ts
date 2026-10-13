@@ -22,7 +22,7 @@ type AppContext = Context<{ Variables: AppVariables }>;
  * Central error pipeline (CTO contract):
  *   error -> classify -> log structured (always)
  *         -> business/validation: stop here (no Sentry)
- *         -> technical/critical/unknown: Sentry.captureException (Fase 2) + 5xx
+ *         -> technical/critical/unknown: Sentry.captureException + 5xx
  *         -> response carries support_id (user sees it / forwards to support)
  */
 export function handleError(err: Error, c: AppContext): Response {

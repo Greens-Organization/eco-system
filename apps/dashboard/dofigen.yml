@@ -2,7 +2,7 @@
 # The root .dockerignore applies (no node_modules, no .env files).
 # After editing: `dofigen update` (pins image digests), then `dofigen generate`.
 #
-# The image runs the adapter-node build on Node (owner decision N3). Runtime
+# The image runs the adapter-node build on Node (owner decision). Runtime
 # config comes from env at start: API_URL, BETTER_AUTH_SECRET,
 # CLIENT_IP_SECRET, and behind a TLS proxy PROTOCOL_HEADER / HOST_HEADER /
 # ADDRESS_HEADER / XFF_DEPTH (see the deploy notes in the README).

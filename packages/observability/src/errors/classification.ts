@@ -5,8 +5,6 @@
  *   validation_error  — invalid input caught at the edge (Zod / schema)
  *   technical_error   — real technical failure (DB down, upstream 5xx)
  *   critical_incident — technical failure with operational impact
- *
- * See tasks/todo/observability.md §4.
  */
 export type ErrorClassification =
   | 'business_error'

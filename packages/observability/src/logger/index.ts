@@ -25,7 +25,7 @@ export function spanToFields(span: Span | undefined): Record<string, string> {
  *   - `base`: per-process fields (service/environment/instance/version/region)
  *   - `mixin`: per-request fields pulled from the ALS context (see ../context)
  *
- * `trace_id`/`span_id` are injected by the OTel span in Fase 2. Exported so
+ * `trace_id`/`span_id` are injected from the active OTel span. Exported so
  * tests can build a logger over a capture stream (transport can't coexist
  * with a passed destination).
  */
@@ -69,7 +69,7 @@ export const loggerOptions = {
 /**
  * Dev pretty-printing via in-process transport (worker thread). The API opts
  * out (`LOG_PRETTY=false`) and pipes `| pino-pretty` to dodge the worker×OTel
- * conflict (Fase 2); the dashboard keeps this path (no OTel). See D6/D11.
+ * conflict; the dashboard keeps this path (no OTel).
  */
 const usePretty = env.LOG_PRETTY ?? Boolean(process.stdout?.isTTY);
 

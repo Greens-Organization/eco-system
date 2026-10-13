@@ -76,7 +76,7 @@ v1.get(
   Scalar({
     url: `${CONSTANTS.API_REST_V1}/openapi`,
     // Relative: right on any host. The docs are only reachable where the API
-    // is — the internal network (card N6).
+    // is — the internal network.
     servers: [{ url: CONSTANTS.API_REST_V1, description: 'This server' }],
     pageTitle: 'Eco System API',
     theme: 'purple',

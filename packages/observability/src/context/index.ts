@@ -5,10 +5,8 @@ import { randomUUID } from 'node:crypto';
  * Request context propagated via AsyncLocalStorage.
  *
  * Holds the per-request fields of the log contract EXCEPT `trace_id`/`span_id`,
- * which come from the active OTel span (logger mixin, Fase 2). Business/feature
+ * which come from the active OTel span (logger mixin). Business/feature
  * fields are open (`[key: string]`) — domains attach their own via setContext().
- *
- * See tasks/todo/observability.md §4 (D2).
  */
 export interface RequestContext {
   request_id: string;

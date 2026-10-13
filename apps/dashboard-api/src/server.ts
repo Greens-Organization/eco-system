@@ -21,7 +21,7 @@ async function main() {
     });
 
     // Runs in ALL environments (essential in prod/k8s to drain on SIGTERM);
-    // opt out only via SKIP_GRACEFUL. (Fix for the prod registration bug, D5.)
+    // opt out only via SKIP_GRACEFUL.
     if (shouldRegisterGracefulShutdown({ skip: env.SKIP_GRACEFUL })) {
       createGracefulShutdown(server);
     }

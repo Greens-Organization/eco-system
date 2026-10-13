@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { setTestEnv } from '../src/index.ts';
 
 /**
- * Smoke test for the bun:test toolchain (D9). Proves three things:
+ * Smoke test for the bun:test toolchain. Proves three things:
  *   1. `bun test` runs TS suites in this monorepo.
  *   2. the shared `@pack/testing` env helper enforces its contract.
  *   3. the root `bunfig.toml [test].preload` actually fired for this run.
