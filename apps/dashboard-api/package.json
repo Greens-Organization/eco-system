@@ -28,7 +28,6 @@
   "devDependencies": {
     "@pack/tsconfig": "workspace:*",
     "@types/bun": "catalog:dev",
-    "concurrently": "10.0.5",
     "pino-pretty": "catalog:",
     "postgres": "3.4.9"
   }

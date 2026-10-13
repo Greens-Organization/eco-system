@@ -28,7 +28,7 @@ export type AppVariables = RequestIdVariables &
   Partial<AuthVariables>;
 
 /** Access logs that are pure noise (uptime probes) — emitted at `debug`. */
-const QUIET_PATHS = new Set(['/status', '/ready', '/health']);
+const QUIET_PATHS = new Set(['/status', '/ready']);
 
 /**
  * The pattern of the route that handles the request. Middlewares are

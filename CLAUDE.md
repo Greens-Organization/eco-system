@@ -391,6 +391,10 @@ measured or debugged; changing one regresses something.
 - **`@pack/seo` ships only `json-ld`** — the Next-shaped `metadata.ts` was
   removed deliberately. The package has no importers by design; it is a helper
   for whoever forks the template.
+- **`@pack/storage` has no importers either, by design** — a thin wrapper
+  over Bun's native `S3Client` (AWS S3, R2, MinIO) for whoever forks the
+  template. Its `pack-env` requires the `S3_*` vars, so importing it without
+  them fails at startup.
 - **`@pack/email` takes an HTML string, not a component** — the react-email
   templates were removed in 2026-09 so no React remains in the monorepo.
   Templating is the caller's choice; `sendEmailHtml` and `sendBatchEmailHtml`
@@ -419,7 +423,7 @@ pino JSON, composed in `@pack/observability/logger`:
    `X-Forwarded-For`/`CF-Connecting-IP` are never read — and `/auth` replaces
    it with the browser's IP once its signature checks out. The API's
    `middleware/observability.ts` opens the scope per request. `/status`,
-   `/ready` and `/health` are not access-logged.
+   and `/ready` are not access-logged.
 3. **Per event** (`AppError`): `error_code`, `classification`,
    `eventCategory?`, `userMessage?`.
 
