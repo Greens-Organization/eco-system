@@ -606,7 +606,7 @@ do it. Full strategy: `tasks/done/sampling-strategy.md`.
 Branch `alpha/eco-system-v2`, ahead of `main`, no upstream.
 
 The 2026-10-11 sweep is closed (`tasks/done/full-sweep-2026-10-11.md`).
-`i18n-paraglide-migration.md` is deliberately parked. Largest open items:
+No open cards in `tasks/todo`. Largest open items:
 
 1. **CI is written but unproven** — the workflow has never run on GitHub.
    Unit tests used to depend on the local `.env`; they now pass in a clean
