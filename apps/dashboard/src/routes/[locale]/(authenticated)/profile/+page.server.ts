@@ -20,6 +20,7 @@ import {
   toDevices,
   tokenFor,
 } from '#lib/server/devices.js';
+import { loadLocale } from '#lib/server/locale.js';
 import type { Actions, PageServerLoad } from './$types';
 
 const MeSchema = z.object({
@@ -48,7 +49,7 @@ async function loadMe(event: RequestEvent) {
   const me = result.data;
   return {
     ...me,
-    memberSince: new Intl.DateTimeFormat(locals.locale, {
+    memberSince: new Intl.DateTimeFormat(loadLocale(event), {
       dateStyle: 'long',
     }).format(new Date(me.createdAt)),
   };
@@ -93,7 +94,7 @@ async function loadDevices(event: RequestEvent) {
   const now = new Date();
   return toDevices(sessions, currentId).map((device) => ({
     ...device,
-    signedInAgo: timeAgo(device.signedInAt, now, event.locals.locale),
+    signedInAgo: timeAgo(device.signedInAt, now, loadLocale(event)),
   }));
 }
 

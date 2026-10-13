@@ -1,8 +1,9 @@
+import { loadLocale } from '#lib/server/locale.js';
 import type { LayoutServerLoad } from './$types';
 
-export const load: LayoutServerLoad = async ({ locals }) => {
+export const load: LayoutServerLoad = async (event) => {
   return {
-    locale: locals.locale,
-    dictionary: locals.dictionary,
+    locale: loadLocale(event),
+    dictionary: event.locals.dictionary,
   };
 };

@@ -152,10 +152,10 @@ bunx biome check .                    # 0 errors
 bun check                             # 0 errors, 258 files across 11 projects
 bunx turbo run check:svelte --force   # 0 errors in dashboard + design-system
 bunx turbo run build --force          # api binary + dashboard vite build
-bunx turbo run test --force           # 205 pass / 0 fail
+bunx turbo run test --force           # 208 pass / 0 fail
 bun run test:coverage                 # same, under each workspace's coverage floor
 bun run test:e2e                      # 76 pass (needs Docker)
-bun run test:browser                  # 17 pass (needs Docker)
+bun run test:browser                  # 20 pass (needs Docker)
 ```
 
 `bun check` is not cached by turbo and takes about half a second.
@@ -257,6 +257,15 @@ look at it. For behavior changes, exercise the endpoint or route.
   `/dashboard`. Locales: `en` (default), `pt`, `es`. A path without a locale
   redirects keeping its query string; `<html lang>` follows the locale
   (`localeHandle` rewrites app.html's `lang="en"`).
+- **Switching language is a client-side navigation** (`goto`, no reload):
+  in vite dev a reload re-requests every module. The `[locale]` layout
+  remounts the tree under `{#key data.locale}` (components read the
+  dictionary once) and sets `<html lang>`. Kit reruns a load only when
+  something it read changed and cannot see `locals`, so **a load that
+  renders by language takes the locale from `loadLocale(event)`**
+  (`#lib/server/locale.js`, reads `params.locale`); one that read
+  `locals.locale` would keep the old language after a switch or a
+  back/forward (`test/browser/i18n.spec.ts`).
 - Account settings live on **Profile** (`/{locale}/profile`): profile data,
   appearance, language, 2FA and signed-in devices on one page, reached from
   the user menu. There is no separate Settings page (owner decision,
@@ -583,8 +592,8 @@ The 2026-10-11 sweep is closed (`tasks/done/full-sweep-2026-10-11.md`).
 1. **CI is written but unproven** — the workflow has never run on GitHub.
    Unit tests used to depend on the local `.env`; they now pass in a clean
    checkout (verified in a worktree with no `.env` files).
-2. **Test coverage is concentrated** in 10 of 13 workspaces (205 unit + 76
-   API e2e + 17 browser); `cache`, `storage` and `design-system` have none.
+2. **Test coverage is concentrated** in 10 of 13 workspaces (208 unit + 76
+   API e2e + 20 browser); `cache`, `storage` and `design-system` have none.
    Per-file coverage floors guard against regressions, not gaps: a file no
    test imports is not measured at all.
 3. **Known bugs**: none open. Fixed: the Dockerfile (phase 6),

@@ -95,17 +95,3 @@ test('the sidebar collapses and stays collapsed after a reload', async ({
   await page.reload();
   await expect(sidebar).toHaveAttribute('data-state', 'collapsed');
 });
-
-test('switching the language keeps the page and changes the copy', async ({
-  page,
-}) => {
-  await page.goto('/en/customers?status=active');
-  await page
-    .getByRole('combobox', { name: t.common.selectLanguage })
-    .selectOption({ label: '🇧🇷 Português' });
-  await expect(page).toHaveURL(/\/pt\/customers\?status=active$/);
-  await expect(page.locator('html')).toHaveAttribute('lang', 'pt');
-  await expect(
-    page.getByRole('link', { name: 'Clientes' }).first()
-  ).toBeVisible();
-});

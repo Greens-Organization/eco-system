@@ -13,6 +13,15 @@ setI18n(
   () => data.locale,
   () => data.dictionary
 );
+
+// The server sets <html lang>; a client-side language switch updates it.
+$effect(() => {
+  document.documentElement.lang = data.locale;
+});
 </script>
 
-{@render children?.()}
+<!-- Components read the dictionary once (`const t = useTranslation()`), so a
+     language switch remounts the tree instead of patching it. -->
+{#key data.locale}
+    {@render children?.()}
+{/key}
