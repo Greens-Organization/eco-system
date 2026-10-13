@@ -5,6 +5,7 @@ import { handleZodError } from '@/main/infra/openapi/utils';
 import { type AppVariables, authMiddleware } from '@/main/middleware';
 import customersRoute from './customers';
 import employeesRoute from './employees';
+import meRoute from './me';
 import statsRoute from './stats';
 
 export type Variables = AppVariables;
@@ -39,6 +40,11 @@ v1.doc('/openapi', {
       'Eco System API allows you to monitor and manage your infrastructure health checks, workspaces, and more.\n\nTo get started, create an account and authenticate via Better Auth.',
   },
   tags: [
+    {
+      name: 'me',
+      description: 'The signed-in user (database-backed example route)',
+      'x-displayName': 'Me',
+    },
     {
       name: 'stats',
       description: 'Stats endpoints',
@@ -93,6 +99,7 @@ v1.use('/*', authMiddleware);
  * API Routes
  */
 const routes = v1
+  .route('/me', meRoute)
   .route('/stats', statsRoute)
   .route('/customers', customersRoute)
   .route('/employees', employeesRoute);

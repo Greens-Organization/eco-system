@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import type { z } from 'zod';
 import { customersSchemaRes } from '@/main/routes/v1/customers/schema';
 import { employeesSchemaRes } from '@/main/routes/v1/employees/schema';
+import { meSchemaRes } from '@/main/routes/v1/me/schema';
 import { statsSchemaRes } from '@/main/routes/v1/stats/schema';
 import { buildTestApp, request } from '../helpers/app';
 import { authenticate, authHeaders } from '../helpers/auth';
@@ -9,6 +10,7 @@ import { authenticate, authHeaders } from '../helpers/auth';
 // Every v1 route: closed without a session, and with one the body matches
 // the route's own response schema (not a typeof spot check).
 const ROUTES: [string, z.ZodType][] = [
+  ['/v1/me', meSchemaRes],
   ['/v1/stats', statsSchemaRes],
   ['/v1/customers', customersSchemaRes],
   ['/v1/employees', employeesSchemaRes],
@@ -36,6 +38,23 @@ describe('v1 routes', () => {
       expect(schema.safeParse(await res.json()).error).toBeUndefined();
     }
   );
+
+  // The database-backed example route: it reads the signed-in user's row.
+  test('/v1/me is the signed-in user, from the database', async () => {
+    const app = buildTestApp();
+    const { user, cookie } = await authenticate(app);
+    const res = await request(app, '/v1/me', { cookie });
+    const me = meSchemaRes.parse(await res.json());
+
+    expect(me).toMatchObject({
+      email: user.email,
+      name: user.name,
+      emailVerified: false,
+      twoFactorEnabled: false,
+      image: null,
+    });
+    expect(Date.parse(me.createdAt)).toBeGreaterThan(Date.now() - 60_000);
+  });
 
   // It used to be 401: the auth middleware ran before anything said "no such
   // route".

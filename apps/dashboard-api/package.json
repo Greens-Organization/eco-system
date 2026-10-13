@@ -21,6 +21,7 @@
     "@pack/observability": "workspace:*",
     "@pack/testing": "workspace:*",
     "@scalar/hono-api-reference": "0.11.3",
+    "drizzle-orm": "0.45.2",
     "hono": "catalog:",
     "zod": "catalog:"
   },
@@ -28,7 +29,6 @@
     "@pack/tsconfig": "workspace:*",
     "@types/bun": "catalog:dev",
     "concurrently": "10.0.5",
-    "drizzle-orm": "0.45.2",
     "pino-pretty": "catalog:",
     "postgres": "3.4.9"
   }
