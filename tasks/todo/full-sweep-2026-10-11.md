@@ -3,7 +3,7 @@
 > Branch `alpha/eco-system-v2`. Estado medido na abertura (2026-10-11):
 > typecheck 13/13, biome 5 erros, 70 testes. **Estado em 2026-10-13:** biome
 > 0, `bun check` 0 em 265 arquivos, `check:svelte` 0, 205 unitários + 76 e2e
-> da API + 15 de navegador, todos passando; pisos de cobertura ok.
+> da API + 17 de navegador, todos passando; pisos de cobertura ok.
 > **Aberto:** só a fase 13 (G10, depende de decisões do dono), os commits das
 > fases 6–12 (snapshots prontos, GPG travado), a primeira execução do CI no
 > GitHub (sem upstream) e os opcionais.
@@ -168,9 +168,13 @@ paginação na URL (formulário GET, funciona sem JS), detalhe `/[id]` com 404,
 status traduzido; home com gráfico de cadastros dos 7 dias, links dos cards e
 estado de erro; Profile com `/v1/me`, renomear, trocar senha (derruba os
 outros dispositivos), dispositivos e exclusão de conta com `alert-dialog`;
-toasts; `<title>` e breadcrumb reais. **Ficou de fora:** ordenação por
-coluna e skeleton de loading (os loads são SSR, sem estado intermediário) —
-listados como opcionais no fim do card.
+toasts; `<title>` e breadcrumb reais. **Skeleton de loading (2026-10-13,
+pedido do dono):** `PageSkeleton` no layout autenticado, no formato da
+página de destino (home, lista, detalhe, perfil), durante a navegação no
+cliente que passa de 200 ms (loads rápidos não piscam); `aria-busy` + status
+"Loading…" para leitor de tela; 2 testes de navegador (navegação lenta mostra
+e some; rápida não mostra). **Ficou de fora:** ordenação por coluna, nos
+opcionais.
 
 Texto original:
 
@@ -818,7 +822,7 @@ no mesmo commit da mudança de comportamento.
 | 11 ✅ | Dependências | patches + **H1** (OTel, Sentry 11, nodemailer 10, localematcher 0.9, Scalar 0.12) — fechada 2026-10-12. Depois, a pedido do dono, `bun update -r --latest`: tudo no mais recente, inclusive **SvelteKit 3 + adapter-node 6**. TS 7 só no `bun check`: o modo `--tsgo` do svelte-check deu falsos erros |
 | 12 ✅ | Higiene | pins fora do catálogo, hash de env no turbo, código morto, infra de teste (N5) — fechada 2026-10-12 |
 | 13 | Release | **G10** — último commit; espera o dono: nome no lugar de `eco-system`/`GRN Group`, destino de `screenshots/`, revisão dos opcionais antes de apagar `tasks/` |
-| — | **Opcionais (o dono decide depois)** | **O3** manifests k8s/HPA; captcha no login (escalada do limite por conta); "confiar neste dispositivo" no 2FA; budget de bundle (`ANALYZE=1`); redirect de `/settings` → `/profile`; ordenação por coluna nas listas; skeleton de loading; Sentry no navegador (via túnel no BFF) |
+| — | **Opcionais (o dono decide depois)** | **O3** manifests k8s/HPA; captcha no login (escalada do limite por conta); "confiar neste dispositivo" no 2FA; budget de bundle (`ANALYZE=1`); ordenação por coluna nas listas; Sentry no navegador (via túnel no BFF). **Decididos (2026-10-13):** redirect de `/settings` → `/profile` **descartado** pelo dono (a rota segue 404); skeleton de loading **feito** (ver N4) |
 
 Fases 0–1 primeiro: sem CI, o resto é mudança sem rede. A fase 11 fica depois
 das telas para não brigar com SvelteKit 3 no meio do N4.

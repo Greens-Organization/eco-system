@@ -155,7 +155,7 @@ bunx turbo run build --force          # api binary + dashboard vite build
 bunx turbo run test --force           # 205 pass / 0 fail
 bun run test:coverage                 # same, under each workspace's coverage floor
 bun run test:e2e                      # 76 pass (needs Docker)
-bun run test:browser                  # 15 pass (needs Docker)
+bun run test:browser                  # 17 pass (needs Docker)
 ```
 
 `bun check` is not cached by turbo and takes about half a second.
@@ -247,6 +247,11 @@ look at it. For behavior changes, exercise the endpoint or route.
   `unknown` ones are logged as errors and sent to Sentry; `framework` ones
   (a 404 from Kit) are one warn line; `app` ones (`error(...)` in our code)
   are not logged again — the throwing code already did.
+- **Loading:** loads are SSR, so a skeleton only exists on client-side
+  navigation. The authenticated layout swaps the page for `PageSkeleton`
+  (shaped like the destination: home, list, detail, profile) when a
+  navigation into the panel takes over 200 ms; faster ones never show it.
+  A new page type gets its shape there.
 - Routes are `[locale]/(authenticated)/…` and `[locale]/(unauthenticated)/…`.
   Route groups do not appear in the URL: the panel is `/{locale}`, not
   `/dashboard`. Locales: `en` (default), `pt`, `es`. A path without a locale
@@ -576,7 +581,7 @@ executed in phases (one verified commit per slice). The only other card,
    Unit tests used to depend on the local `.env`; they now pass in a clean
    checkout (verified in a worktree with no `.env` files).
 2. **Test coverage is concentrated** in 10 of 13 workspaces (205 unit + 76
-   API e2e + 15 browser); `cache`, `storage` and `design-system` have none.
+   API e2e + 17 browser); `cache`, `storage` and `design-system` have none.
    Per-file coverage floors guard against regressions, not gaps: a file no
    test imports is not measured at all.
 3. **Known bugs**: none open on the card. Fixed: the Dockerfile (phase 6),
