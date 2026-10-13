@@ -1,0 +1,5 @@
+[tools]
+bun = "1.4.3"
+# Only for the dashboard's production build: adapter-node runs on Node.
+# Everything else (scripts, tests, the API) runs on Bun.
+node = "26.10.0"

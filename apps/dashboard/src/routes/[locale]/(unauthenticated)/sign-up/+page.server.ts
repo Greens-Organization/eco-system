@@ -1,0 +1,94 @@
+import { defaultLocale } from '@pack/i18n';
+import { fail, redirect } from '@sveltejs/kit';
+import {
+  authFetch,
+  localizeAuthError,
+  reasonFor,
+  redactEmail,
+  userMessageFor,
+} from '#lib/auth-proxy.js';
+import { env } from '#lib/env.js';
+import type { Actions, PageServerLoad } from './$types';
+
+export const load: PageServerLoad = async ({ locals }) => {
+  if (locals.session) {
+    redirect(307, `/${locals.locale ?? defaultLocale}`);
+  }
+};
+
+export const actions: Actions = {
+  default: async ({ request, locals, url, getClientAddress }) => {
+    const data = await request.formData();
+    const name = data.get('name');
+    const email = data.get('email');
+    const password = data.get('password');
+
+    const errors = locals.dictionary.app.errors;
+
+    if (
+      typeof name !== 'string' ||
+      typeof email !== 'string' ||
+      typeof password !== 'string' ||
+      !name ||
+      !email ||
+      !password
+    ) {
+      return fail(400, {
+        error: errors.missingFields,
+        requestId: locals.requestId,
+      });
+    }
+
+    const { domain, localHint } = redactEmail(email);
+    const t0 = performance.now();
+    locals.log.info({ domain, localHint }, 'auth.signup.attempt');
+
+    const result = await authFetch(`${env.API_URL}/auth/sign-up/email`, {
+      method: 'POST',
+      requestId: locals.requestId,
+      clientIp: getClientAddress(),
+      clientIpSecret: env.CLIENT_IP_SECRET,
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: request.headers.get('cookie') ?? '',
+        Origin: url.origin,
+      },
+      body: JSON.stringify({ name, email, password }),
+    });
+
+    const dur_ms = Math.round(performance.now() - t0);
+
+    if (!result.ok) {
+      locals.log.error(
+        { kind: result.kind, reason: reasonFor(result), dur_ms },
+        'auth.signup.unreachable'
+      );
+      return fail(503, {
+        error: userMessageFor(result.kind, errors),
+        requestId: locals.requestId,
+      });
+    }
+
+    const { response: res } = result;
+
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as {
+        code?: string;
+        message?: string;
+      };
+      locals.log.warn(
+        { status: res.status, dur_ms, code: body.code },
+        'auth.signup.rejected'
+      );
+      return fail(res.status, {
+        error: localizeAuthError(res.status, body, errors),
+        requestId: locals.requestId,
+      });
+    }
+
+    locals.log.info({ status: res.status, dur_ms }, 'auth.signup.success');
+
+    const locale = locals.locale ?? defaultLocale;
+    redirect(303, `/${locale}/sign-in`);
+  },
+};

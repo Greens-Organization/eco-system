@@ -1,0 +1,69 @@
+# Build from the repo root: docker build -f apps/dashboard-api/Dockerfile .
+# The root .dockerignore applies (no node_modules, no .env files).
+# After editing: `dofigen update` (pins image digests), then `dofigen generate`.
+
+builders:
+  # Dependencies only, from the lockfile: changes to source code keep this
+  # layer cached. Every workspace manifest is bound because Bun resolves the
+  # whole workspace, even when it installs one member's tree.
+  deps:
+    fromImage: oven/bun:1.4.3
+    workdir: /app/
+    labels:
+      org.opencontainers.image.stage: deps
+    bind:
+      - bunfig.toml
+      - bun.lock
+      - package.json
+      - apps/dashboard/package.json
+      - apps/dashboard-api/package.json
+      - packages/auth/package.json
+      - packages/cache/package.json
+      - packages/db/package.json
+      - packages/design-system/package.json
+      - packages/email/package.json
+      - packages/i18n/package.json
+      - packages/observability/package.json
+      - packages/seo/package.json
+      - packages/storage/package.json
+      - packages/testing/package.json
+      - packages/tools/package.json
+      - packages/tsconfig/package.json
+    run: bun install --frozen-lockfile --production --filter @app/dashboard-api
+    cache:
+      - /root/.bun/install/cache
+
+  build:
+    fromBuilder: deps
+    workdir: /app/apps/dashboard-api
+    labels:
+      org.opencontainers.image.stage: build
+    copy:
+      - . /app/
+    run: bun build --compile src/server.ts --outfile=dashboard-api
+
+fromImage: oven/bun:1.4.3-slim
+
+labels:
+  org.opencontainers.image.title: Eco System API
+  org.opencontainers.image.description: Hono API behind the eco-system dashboard (internal network only)
+  org.opencontainers.image.vendor: Eco System
+
+user: "1000"
+workdir: /home/bun/app
+
+copy:
+  - fromBuilder: build
+    source: /app/apps/dashboard-api/dashboard-api
+    target: /home/bun/app/dashboard-api
+
+expose: "3002"
+
+healthcheck:
+  interval: 30s
+  timeout: 10s
+  start: 30s
+  retries: 3
+  cmd: "bun -e 'fetch(\"http://localhost:3002/status\").then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))'"
+
+entrypoint: /home/bun/app/dashboard-api

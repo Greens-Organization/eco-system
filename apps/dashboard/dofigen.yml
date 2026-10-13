@@ -1,0 +1,98 @@
+# Build from the repo root: docker build -f apps/dashboard/Dockerfile .
+# The root .dockerignore applies (no node_modules, no .env files).
+# After editing: `dofigen update` (pins image digests), then `dofigen generate`.
+#
+# The image runs the adapter-node build on Node (owner decision). Runtime
+# config comes from env at start: API_URL, BETTER_AUTH_SECRET,
+# CLIENT_IP_SECRET, and behind a TLS proxy PROTOCOL_HEADER / HOST_HEADER /
+# ADDRESS_HEADER / XFF_DEPTH (see the deploy notes in the README).
+
+builders:
+  # Every dependency (dev included: Vite builds the app), from the lockfile.
+  deps:
+    fromImage: oven/bun:1.4.3
+    workdir: /app/
+    labels:
+      org.opencontainers.image.stage: deps
+    bind: &manifests
+      - bunfig.toml
+      - bun.lock
+      - package.json
+      - apps/dashboard/package.json
+      - apps/dashboard-api/package.json
+      - packages/auth/package.json
+      - packages/cache/package.json
+      - packages/db/package.json
+      - packages/design-system/package.json
+      - packages/email/package.json
+      - packages/i18n/package.json
+      - packages/observability/package.json
+      - packages/seo/package.json
+      - packages/storage/package.json
+      - packages/testing/package.json
+      - packages/tools/package.json
+      - packages/tsconfig/package.json
+    run: bun install --frozen-lockfile --filter @app/dashboard-svelte
+    cache:
+      - /root/.bun/install/cache
+
+  build:
+    fromBuilder: deps
+    workdir: /app/apps/dashboard
+    labels:
+      org.opencontainers.image.stage: build
+    copy:
+      - . /app/
+    # Public origin for plain-http deploys (vite.config.ts `paths.origin`).
+    arg:
+      ORIGIN: ""
+    run: bun run build
+
+  # What the build leaves external (pino, zod, uqr…), hoisted into one plain
+  # node_modules that Node resolves without Bun's isolated-linker symlinks.
+  # The @pack/* workspace packages are bundled into the build.
+  runtime-deps:
+    fromImage: oven/bun:1.4.3
+    workdir: /app/
+    labels:
+      org.opencontainers.image.stage: runtime-deps
+    bind: *manifests
+    run: bun install --frozen-lockfile --production --linker hoisted --filter @app/dashboard-svelte
+    cache:
+      - /root/.bun/install/cache
+
+fromImage: node:26.10.0-slim
+
+labels:
+  org.opencontainers.image.title: Eco System Dashboard
+  org.opencontainers.image.description: SvelteKit dashboard (adapter-node), the only public entry point
+  org.opencontainers.image.vendor: Eco System
+
+env:
+  NODE_ENV: production
+  PORT: "3000"
+
+user: "1000"
+workdir: /app/apps/dashboard
+
+copy:
+  - fromBuilder: runtime-deps
+    source: /app/node_modules
+    target: /app/node_modules
+  - fromBuilder: build
+    source: /app/apps/dashboard/build
+    target: /app/apps/dashboard/build
+  - apps/dashboard/package.json /app/apps/dashboard/package.json
+
+expose: "3000"
+
+# The sign-in page renders without calling the API, so this checks the
+# server alone.
+healthcheck:
+  interval: 30s
+  timeout: 10s
+  start: 15s
+  retries: 3
+  cmd: "node -e 'fetch(\"http://localhost:3000/en/sign-in\").then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))'"
+
+entrypoint: ["node", "build"]

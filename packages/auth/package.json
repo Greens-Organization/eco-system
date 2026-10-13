@@ -3,23 +3,27 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+    "test": "bun test --preload @pack/testing/preload",
+    "clean": "git clean -xdf .cache .turbo dist node_modules"
+  },
+  "exports": {
+    "./server": "./src/server.ts",
+    "./cookies": "./src/cookies.ts",
+    "./client-ip": "./src/client-ip.ts",
+    "./pack-env": "./pack-env.ts"
   },
   "dependencies": {
-    "@clerk/nextjs": "6.33.3",
-    "@clerk/themes": "2.4.25",
-    "@t3-oss/env-nextjs": "catalog:",
-    "next-themes": "catalog:",
-    "react": "catalog:",
-    "server-only": "catalog:",
+    "@pack/cache": "workspace:*",
+    "@pack/db": "workspace:*",
+    "@pack/email": "workspace:*",
+    "@pack/observability": "workspace:*",
+    "@pack/tools": "workspace:*",
+    "better-auth": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@clerk/types": "4.92.0",
-    "@pack/typescript-config": "workspace:*",
-    "@types/node": "catalog:dev",
-    "@types/react": "catalog:dev",
-    "@types/react-dom": "catalog:dev"
+    "@pack/testing": "workspace:*",
+    "@pack/tsconfig": "workspace:*",
+    "@types/bun": "catalog:dev"
   }
 }

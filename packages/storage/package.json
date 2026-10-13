@@ -2,16 +2,19 @@
   "name": "@pack/storage",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./pack-env": "./pack-env.ts"
+  },
   "scripts": {
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+    "clean": "git clean -xdf .cache .turbo dist node_modules"
   },
   "dependencies": {
-    "@t3-oss/env-nextjs": "catalog:",
-    "@vercel/blob": "2.0.0",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@pack/typescript-config": "workspace:*"
+    "@pack/tsconfig": "workspace:*",
+    "@types/bun": "catalog:dev"
   }
 }

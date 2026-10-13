@@ -1,0 +1,20 @@
+{
+  "name": "@pack/cache",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./pack-env": "./pack-env.ts"
+  },
+  "scripts": {
+    "clean": "git clean -xdf .cache .turbo dist node_modules"
+  },
+  "dependencies": {
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@pack/tsconfig": "workspace:*",
+    "@types/bun": "catalog:dev"
+  }
+}

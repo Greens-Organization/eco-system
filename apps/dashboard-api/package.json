@@ -1,0 +1,39 @@
+{
+  "name": "@app/dashboard-api",
+  "private": true,
+  "scripts": {
+    "dev": "bun run --hot ./src/server.ts | pino-pretty",
+    "build": "bun build src/server.ts --compile --outfile=dashboard-api",
+    "preview": "./dashboard-api",
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "test": "bun test test/unit --preload @pack/testing/preload --preload ./test/unit/setup.ts",
+    "test:watch": "bun test test/unit --watch --preload @pack/testing/preload --preload ./test/unit/setup.ts",
+    "test:coverage": "bun test test/unit --coverage --preload @pack/testing/preload --preload ./test/unit/setup.ts",
+    "test:e2e": "bun run test/e2e/run.ts"
+  },
+  "dependencies": {
+    "@hono/otel": "catalog:",
+    "@hono/zod-openapi": "catalog:",
+    "@pack/auth": "workspace:*",
+    "@pack/cache": "workspace:*",
+    "@pack/db": "workspace:*",
+    "@pack/email": "workspace:*",
+    "@pack/observability": "workspace:*",
+    "@pack/testing": "workspace:*",
+    "@scalar/hono-api-reference": "catalog:",
+    "drizzle-orm": "catalog:",
+    "hono": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@pack/tsconfig": "workspace:*",
+    "@types/bun": "catalog:dev",
+    "pino-pretty": "catalog:",
+    "postgres": "catalog:"
+  },
+  "imports": {
+    "#core/*": "./src/core/*.ts",
+    "#infra/*": "./src/infra/*.ts",
+    "#main/*": "./src/main/*.ts"
+  }
+}

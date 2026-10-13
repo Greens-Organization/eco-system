@@ -1,189 +1,251 @@
 {
-  "web": {
-    "global": {
-      "primaryCta": "Agende uma chamada",
-      "secondaryCta": "Inscreva-se"
+  "app": {
+    "common": {
+      "loading": "Carregando...",
+      "error": "Erro",
+      "success": "Sucesso",
+      "cancel": "Cancelar",
+      "save": "Salvar",
+      "delete": "Excluir",
+      "edit": "Editar",
+      "close": "Fechar",
+      "search": "Buscar",
+      "filter": "Filtrar",
+      "sort": "Ordenar",
+      "actions": "Ações",
+      "settings": "Configurações",
+      "logout": "Sair",
+      "profile": "Perfil",
+      "selectLanguage": "Selecionar idioma",
+      "user": "Usuário"
     },
-    "header": {
-      "home": "Início",
-      "product": {
-        "title": "Produto",
-        "description": "Gerenciar uma pequena empresa hoje já é difícil.",
-        "pricing": "Preços"
-      },
-      "blog": "Blog",
-      "docs": "Documentos",
-      "contact": "Contato",
-      "signIn": "Entrar",
-      "signUp": "Comece agora"
+    "navigation": {
+      "dashboard": "Painel",
+      "help": "Ajuda",
+      "customers": "Clientes",
+      "employees": "Funcionários"
     },
-    "home": {
-      "meta": {
-        "title": "Transforme as Operações da Sua Empresa Hoje",
-        "description": "No mundo acelerado de hoje, sua empresa merece mais do que sistemas de negociação ultrapassados. Nossa plataforma inovadora simplifica operações, reduz a complexidade e ajuda pequenas empresas a prosperar na economia moderna."
-      },
-      "hero": {
-        "announcement": "Leia nosso último artigo"
-      },
-      "cases": {
-        "title": "Histórias de Sucesso que Empoderam o Mundo Todo"
-      },
-      "features": {
-        "title": "Ferramentas Poderosas para Negócios Modernos",
-        "description": "Descubra como nossos recursos de ponta podem revolucionar suas operações diárias.",
-        "items": [
-          {
-            "title": "Operações Simplificadas",
-            "description": "Nossa plataforma simplifica operações, reduz a complexidade e ajuda pequenas empresas a prosperar na economia moderna."
-          },
-          {
-            "title": "Análises em Tempo Real",
-            "description": "Obtenha insights instantâneos sobre o desempenho da sua empresa com ferramentas abrangentes de análise e relatórios."
-          },
-          {
-            "title": "Fluxos de Trabalho Automatizados",
-            "description": "Economize tempo e reduza erros com automação inteligente que cuida de tarefas repetitivas para você."
-          },
-          {
-            "title": "Transações Seguras",
-            "description": "Fique tranquilo sabendo que as operações da sua empresa estão protegidas por segurança e criptografia de nível empresarial."
-          }
-        ]
-      },
-      "stats": {
-        "title": "Resultados Reais, Impacto Real",
-        "description": "Junte-se a milhares de empresas que transformaram suas operações com nossa plataforma. Nossas soluções ajudaram empresas a reduzir a sobrecarga administrativa em 60% e aumentar a eficiência comercial em 45% em média.",
-        "items": [
-          {
-            "title": "Usuários ativos mensais",
-            "metric": "100000",
-            "delta": "10",
-            "type": "unidade"
-          },
-          {
-            "title": "Usuários ativos diários",
-            "metric": "10000",
-            "delta": "-5",
-            "type": "unidade"
-          },
-          {
-            "title": "Receita recorrente mensal",
-            "metric": "100000",
-            "delta": "20",
-            "type": "moeda"
-          },
-          {
-            "title": "Custo por aquisição",
-            "metric": "100",
-            "delta": "-10",
-            "type": "moeda"
-          }
-        ]
-      },
-      "testimonials": {
-        "title": "Ouça Nossa Comunidade Próspera",
-        "items": [
-          {
-            "title": "Melhor decisão",
-            "description": "Nosso objetivo era simplificar o comércio de PME, tornando-o mais fácil e rápido do que nunca, e conseguimos isso juntos.",
-            "author": {
-              "name": "Hayden Bleasel",
-              "image": "https://github.com/haydenbleasel.png"
-            }
-          },
-          {
-            "title": "Mudança de jogo",
-            "description": "Esta plataforma revolucionou a forma como lidamos com nossas operações diárias. Os ganhos de eficiência foram notáveis.",
-            "author": {
-              "name": "Lee Robinson",
-              "image": "https://github.com/leerob.png"
-            }
-          },
-          {
-            "title": "Superou as expectativas",
-            "description": "A implementação foi tranquila e os resultados foram imediatos. Nossa equipe se adaptou rapidamente e a produtividade disparou.",
-            "author": {
-              "name": "shadcn",
-              "image": "https://github.com/shadcn.png"
-            }
-          },
-          {
-            "title": "Suporte excepcional",
-            "description": "Não só a plataforma é poderosa, mas a equipe de suporte ao cliente tem sido excepcional em nos ajudar a maximizar seu potencial.",
-            "author": {
-              "name": "Pontus Abrahamsson",
-              "image": "https://github.com/pontusab.png"
-            }
-          }
-        ]
-      },
-      "faq": {
-        "title": "Perguntas Comuns, Respostas de Especialistas",
-        "description": "Obtenha respostas rápidas para suas perguntas mais urgentes sobre nossa plataforma. Compilamos tudo o que você precisa saber sobre como transformar suas operações comerciais e começar com soluções de negociação modernas.",
-        "cta": "Alguma dúvida? Entre em contato",
-        "items": [
-          {
-            "question": "O que é a plataforma?",
-            "answer": "A plataforma é uma plataforma de negociação que permite que você negocie com confiança."
-          },
-          {
-            "question": "Quão segura é a plataforma?",
-            "answer": "Nossa plataforma emprega medidas de segurança de nível empresarial, incluindo criptografia de ponta a ponta e autenticação multifatorial, para garantir que suas atividades de negociação permaneçam completamente seguras."
-          },
-          {
-            "question": "Quais recursos de negociação estão disponíveis?",
-            "answer": "A plataforma oferece ferramentas de negociação abrangentes, incluindo dados de mercado em tempo real, gráficos avançados, estratégias de negociação automatizadas e análises detalhadas para apoiar a tomada de decisões informadas."
-          },
-          {
-            "question": "Como funciona a precificação?",
-            "answer": "Oferecemos níveis de preços flexíveis projetados para escalar com as necessidades da sua empresa, desde planos iniciais para traders individuais até soluções empresariais para grandes organizações."
-          },
-          {
-            "question": "Que tipo de suporte você oferece?",
-            "answer": "Nossa equipe de suporte dedicada está disponível 24/7 através de vários canais, incluindo chat ao vivo, e-mail e telefone. Também fornecemos documentação extensa e recursos de treinamento."
-          }
-        ]
-      },
-      "cta": {
-        "title": "Comece Sua Transformação Empresarial",
-        "description": "Junte-se a milhares de empresas visionárias que já modernizaram suas operações. Nossa plataforma oferece as ferramentas, suporte e eficiência que você precisa para ter sucesso no mercado competitivo de hoje. Comece em minutos."
+    "sidebar": {
+      "general": "Geral",
+      "customers": "Clientes",
+      "employees": "Colaboradores",
+      "configurations": "Configurações",
+      "changeTheme": "Mudar tema",
+      "profile": "Perfil",
+      "loading": "Carregando..."
+    },
+    "dashboard": {
+      "title": "Acme Inc",
+      "description": "Minha aplicação.",
+      "welcome": "Que bom te ver de volta",
+      "pages": "Construindo Sua Aplicação",
+      "dataFetching": "Busca de Dados",
+      "totalUsers": "Total de Usuários",
+      "activeUsers": "Usuários Ativos",
+      "totalRevenue": "Receita Total",
+      "recentActivity": "Atividade Recente",
+      "noActivity": "Nenhuma atividade encontrada",
+      "signups": "Cadastros nos últimos 7 dias",
+      "signupsSummary": "{total} cadastros nos últimos 7 dias",
+      "loadFailed": "Não foi possível carregar os dados do painel. Tente de novo em instantes.",
+      "viewAll": "Ver todos",
+      "actions": {
+        "workspace_created": "Criou um novo workspace",
+        "billing_updated": "Atualizou os dados de cobrança",
+        "member_invited": "Convidou um membro da equipe",
+        "project_deleted": "Excluiu um projeto"
       }
     },
-    "blog": {
-      "meta": {
-        "title": "Blog",
-        "description": "Pensamentos, ideias e opiniões."
+    "customers": {
+      "title": "Clientes",
+      "empty": "Nenhum cliente encontrado",
+      "columns": {
+        "name": "Nome",
+        "email": "E-mail",
+        "status": "Status",
+        "createdAt": "Cliente desde"
+      },
+      "status": {
+        "active": "Ativo",
+        "pending": "Pendente",
+        "inactive": "Inativo"
+      },
+      "detailTitle": "Cliente"
+    },
+    "employees": {
+      "title": "Funcionários",
+      "empty": "Nenhum funcionário encontrado",
+      "columns": {
+        "name": "Nome",
+        "email": "E-mail",
+        "role": "Cargo",
+        "department": "Departamento",
+        "status": "Status"
+      },
+      "status": {
+        "active": "Ativo",
+        "on_leave": "De licença",
+        "inactive": "Inativo"
+      },
+      "detailTitle": "Funcionário"
+    },
+    "settings": {
+      "appearance": "Aparência",
+      "appearanceDescription": "Personalize como o app aparece no seu dispositivo.",
+      "theme": "Tema",
+      "language": "Idioma",
+      "languageDescription": "Escolha seu idioma preferido.",
+      "account": "Conta",
+      "accountDescription": "Os detalhes da sua conta.",
+      "security": {
+        "title": "Segurança",
+        "description": "Adicione uma segunda etapa ao login com um app autenticador.",
+        "twoFactor": "Verificação em duas etapas",
+        "on": "Ativada",
+        "off": "Desativada",
+        "enable": "Ativar",
+        "disable": "Desativar",
+        "confirmPassword": "Confirme sua senha",
+        "scan": "Escaneie este QR code com seu app autenticador ou digite a chave de configuração.",
+        "setupKey": "Chave de configuração",
+        "backupCodes": "Códigos de backup",
+        "backupCodesHint": "Guarde estes códigos em um lugar seguro. Se perder o celular, cada um permite entrar uma vez.",
+        "confirmCode": "Digite o código do app para concluir.",
+        "confirm": "Ativar",
+        "enabled": "A verificação em duas etapas está ativada.",
+        "disabled": "A verificação em duas etapas está desativada."
+      },
+      "devices": {
+        "title": "Dispositivos conectados",
+        "description": "Onde sua conta está conectada agora.",
+        "device": "{browser} no {system}",
+        "unknownDevice": "Dispositivo desconhecido",
+        "unknownBrowser": "Navegador",
+        "signedIn": "entrou {when}",
+        "thisDevice": "Este dispositivo",
+        "signOut": "Sair",
+        "signOutOthers": "Sair de todos os outros dispositivos",
+        "signedOutOne": "Pronto. O dispositivo foi desconectado.",
+        "signedOutOthers": "Pronto. Os outros dispositivos foram desconectados.",
+        "delayNote": "Um dispositivo desconectado pode continuar aberto por até um minuto.",
+        "listFailed": "Não foi possível carregar seus dispositivos."
+      },
+      "password": {
+        "title": "Senha",
+        "description": "Trocar a senha desconecta todos os outros dispositivos.",
+        "current": "Senha atual",
+        "new": "Nova senha",
+        "hint": "Pelo menos 8 caracteres.",
+        "submit": "Trocar senha",
+        "done": "Senha trocada. Os outros dispositivos foram desconectados."
+      },
+      "danger": {
+        "title": "Zona de perigo",
+        "description": "Excluir a conta remove ela e todas as sessões. Não dá para desfazer.",
+        "delete": "Excluir conta",
+        "confirmTitle": "Excluir sua conta?",
+        "confirmDescription": "Não dá para desfazer. Digite sua senha para confirmar.",
+        "confirm": "Excluir para sempre"
       }
     },
-    "contact": {
-      "meta": {
-        "title": "Vamos Falar Sobre Seu Negócio",
-        "description": "Agende uma consulta com nossa equipe para discutir como podemos ajudar a simplificar suas operações e impulsionar o crescimento da sua empresa."
-      },
-      "hero": {
-        "benefits": [
-          {
-            "title": "Consulta Personalizada",
-            "description": "Obtenha soluções personalizadas e conselhos de especialistas específicos para as necessidades da sua empresa."
-          },
-          {
-            "title": "Integração Sem Costura",
-            "description": "Integramos perfeitamente com seus sistemas existentes para garantir uma transição suave e mínima interrupção."
-          },
-          {
-            "title": "Orientação Especializada",
-            "description": "Nossa equipe de especialistas irá guiá-lo durante o processo, garantindo que você aproveite ao máximo nossa plataforma."
-          }
-        ],
-        "form": {
-          "title": "Agende uma reunião",
-          "date": "Data",
-          "firstName": "Primeiro nome",
-          "lastName": "Último nome",
-          "resume": "Carregar currículo",
-          "cta": "Agende a reunião"
-        }
+    "profile": {
+      "title": "Perfil",
+      "description": "Suas informações pessoais.",
+      "name": "Nome",
+      "email": "E-mail",
+      "accountId": "ID da conta",
+      "memberSince": "Membro desde",
+      "edit": {
+        "save": "Salvar",
+        "saved": "Seu nome foi atualizado."
       }
+    },
+    "errors": {
+      "notFound": "Página não encontrada",
+      "notFoundDescription": "A página que você procura não existe ou foi movida.",
+      "unauthorized": "Acesso não autorizado",
+      "serverError": "Algo deu errado",
+      "tryAgain": "Tente novamente",
+      "backHome": "Voltar para o início",
+      "reference": "ref",
+      "missingFields": "Todos os campos são obrigatórios",
+      "timeout": "O servidor demorou muito para responder. Tente novamente.",
+      "unreachable": "Não foi possível conectar ao servidor. Tente novamente mais tarde.",
+      "unknown": "Algo deu errado. Tente novamente.",
+      "invalidCredentials": "E-mail ou senha inválidos",
+      "invalidEmail": "E-mail inválido",
+      "emailTaken": "Já existe uma conta com esse e-mail",
+      "passwordTooShort": "Senha muito curta",
+      "passwordTooLong": "Senha muito longa",
+      "emailNotVerified": "Verifique seu e-mail antes de entrar",
+      "tooManyRequests": "Muitas tentativas. Tente novamente mais tarde.",
+      "wrongPassword": "Senha incorreta",
+      "invalidCode": "Código inválido. Confira o app autenticador e tente de novo.",
+      "invalidBackupCode": "Código de backup inválido ou já usado",
+      "twoFactorLocked": "Muitos códigos errados. Aguarde alguns minutos e tente de novo.",
+      "twoFactorExpired": "Seu login expirou. Entre novamente.",
+      "deviceNotFound": "Esse dispositivo já não está conectado."
+    },
+    "auth": {
+      "signIn": {
+        "title": "Que bom te ver de volta",
+        "description": "Informe seus dados para entrar."
+      },
+      "signUp": {
+        "title": "Criar uma conta",
+        "description": "Informe seus dados para começar."
+      },
+      "name": "Nome",
+      "email": "E-mail",
+      "password": "Senha",
+      "noAccount": "Não tem uma conta?",
+      "hasAccount": "Já tem uma conta?",
+      "twoFactor": {
+        "title": "Verificação em duas etapas",
+        "description": "Digite o código de 6 dígitos do seu app autenticador.",
+        "backupDescription": "Digite um dos seus códigos de backup. Cada um funciona uma única vez.",
+        "code": "Código",
+        "backupCode": "Código de backup",
+        "verify": "Verificar",
+        "useBackup": "Usar um código de backup",
+        "useApp": "Usar o app autenticador",
+        "backToSignIn": "Voltar ao login"
+      },
+      "forgotLink": "Esqueceu a senha?",
+      "forgot": {
+        "title": "Redefinir a senha",
+        "description": "Informe seu e-mail e enviaremos um link para escolher uma nova senha.",
+        "submit": "Enviar link",
+        "sent": "Se existir uma conta com esse e-mail, um link está a caminho. Confira sua caixa de entrada.",
+        "back": "Voltar ao login"
+      },
+      "reset": {
+        "title": "Escolha uma nova senha",
+        "description": "Pelo menos 8 caracteres.",
+        "newPassword": "Nova senha",
+        "confirmPassword": "Confirme a nova senha",
+        "submit": "Salvar nova senha",
+        "mismatch": "As senhas não coincidem.",
+        "done": "Senha trocada. Entre com a nova senha.",
+        "invalidLink": "Este link é inválido ou expirou. Peça um novo.",
+        "requestNew": "Pedir um novo link"
+      }
+    },
+    "list": {
+      "search": "Buscar",
+      "searchPlaceholder": "Nome ou e-mail",
+      "status": "Status",
+      "allStatuses": "Todos os status",
+      "apply": "Aplicar",
+      "clear": "Limpar",
+      "previous": "Anterior",
+      "next": "Próxima",
+      "pageOf": "Página {page} de {pages}",
+      "results": "{count} resultados",
+      "noResults": "Nada corresponde a esses filtros.",
+      "loadFailed": "Não foi possível carregar esta lista. Tente de novo em instantes.",
+      "back": "Voltar para a lista",
+      "id": "ID"
     }
   }
 }

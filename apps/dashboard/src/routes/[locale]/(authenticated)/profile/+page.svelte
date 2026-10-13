@@ -1,0 +1,540 @@
+<script lang="ts">
+import Moon from '@lucide/svelte/icons/moon';
+import Sun from '@lucide/svelte/icons/sun';
+import * as AlertDialog from '@pack/design-system/components/ui/alert-dialog';
+import { Badge } from '@pack/design-system/components/ui/badge';
+import { Button } from '@pack/design-system/components/ui/button';
+import { genericAvatar } from '@pack/design-system/lib/utils';
+import { mode, toggleMode } from 'mode-watcher';
+import { toast } from 'svelte-sonner';
+import Header from '#lib/components/header.svelte';
+import LanguageSelector from '#lib/components/language-selector.svelte';
+import { useLocale, useTranslation } from '#lib/i18n/context.svelte.js';
+import { enhance } from '$app/forms';
+import { page } from '$app/state';
+import type { ActionData, PageData } from './$types';
+
+let { data, form }: { data: PageData; form: ActionData } = $props();
+
+const t = useTranslation();
+const locale = useLocale();
+
+// The enrollment (QR + backup codes) arrives once, from `enable`. Rendered
+// straight from `form` (so it works without JS); `kept` holds it on screen in
+// the browser while the user retries a wrong confirmation code.
+type Setup = { qr: string; secret: string; backupCodes: string[] };
+let kept = $state<Setup | null>(null);
+$effect(() => {
+  if (form && 'setup' in form && form.setup) kept = form.setup;
+  // Once 2FA is turned on or off the enrollment is over.
+  if (doneStep === 'confirm' || doneStep === 'disable') kept = null;
+});
+const setup = $derived.by(() => {
+  if (doneStep === 'confirm' || doneStep === 'disable') return null;
+  if (form && 'setup' in form && form.setup) return form.setup;
+  return kept;
+});
+
+// Loads ran before the action changed the session, so trust a fresh result.
+const doneStep = $derived(
+  form && 'done' in form && form.done ? form.step : undefined
+);
+const twoFactorOn = $derived(
+  doneStep === 'confirm' || doneStep === 'disable'
+    ? doneStep === 'confirm'
+    : data.twoFactorEnabled
+);
+const errorFor = (step: string) =>
+  form && 'error' in form && form.step === step ? form.error : undefined;
+
+let busy = $state(false);
+let deleteOpen = $state(false);
+/** use:enhance handler; with `success`, a toast confirms it worked. */
+const submit = (success?: string) => () => {
+  busy = true;
+  return async ({
+    result,
+    update,
+  }: {
+    result: { type: string };
+    update: (options?: { reset?: boolean }) => Promise<void>;
+  }) => {
+    busy = false;
+    // Keep what the user typed if it failed; clear it once it worked.
+    await update({ reset: result.type === 'success' });
+    if (success && result.type === 'success') toast.success(success);
+  };
+};
+
+const deviceName = (device: {
+  browser: string | null;
+  system: string | null;
+}) =>
+  device.browser || device.system
+    ? t.app.settings.devices.device
+        .replace(
+          '{browser}',
+          device.browser ?? t.app.settings.devices.unknownBrowser
+        )
+        .replace('{system}', device.system ?? '?')
+    : t.app.settings.devices.unknownDevice;
+
+const inputClass =
+  'flex h-9 w-full max-w-xs rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
+
+// The API's row when it answered; the session's copy otherwise.
+const user = $derived(data.me ?? page.data.user);
+
+const avatarSrc = $derived(
+  user?.image ?? genericAvatar(user?.name ?? user?.email ?? 'U')
+);
+const detailRowClass =
+  'flex items-center justify-between gap-4 border-b pb-3 last:border-0 last:pb-0 border-border/50';
+
+const sectionClass = 'rounded-xl bg-muted/50 p-6 space-y-4';
+const rowClass = 'flex items-center justify-between gap-4';
+</script>
+
+<Header
+    crumbs={[{ label: t.app.navigation.dashboard, href: `/${locale}` }]}
+    page={t.app.profile.title}
+/>
+
+<div class="flex flex-1 flex-col gap-4 p-4">
+    <!-- Profile -->
+    <div class="rounded-xl bg-muted/50 p-6">
+        <div class="flex items-center gap-4">
+            <img
+                src={avatarSrc}
+                alt={user?.name ?? t.app.common.user}
+                width="64"
+                height="64"
+                class="size-16 shrink-0 rounded-full object-cover"
+            />
+            <div class="space-y-1">
+                <h2 class="text-lg font-semibold leading-none">
+                    {user?.name ?? "—"}
+                </h2>
+                <p class="text-sm text-muted-foreground">
+                    {user?.email ?? "—"}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="rounded-xl bg-muted/50 p-6">
+        <h3 class="text-base font-semibold mb-4">
+            {t.app.profile.description}
+        </h3>
+        <div class="space-y-3 text-sm">
+            <form
+                method="POST"
+                action="?/updateName"
+                use:enhance={submit(t.app.profile.edit.saved)}
+                class="{detailRowClass} flex-wrap"
+            >
+                <label for="profile-name" class="font-medium">{t.app.profile.name}</label>
+                <div class="flex items-center gap-2">
+                    <input
+                        id="profile-name"
+                        name="name"
+                        required
+                        maxlength={100}
+                        autocomplete="name"
+                        value={user?.name ?? ""}
+                        class="{inputClass} h-8"
+                    />
+                    <Button type="submit" size="sm" variant="outline" disabled={busy}>
+                        {t.app.profile.edit.save}
+                    </Button>
+                </div>
+                {#if errorFor("updateName")}
+                    <p class="w-full text-sm text-destructive" role="alert">{errorFor("updateName")}</p>
+                {/if}
+            </form>
+            <div class={detailRowClass}>
+                <span class="font-medium">{t.app.profile.email}</span>
+                <span class="text-muted-foreground">{user?.email ?? "—"}</span>
+            </div>
+            {#if data.me}
+                <div class={detailRowClass}>
+                    <span class="font-medium">{t.app.profile.memberSince}</span>
+                    <span class="text-muted-foreground">{data.me.memberSince}</span>
+                </div>
+            {/if}
+            <div class={detailRowClass}>
+                <span class="font-medium">{t.app.profile.accountId}</span>
+                <span class="text-muted-foreground font-mono text-xs">
+                    {user?.id ?? "—"}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Appearance -->
+    <div class={sectionClass}>
+        <div>
+            <h2 class="text-lg font-semibold">{t.app.settings.appearance}</h2>
+            <p class="text-sm text-muted-foreground">
+                {t.app.settings.appearanceDescription}
+            </p>
+        </div>
+        <div class={rowClass}>
+            <span class="text-sm font-medium">{t.app.settings.theme}</span>
+            <button
+                type="button"
+                onclick={toggleMode}
+                class="inline-flex h-9 items-center gap-2 rounded-md border border-input bg-background px-3 text-sm hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+                {#if mode.current === "light"}
+                    <Sun class="size-4" />
+                {:else}
+                    <Moon class="size-4" />
+                {/if}
+                <span>{t.app.sidebar.changeTheme}</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Language -->
+    <div class={sectionClass}>
+        <div>
+            <h2 class="text-lg font-semibold">{t.app.settings.language}</h2>
+            <p class="text-sm text-muted-foreground">
+                {t.app.settings.languageDescription}
+            </p>
+        </div>
+        <div class={rowClass}>
+            <span class="text-sm font-medium">{t.app.common.selectLanguage}</span
+            >
+            <LanguageSelector />
+        </div>
+    </div>
+
+    <!-- Security -->
+    <div class={sectionClass}>
+        <div>
+            <h2 class="text-lg font-semibold">{t.app.settings.security.title}</h2>
+            <p class="text-sm text-muted-foreground">
+                {t.app.settings.security.description}
+            </p>
+        </div>
+
+        <form
+            method="POST"
+            action="?/changePassword"
+            use:enhance={submit(t.app.settings.password.done)}
+            class="flex flex-col gap-2 border-b border-border/50 pb-4"
+        >
+            <span class="text-sm font-medium">{t.app.settings.password.title}</span>
+            <p class="text-sm text-muted-foreground">{t.app.settings.password.description}</p>
+            <label for="current-password" class="text-sm">{t.app.settings.password.current}</label>
+            <input
+                id="current-password"
+                name="currentPassword"
+                type="password"
+                required
+                autocomplete="current-password"
+                class={inputClass}
+            />
+            <label for="new-password" class="text-sm">{t.app.settings.password.new}</label>
+            <input
+                id="new-password"
+                name="newPassword"
+                type="password"
+                required
+                minlength={8}
+                maxlength={128}
+                autocomplete="new-password"
+                aria-describedby="new-password-hint"
+                class={inputClass}
+            />
+            <span id="new-password-hint" class="text-xs text-muted-foreground">{t.app.settings.password.hint}</span>
+            {#if errorFor("changePassword")}
+                <p class="text-sm text-destructive" role="alert">{errorFor("changePassword")}</p>
+            {/if}
+            {#if doneStep === "changePassword"}
+                <p class="text-sm text-muted-foreground" role="status">{t.app.settings.password.done}</p>
+            {/if}
+            <Button type="submit" size="sm" disabled={busy} class="w-fit">
+                {t.app.settings.password.submit}
+            </Button>
+        </form>
+        <div class={rowClass}>
+            <span class="text-sm font-medium"
+                >{t.app.settings.security.twoFactor}</span
+            >
+            <Badge variant={twoFactorOn ? "default" : "outline"}>
+                {twoFactorOn
+                    ? t.app.settings.security.on
+                    : t.app.settings.security.off}
+            </Badge>
+        </div>
+
+        {#if doneStep === "confirm" || doneStep === "disable"}
+            <p class="text-sm text-muted-foreground" role="status">
+                {doneStep === "confirm"
+                    ? t.app.settings.security.enabled
+                    : t.app.settings.security.disabled}
+            </p>
+        {/if}
+
+        {#if twoFactorOn}
+            <form
+                method="POST"
+                action="?/disable"
+                use:enhance={submit()}
+                class="flex flex-col gap-2"
+            >
+                <label for="disable-password" class="text-sm font-medium"
+                    >{t.app.settings.security.confirmPassword}</label
+                >
+                <input
+                    id="disable-password"
+                    name="password"
+                    type="password"
+                    required
+                    autocomplete="current-password"
+                    class={inputClass}
+                />
+                {#if errorFor("disable")}
+                    <p class="text-sm text-destructive" role="alert">
+                        {errorFor("disable")}
+                    </p>
+                {/if}
+                <Button
+                    type="submit"
+                    variant="destructive"
+                    disabled={busy}
+                    class="w-fit"
+                >
+                    {t.app.settings.security.disable}
+                </Button>
+            </form>
+        {:else if setup}
+            <div class="flex flex-col gap-4">
+                <p class="text-sm">{t.app.settings.security.scan}</p>
+                <div class="w-44 rounded-md bg-white p-2 text-black">
+                    {@html setup.qr}
+                </div>
+                <div class="flex flex-col gap-1">
+                    <span class="text-sm font-medium"
+                        >{t.app.settings.security.setupKey}</span
+                    >
+                    <code class="w-fit break-all rounded bg-muted px-2 py-1 text-sm"
+                        >{setup.secret}</code
+                    >
+                </div>
+                <div class="flex flex-col gap-1">
+                    <span class="text-sm font-medium"
+                        >{t.app.settings.security.backupCodes}</span
+                    >
+                    <p class="text-sm text-muted-foreground">
+                        {t.app.settings.security.backupCodesHint}
+                    </p>
+                    <ul class="grid w-fit grid-cols-2 gap-x-6 gap-y-1 font-mono text-sm">
+                        {#each setup.backupCodes as code (code)}
+                            <li>{code}</li>
+                        {/each}
+                    </ul>
+                </div>
+                <form
+                    method="POST"
+                    action="?/confirm"
+                    use:enhance={submit()}
+                    class="flex flex-col gap-2"
+                >
+                    <label for="confirm-code" class="text-sm font-medium"
+                        >{t.app.settings.security.confirmCode}</label
+                    >
+                    <input
+                        id="confirm-code"
+                        name="code"
+                        required
+                        inputmode="numeric"
+                        autocomplete="one-time-code"
+                        pattern="[0-9 ]*"
+                        maxlength={7}
+                        placeholder="000000"
+                        class={inputClass}
+                    />
+                    {#if errorFor("confirm")}
+                        <p class="text-sm text-destructive" role="alert">
+                            {errorFor("confirm")}
+                        </p>
+                    {/if}
+                    <Button type="submit" disabled={busy} class="w-fit">
+                        {t.app.settings.security.confirm}
+                    </Button>
+                </form>
+            </div>
+        {:else}
+            <form
+                method="POST"
+                action="?/enable"
+                use:enhance={submit()}
+                class="flex flex-col gap-2"
+            >
+                <label for="enable-password" class="text-sm font-medium"
+                    >{t.app.settings.security.confirmPassword}</label
+                >
+                <input
+                    id="enable-password"
+                    name="password"
+                    type="password"
+                    required
+                    autocomplete="current-password"
+                    class={inputClass}
+                />
+                <!-- Without JS a failed confirmation lands here: start over. -->
+                {#if errorFor("enable") ?? errorFor("confirm")}
+                    <p class="text-sm text-destructive" role="alert">
+                        {errorFor("enable") ?? errorFor("confirm")}
+                    </p>
+                {/if}
+                <Button type="submit" disabled={busy} class="w-fit">
+                    {t.app.settings.security.enable}
+                </Button>
+            </form>
+        {/if}
+    </div>
+    <!-- Signed-in devices -->
+    <div class={sectionClass}>
+        <div>
+            <h2 class="text-lg font-semibold">{t.app.settings.devices.title}</h2>
+            <p class="text-sm text-muted-foreground">
+                {t.app.settings.devices.description}
+            </p>
+        </div>
+
+        {#if doneStep === "signOutDevice" || doneStep === "signOutOthers"}
+            <p class="text-sm text-muted-foreground" role="status">
+                {doneStep === "signOutDevice"
+                    ? t.app.settings.devices.signedOutOne
+                    : t.app.settings.devices.signedOutOthers}
+                {t.app.settings.devices.delayNote}
+            </p>
+        {/if}
+        {#if errorFor("signOutDevice") ?? errorFor("signOutOthers")}
+            <p class="text-sm text-destructive" role="alert">
+                {errorFor("signOutDevice") ?? errorFor("signOutOthers")}
+            </p>
+        {/if}
+
+        {#if data.devices}
+            <ul
+                aria-label={t.app.settings.devices.title}
+                class="divide-y divide-border rounded-md border"
+            >
+                {#each data.devices as device (device.id)}
+                    <li class="flex flex-wrap items-center justify-between gap-2 px-3 py-2">
+                        <div class="min-w-0">
+                            <p class="text-sm font-medium">{deviceName(device)}</p>
+                            <p class="text-xs text-muted-foreground">
+                                {[
+                                    device.ip,
+                                    t.app.settings.devices.signedIn.replace(
+                                        "{when}",
+                                        device.signedInAgo,
+                                    ),
+                                ]
+                                    .filter(Boolean)
+                                    .join(" · ")}
+                            </p>
+                        </div>
+                        {#if device.current}
+                            <span class="text-xs font-medium text-primary"
+                                >{t.app.settings.devices.thisDevice}</span
+                            >
+                        {:else}
+                            <form method="POST" action="?/signOutDevice" use:enhance={submit()}>
+                                <input type="hidden" name="id" value={device.id} />
+                                <Button
+                                    type="submit"
+                                    size="sm"
+                                    variant="ghost"
+                                    disabled={busy}
+                                    aria-label="{t.app.settings.devices.signOut}: {deviceName(device)}"
+                                >
+                                    {t.app.settings.devices.signOut}
+                                </Button>
+                            </form>
+                        {/if}
+                    </li>
+                {/each}
+            </ul>
+
+            {#if data.devices.length > 1}
+                <form method="POST" action="?/signOutOthers" use:enhance={submit()}>
+                    <Button type="submit" variant="outline" size="sm" disabled={busy}>
+                        {t.app.settings.devices.signOutOthers}
+                    </Button>
+                </form>
+            {/if}
+        {:else}
+            <p class="text-sm text-muted-foreground">
+                {t.app.settings.devices.listFailed}
+            </p>
+        {/if}
+    </div>
+    <!-- Danger zone -->
+    <div class="{sectionClass} border border-destructive/40">
+        <div>
+            <h2 class="text-lg font-semibold text-destructive">{t.app.settings.danger.title}</h2>
+            <p class="text-sm text-muted-foreground">{t.app.settings.danger.description}</p>
+        </div>
+        <!-- Inside the dialog while it is open (its overlay hides the page);
+             here for the no-JS form. -->
+        {#if errorFor("deleteAccount") && !deleteOpen}
+            <p class="text-sm text-destructive" role="alert">{errorFor("deleteAccount")}</p>
+        {/if}
+        <AlertDialog.Root bind:open={deleteOpen}>
+            <AlertDialog.Trigger>
+                {#snippet child({ props })}
+                    <Button {...props} variant="destructive" size="sm" class="w-fit">
+                        {t.app.settings.danger.delete}
+                    </Button>
+                {/snippet}
+            </AlertDialog.Trigger>
+            <AlertDialog.Content>
+                <form method="POST" action="?/deleteAccount" use:enhance={submit()} class="flex flex-col gap-4">
+                    <AlertDialog.Header>
+                        <AlertDialog.Title>{t.app.settings.danger.confirmTitle}</AlertDialog.Title>
+                        <AlertDialog.Description>
+                            {t.app.settings.danger.confirmDescription}
+                        </AlertDialog.Description>
+                    </AlertDialog.Header>
+                    <label for="delete-password" class="sr-only">{t.app.settings.security.confirmPassword}</label>
+                    <input
+                        id="delete-password"
+                        name="password"
+                        type="password"
+                        required
+                        autocomplete="current-password"
+                        placeholder={t.app.settings.security.confirmPassword}
+                        class="{inputClass} max-w-none"
+                    />
+                    {#if errorFor("deleteAccount")}
+                        <p class="text-sm text-destructive" role="alert">{errorFor("deleteAccount")}</p>
+                    {/if}
+                    <AlertDialog.Footer>
+                        <AlertDialog.Cancel type="button">{t.app.common.cancel}</AlertDialog.Cancel>
+                        <Button type="submit" variant="destructive" disabled={busy}>
+                            {t.app.settings.danger.confirm}
+                        </Button>
+                    </AlertDialog.Footer>
+                </form>
+            </AlertDialog.Content>
+        </AlertDialog.Root>
+        <!-- The dialog needs JS; without it, the same form inline. -->
+        <noscript>
+            <form method="POST" action="?/deleteAccount" class="flex flex-col gap-2">
+                <label for="delete-password-nojs" class="text-sm">{t.app.settings.security.confirmPassword}</label>
+                <input id="delete-password-nojs" name="password" type="password" required autocomplete="current-password" class={inputClass} />
+                <button type="submit" class="w-fit rounded-md bg-destructive px-3 py-1.5 text-sm text-white">
+                    {t.app.settings.danger.confirm}
+                </button>
+            </form>
+        </noscript>
+    </div>
+</div>

@@ -1,0 +1,19 @@
+{
+  "name": "@pack/tools",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "test": "bun test --preload @pack/testing/preload"
+  },
+  "dependencies": {
+    "es-toolkit": "catalog:"
+  },
+  "devDependencies": {
+    "@pack/testing": "workspace:*"
+  }
+}

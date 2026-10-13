@@ -1,0 +1,29 @@
+# Local observability stack for dev — Grafana LGTM all-in-one.
+# Receives OTLP (traces/metrics/logs) and exposes Grafana to visualize them.
+# Production stays agnostic (point OTEL_EXPORTER_OTLP_ENDPOINT at your own).
+#
+# Up:      bun run docker:obs:up
+# Grafana: http://localhost:3001  (anonymous login, no password by default)
+# In .env: OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
+#
+# Grafana is published on 3001, not its native 3000: the dashboard's vite dev
+# server owns 3000 (apps/dashboard/vite.config.ts), and the two stacks are meant
+# to run side by side.
+services:
+  lgtm:
+    image: grafana/otel-lgtm:0.28.0
+    container_name: eco-system-lgtm
+    ports:
+      - "3001:3000" # Grafana UI (host 3001 — 3000 is the dashboard)
+      - "4317:4317" # OTLP gRPC
+      - "4318:4318" # OTLP HTTP
+    volumes:
+      - lgtm-grafana:/data/grafana
+      - lgtm-prometheus:/data/prometheus
+      - lgtm-loki:/loki
+    restart: unless-stopped
+
+volumes:
+  lgtm-grafana:
+  lgtm-prometheus:
+  lgtm-loki:

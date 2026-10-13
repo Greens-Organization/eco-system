@@ -1,0 +1,109 @@
+import { OpenAPIHono } from '@hono/zod-openapi';
+import { Scalar } from '@scalar/hono-api-reference';
+import { CONSTANTS } from '#infra/common/constants';
+import { handleZodError } from '#main/infra/openapi/utils';
+import { type AppVariables, authMiddleware } from '#main/middleware/index';
+import customersRoute from './customers';
+import employeesRoute from './employees';
+import meRoute from './me';
+import statsRoute from './stats';
+
+export type Variables = AppVariables;
+
+export const v1 = new OpenAPIHono<{ Variables: Variables }>({
+  defaultHook: handleZodError,
+});
+
+/**
+ * Security Scheme: Better Auth Cookie
+ */
+v1.openAPIRegistry.registerComponent('securitySchemes', 'CookieAuth', {
+  type: 'apiKey',
+  in: 'cookie',
+  name: 'better-auth.session_token',
+  description: 'Session cookie set by Better Auth after login',
+});
+
+/**
+ * OpenAPI Specification
+ */
+v1.doc('/openapi', {
+  openapi: '3.0.0',
+  info: {
+    version: '1.0.0',
+    title: 'Eco System API',
+    contact: {
+      email: 'contact@greens.lat',
+      url: 'https://greens.lat',
+    },
+    description:
+      'Eco System API allows you to monitor and manage your infrastructure health checks, workspaces, and more.\n\nTo get started, create an account and authenticate via Better Auth.',
+  },
+  tags: [
+    {
+      name: 'me',
+      description: 'The signed-in user (database-backed example route)',
+      'x-displayName': 'Me',
+    },
+    {
+      name: 'stats',
+      description: 'Stats endpoints',
+      'x-displayName': 'Stats',
+    },
+    {
+      name: 'customers',
+      description: 'Customers endpoints',
+      'x-displayName': 'Customers',
+    },
+    {
+      name: 'employees',
+      description: 'Employees endpoints',
+      'x-displayName': 'Employees',
+    },
+  ],
+  security: [
+    {
+      CookieAuth: [],
+    },
+  ],
+});
+
+/**
+ * Scalar API Documentation UI
+ */
+v1.get(
+  '/',
+  Scalar({
+    url: `${CONSTANTS.API_REST_V1}/openapi`,
+    // Relative: right on any host. The docs are only reachable where the API
+    // is — the internal network.
+    servers: [{ url: CONSTANTS.API_REST_V1, description: 'This server' }],
+    pageTitle: 'Eco System API',
+    theme: 'purple',
+    layout: 'modern',
+    metaData: {
+      title: 'Eco System API',
+      description: 'Start building with Eco System API',
+      ogDescription: 'API Reference',
+      ogTitle: 'Eco System API',
+    },
+  })
+);
+
+/**
+ * Authentication middleware
+ * Applied to all routes except /openapi (spec) and / (docs)
+ */
+v1.use('/*', authMiddleware);
+
+/**
+ * API Routes
+ */
+const routes = v1
+  .route('/me', meRoute)
+  .route('/stats', statsRoute)
+  .route('/customers', customersRoute)
+  .route('/employees', employeesRoute);
+
+export default routes;
+export type AppType = typeof routes;

@@ -1,7 +1,8 @@
 {
-  "extends": "@pack/typescript-config/nextjs.json",
+  "extends": "@pack/tsconfig/bun.json",
   "compilerOptions": {
-    "baseUrl": "."
+    "types": ["bun"]
   },
+  "include": ["**/*.ts"],
   "exclude": ["node_modules"]
 }

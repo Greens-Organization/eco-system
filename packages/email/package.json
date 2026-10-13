@@ -2,22 +2,21 @@
   "name": "@pack/email",
   "version": "0.0.0",
   "private": true,
+  "exports": {
+    ".": "./index.ts",
+    "./pack-env": "./pack-env.ts"
+  },
   "scripts": {
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+    "test": "bun test --preload @pack/testing/preload",
+    "clean": "git clean -xdf .cache .turbo dist node_modules"
   },
   "dependencies": {
-    "@react-email/components": "0.5.6",
-    "@t3-oss/env-nextjs": "catalog:",
-    "react": "catalog:",
-    "react-dom": "catalog:",
-    "resend": "6.1.2",
+    "nodemailer": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@pack/typescript-config": "workspace:*",
-    "@types/node": "catalog:dev",
-    "@types/react": "catalog:dev",
-    "@types/react-dom": "catalog:dev"
+    "@pack/testing": "workspace:*",
+    "@pack/tsconfig": "workspace:*",
+    "@types/bun": "catalog:dev"
   }
 }

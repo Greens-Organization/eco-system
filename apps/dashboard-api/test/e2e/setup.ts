@@ -1,0 +1,72 @@
+import { afterAll, afterEach, beforeAll } from 'bun:test';
+import { resolve } from 'node:path';
+
+// --- Env de teste: setado ANTES de qualquer import de app/db/auth ---
+// (preload roda antes dos arquivos de teste). Override do DATABASE_URL do .env
+// pro DB de teste; vars obrigatórias do better-auth/email; observabilidade OFF.
+process.env.NODE_ENV = 'test';
+// Override INCONDICIONAL (NÃO usar ||=): o Bun auto-carrega packages/db/.env, que
+// seta DATABASE_URL pro DB de dev. Precisamos forçar o DB de teste pra que o e2e
+// nunca toque o dev. O guard em runMigrations() é defesa-em-profundidade.
+process.env.DATABASE_URL =
+  'postgresql://eco_user:eco_password@localhost:5436/eco_test';
+// Mesmo motivo: o Redis de teste (sessões e rate limit do better-auth).
+process.env.REDIS_URL = 'redis://localhost:6380';
+// Mailpit from the test compose: password-reset mail really goes out.
+process.env.SMTP_HOST = 'localhost';
+process.env.SMTP_PORT = '1025';
+process.env.SMTP_USER = '';
+process.env.BETTER_AUTH_SECRET ||= 'test-secret-not-for-prod-0123456789';
+process.env.CLIENT_IP_SECRET ||= 'e2e-client-ip-secret-not-for-prod-0123456789';
+process.env.BETTER_AUTH_URL ||= 'http://localhost:3002';
+process.env.ORIGIN_ALLOWED ||= 'http://localhost:3000';
+process.env.SMTP_FROM ||= 'test@eco.local';
+process.env.SENTRY_DSN = '';
+process.env.OTEL_EXPORTER_OTLP_ENDPOINT = '';
+
+const MIGRATIONS_FOLDER = resolve(
+  import.meta.dir,
+  '../../../../packages/db/migrations'
+);
+
+// Só ativa o ciclo de DB sob E2E=1 (o runner seta). Assim, se alguém rodar
+// `bun test test/e2e` sem o runner, não tenta migrar/truncar sem container.
+const isE2E = process.env.E2E === '1';
+
+if (isE2E) {
+  beforeAll(async () => {
+    await runMigrations();
+  });
+
+  afterEach(async () => {
+    const { flushRedis, truncateAll } = await import('./helpers/reset');
+    const { clearMail } = await import('./helpers/mail');
+    await truncateAll();
+    await flushRedis();
+    await clearMail();
+  });
+
+  afterAll(async () => {
+    const { disconnectDatabase } = await import('@pack/db');
+    const { disconnectCache } = await import('@pack/cache');
+    await disconnectDatabase().catch(() => undefined);
+    disconnectCache();
+  });
+}
+
+async function runMigrations(): Promise<void> {
+  const url = process.env.DATABASE_URL;
+  // Guard: nunca migrar/truncar fora do DB de teste.
+  if (!url?.includes('eco_test')) {
+    throw new Error(
+      `DATABASE_URL precisa apontar pro eco_test nos e2e. Recebido: ${url}`
+    );
+  }
+  const { default: postgres } = await import('postgres');
+  const { drizzle } = await import('drizzle-orm/postgres-js');
+  const { migrate } = await import('drizzle-orm/postgres-js/migrator');
+
+  const client = postgres(url, { max: 1, onnotice: () => undefined });
+  await migrate(drizzle(client), { migrationsFolder: MIGRATIONS_FOLDER });
+  await client.end();
+}

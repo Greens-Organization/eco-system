@@ -1,0 +1,46 @@
+services:
+  pg:
+    image: postgres:18.1-alpine
+    container_name: eco-system-db-local
+    ports:
+      - 5432:5432
+    networks:
+      - eco_system_network
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=postgres
+    volumes:
+      - "pg:/var/lib/postgresql/data"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d postgres"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+  redis:
+    image: redis:7.4.9-alpine
+    container_name: eco-system-redis-local
+    ports:
+      - 6379:6379
+    networks:
+      - eco_system_network
+    # The password lives here only (requirepass); apps/dashboard-api/.env.example
+    # REDIS_URL matches it.
+    command: redis-server --requirepass eco_system_redis
+    volumes:
+      - "redis_data:/data"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "eco_system_redis", "--no-auth-warning", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+volumes:
+  pg: {}
+  redis_data: {}
+
+networks:
+  eco_system_network:
+    name: eco_system_network

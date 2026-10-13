@@ -4,20 +4,42 @@
   "private": true,
   "scripts": {
     "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+    "test": "bun test --preload @pack/testing/preload"
+  },
+  "exports": {
+    ".": "./index.ts",
+    "./errors": "./src/errors/index.ts",
+    "./logger": "./src/logger/index.ts",
+    "./context": "./src/context/index.ts",
+    "./sentry": "./src/sentry/index.ts",
+    "./instrumentation": "./src/instrumentation.ts",
+    "./instrumentation/node": "./src/instrumentation-node.ts",
+    "./propagation": "./src/propagation.ts",
+    "./pack-env": "./pack-env.ts"
   },
   "dependencies": {
-    "@logtail/next": "0.2.1",
-    "@sentry/nextjs": "catalog:",
-    "@t3-oss/env-nextjs": "catalog:",
-    "react": "catalog:",
-    "server-only": "catalog:",
+    "@opentelemetry/api": "catalog:",
+    "@opentelemetry/api-logs": "catalog:",
+    "@opentelemetry/exporter-logs-otlp-http": "catalog:",
+    "@opentelemetry/exporter-metrics-otlp-http": "catalog:",
+    "@opentelemetry/exporter-trace-otlp-http": "catalog:",
+    "@opentelemetry/host-metrics": "catalog:",
+    "@opentelemetry/resources": "catalog:",
+    "@opentelemetry/sdk-logs": "catalog:",
+    "@opentelemetry/sdk-metrics": "catalog:",
+    "@opentelemetry/context-async-hooks": "catalog:",
+    "@opentelemetry/core": "catalog:",
+    "@opentelemetry/sdk-trace-base": "catalog:",
+    "@sentry/bun": "catalog:",
+    "@sentry/core": "catalog:",
+    "@sentry/node": "catalog:",
+    "pino": "catalog:",
+    "pino-pretty": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@pack/typescript-config": "workspace:*",
-    "@types/node": "catalog:dev",
-    "@types/react": "catalog:dev",
-    "@types/react-dom": "catalog:dev"
+    "@pack/testing": "workspace:*",
+    "@pack/tsconfig": "workspace:*",
+    "@types/bun": "catalog:dev"
   }
 }

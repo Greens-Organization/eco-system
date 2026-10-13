@@ -1,0 +1,24 @@
+# Build context is the repo root (the apps import workspace packages).
+# Dependencies are installed inside the image from bun.lock.
+**/node_modules
+
+# Never ship local env files into a build layer.
+**/.env
+**/.env.*
+!**/.env.example
+
+# Outputs and caches
+**/.turbo
+**/.svelte-kit
+**/build
+**/dist
+**/coverage
+apps/dashboard-api/dashboard-api
+
+# Not needed to build
+.git
+study
+screenshots
+tasks
+infra
+**/*.log

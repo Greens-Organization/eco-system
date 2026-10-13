@@ -1,0 +1,9 @@
+{
+  "extends": "@pack/tsconfig/bun.json",
+  "compilerOptions": {
+    "paths": {
+      "@pack/*": ["../../packages/*"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx"]
+}

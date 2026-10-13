@@ -3,19 +3,18 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+    "test": "bun test --preload @pack/testing/preload",
+    "clean": "git clean -xdf .cache .turbo dist node_modules"
+  },
+  "exports": {
+    "./json-ld": "./src/json-ld.ts"
   },
   "dependencies": {
-    "lodash.merge": "4.6.2",
-    "react": "catalog:",
-    "schema-dts": "1.1.5"
+    "schema-dts": "catalog:"
   },
   "devDependencies": {
-    "@pack/typescript-config": "workspace:*",
-    "@types/lodash.merge": "4.6.9",
-    "@types/node": "catalog:dev",
-    "@types/react": "catalog:dev",
-    "next": "catalog:"
+    "@pack/testing": "workspace:*",
+    "@pack/tsconfig": "workspace:*",
+    "@types/bun": "catalog:dev"
   }
 }

@@ -1,7 +1,7 @@
 {
-  "extends": "@pack/typescript-config/nextjs.json",
+  "extends": "@pack/tsconfig/svelte.json",
   "compilerOptions": {
-    "baseUrl": "."
+    "types": ["bun"]
   },
   "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]

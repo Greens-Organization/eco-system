@@ -1,0 +1,54 @@
+{
+  "name": "@app/dashboard-svelte",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "debug": "DEBUG=vite:deps,vite:transform,vite:resolve bun run dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "prepare": "svelte-kit sync || echo ''",
+    "test": "bun test test/unit --preload @pack/testing/preload",
+    "test:browser": "bun run test/browser/run.ts",
+    "check:svelte": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "analyze": "ANALYZE=1 vite build",
+    "clean": "git clean -xdf .cache .svelte-kit build",
+    "clean:hard": "git clean -xdf .cache .svelte-kit build node_modules"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "catalog:",
+    "pino": "catalog:",
+    "pino-pretty": "catalog:"
+  },
+  "devDependencies": {
+    "@lucide/svelte": "catalog:",
+    "@pack/auth": "workspace:*",
+    "@pack/design-system": "workspace:*",
+    "@pack/i18n": "workspace:*",
+    "@pack/observability": "workspace:*",
+    "@pack/testing": "workspace:*",
+    "@pack/tools": "workspace:*",
+    "@pack/tsconfig": "workspace:*",
+    "@playwright/test": "catalog:dev",
+    "@sveltejs/adapter-node": "catalog:",
+    "@sveltejs/kit": "catalog:",
+    "@sveltejs/vite-plugin-svelte": "catalog:",
+    "@tailwindcss/typography": "catalog:",
+    "@tailwindcss/vite": "catalog:",
+    "@types/bun": "catalog:dev",
+    "hono": "catalog:",
+    "mode-watcher": "catalog:",
+    "svelte": "catalog:",
+    "svelte-check": "catalog:dev",
+    "svelte-sonner": "catalog:",
+    "tailwindcss": "catalog:",
+    "uqr": "catalog:",
+    "vite": "catalog:",
+    "zod": "catalog:"
+  },
+  "imports": {
+    "#lib": "./src/lib/index.js",
+    "#lib/*": "./src/lib/*"
+  }
+}

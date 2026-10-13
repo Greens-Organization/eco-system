@@ -1,25 +1,22 @@
 {
   "$schema": "https://turborepo.com/schema.json",
-  "globalDependencies": ["**/.env.*local"],
+  "globalDependencies": ["**/.env", "**/.env.local"],
+  "globalEnv": ["NODE_ENV"],
   "ui": "tui",
   "envMode": "loose",
+  "agentGuidance": false,
   "tasks": {
     "build": {
       "dependsOn": ["^build", "test"],
-      "outputs": [
-        ".next/**",
-        "!.next/cache/**",
-        ".basehub/**",
-        "**/generated/**",
-        "storybook-static/**",
-        ".react-email/**"
-      ]
+      "outputs": [".svelte-kit/**", "build/**", "dashboard-api"]
     },
-    "test": {
-      "dependsOn": ["^test"]
+    "test": {},
+    "check:svelte": {
+      "dependsOn": ["^check:svelte"]
     },
     "analyze": {
-      "dependsOn": ["^analyze"]
+      "dependsOn": ["^analyze"],
+      "env": ["ANALYZE"]
     },
     "dev": {
       "cache": false,

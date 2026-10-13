@@ -1,0 +1,116 @@
+# Production-like stack: the dashboard is the only service with a published
+# port. The API, Postgres and Redis live on the compose network only (the
+# browser never reaches the API).
+#
+#   cp infra/docker/.env.prod.example infra/docker/.env.prod   # fill it in
+#   docker compose -f infra/docker/docker-compose.prod.yml --env-file infra/docker/.env.prod up -d --build
+#
+# Behind a TLS proxy, uncomment the dashboard's ADDRESS_HEADER / XFF_DEPTH
+# (the visitor's IP), and HOST_HEADER / PROTOCOL_HEADER if the proxy rewrites
+# Host — see the README.
+name: eco-prod
+
+services:
+  postgres:
+    image: postgres:18.1-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB}
+    volumes:
+      - pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.4.9-alpine
+    command: ['redis-server', '--requirepass', '${REDIS_PASSWORD:?set REDIS_PASSWORD}']
+    volumes:
+      - redis:/data
+    healthcheck:
+      test: ['CMD-SHELL', 'redis-cli -a "$$REDIS_PASSWORD" --no-auth-warning ping']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    restart: unless-stopped
+
+  # One-shot: applies pending migrations (drizzle-orm migrator) from the API's
+  # build stage, then exits. The API starts only after it succeeds.
+  migrate:
+    build:
+      context: ../..
+      dockerfile: apps/dashboard-api/Dockerfile
+      target: build
+    working_dir: /app/packages/db
+    command: ['bun', 'src/migrate.ts']
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: 'no'
+
+  api:
+    build:
+      context: ../..
+      dockerfile: apps/dashboard-api/Dockerfile
+    environment:
+      NODE_ENV: production
+      PORT: '3002'
+      SERVICE_NAME: dashboard-api
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      REDIS_URL: redis://default:${REDIS_PASSWORD}@redis:6379
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET}
+      CLIENT_IP_SECRET: ${CLIENT_IP_SECRET:?set CLIENT_IP_SECRET}
+      # The dashboard's public URL (https turns on Secure + __Secure- cookies).
+      BETTER_AUTH_URL: ${PUBLIC_URL:?set PUBLIC_URL}
+      ORIGIN_ALLOWED: ${PUBLIC_URL}
+      SMTP_FROM: ${SMTP_FROM:?set SMTP_FROM}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+    # No ports: only the dashboard reaches it, over the compose network.
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  dashboard:
+    build:
+      context: ../..
+      dockerfile: apps/dashboard/Dockerfile
+      # Baked into the build: the origin form actions are checked against.
+      args:
+        ORIGIN: ${PUBLIC_URL}
+    environment:
+      API_URL: http://api:3002
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      CLIENT_IP_SECRET: ${CLIENT_IP_SECRET}
+      SERVICE_NAME: dashboard
+      # Same collector and Sentry project as the API: one trace spans both.
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+      # Behind a TLS proxy, uncomment so the client IP (rate limits, device
+      # list) is the visitor's; the two *_HOST/PROTOCOL lines only if the
+      # proxy rewrites Host (form actions check the origin):
+      # PROTOCOL_HEADER: X-Forwarded-Proto
+      # HOST_HEADER: X-Forwarded-Host
+      # ADDRESS_HEADER: X-Forwarded-For
+      # XFF_DEPTH: '1'
+    ports:
+      - '${DASHBOARD_PORT:-3000}:3000'
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pg: {}
+  redis: {}

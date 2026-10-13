@@ -1,22 +1,17 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "display": "Default",
-  "compilerOptions": {
-    "jsx": "react",
-    "declaration": true,
-    "declarationMap": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "incremental": false,
-    "isolatedModules": true,
-    "lib": ["es2022", "DOM", "DOM.Iterable"],
-    "module": "NodeNext",
-    "moduleDetection": "force",
-    "moduleResolution": "NodeNext",
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "target": "ES2022",
-    "strictNullChecks": true
-  }
+  "files": [],
+  "references": [
+    { "path": "./apps/dashboard-api" },
+    { "path": "./packages/auth" },
+    { "path": "./packages/cache" },
+    { "path": "./packages/db" },
+    { "path": "./packages/email" },
+    { "path": "./packages/i18n" },
+    { "path": "./packages/observability" },
+    { "path": "./packages/seo" },
+    { "path": "./packages/storage" },
+    { "path": "./packages/testing" },
+    { "path": "./packages/tools" }
+  ]
 }
