@@ -725,7 +725,20 @@ origem, agora em `tasks/done/`.
 
 ### De `health-and-upgrade-audit.md`
 
-- **H1 — Majors de dependência**, cada um sua própria fatia, nesta ordem:
+- **H1 — Majors de dependência** — **fase 11 (2026-10-12):** patches num
+  commit; feitos OTel 2.11/0.222 (processadores de log recebem
+  `{ exporter }`), Sentry 11 (ver abaixo), nodemailer 10 (traz tipos; sai o
+  `@types/nodemailer`), intl-localematcher 0.9 (mesmos resultados), Scalar
+  0.12 (`pageTitle`). Regra: versão com 2+ semanas. **Bloqueados:**
+  `typescript` 7 — o pacote não tem mais a API JS do compilador e o
+  `svelte-check` 4.7.6 (último) exige `^5 || ^6`; esperar o svelte-check.
+  `@sveltejs/kit` 3 + `adapter-node` 6 — saíram em 2026-10-01, elegíveis a
+  partir de 2026-10-15; fatia própria nessa data. **Sentry 11** tirou o
+  `sendDefaultPii` e passou a coletar usuário, cookies, headers, corpos,
+  query e variáveis locais por padrão: tudo desligado em `dataCollection`,
+  `scrubPii` passou a limpar `vars` dos frames, e as opções viraram
+  `satisfies NodeOptions` (o `skipOpenTelemetrySetup` antigo seria ignorado
+  em silêncio). Texto original: cada um sua própria fatia, nesta ordem:
   `typescript` 6→7 (checar `svelte-check` e `drizzle-kit`), `@sveltejs/kit`
   2→3 + `adapter-node` 5→6, `@sentry/bun` 10→11, `nodemailer` 9→10,
   `@formatjs/intl-localematcher` 0.8→0.9, grupo OTel 0.219→0.223 em lockstep,
@@ -780,7 +793,7 @@ no mesmo commit da mudança de comportamento.
 | 8 ✅ | Design system | **G4** — fechada 2026-10-12 |
 | 9 ✅ | Telas | **N4** + **G3** (reset de senha) + **e2e de navegador (Playwright)** — fechada 2026-10-12 |
 | 10 ✅ | Observabilidade do dashboard | **O2** — fechada 2026-10-12 |
-| 11 | Dependências | patches, depois **H1** um major por fatia |
+| 11 ✅ | Dependências | patches + **H1** (OTel, Sentry 11, nodemailer 10, localematcher 0.9, Scalar 0.12) — fechada 2026-10-12; TS 7 bloqueado pelo svelte-check, Kit 3 a partir de 2026-10-15 |
 | 12 | Higiene | pins fora do catálogo, ignores do biome, hash de env no turbo, código morto |
 | 13 | Release | **G10** — último commit |
 | — | **Opcionais (o dono decide depois)** | **O3** manifests k8s/HPA; captcha no login (escalada do limite por conta); "confiar neste dispositivo" no 2FA; budget de bundle (`ANALYZE=1`); redirect de `/settings` → `/profile`; ordenação por coluna nas listas; skeleton de loading; Sentry no navegador (via túnel no BFF) |

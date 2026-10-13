@@ -79,7 +79,9 @@ the built-in `bun check`. The aggregate gate is `verify`.
 The `typescript` package (6.0.3, root devDependency) is only for
 `svelte-check` and the editor. `bun check` matches TypeScript 7.0.2
 (`bun -p process.versions.typescript`), so the editor can in rare cases
-disagree with it; aligning the two is part of the dependency majors (H1).
+disagree with it. It stays on 6: the `typescript@7` package no longer ships
+the JS compiler API, and `svelte-check` 4.7.6 (latest) requires
+`typescript ^5 || ^6`. Move when `svelte-check` supports 7.
 
 `@app/dashboard-api`, `@app/dashboard-svelte`, `@pack/auth`, `@pack/db`,
 `@pack/observability`, `@pack/tools`, `@pack/testing`, `@pack/email` and
