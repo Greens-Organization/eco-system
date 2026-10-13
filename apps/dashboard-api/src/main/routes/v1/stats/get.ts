@@ -6,6 +6,7 @@ import { statsSchemaRes } from './schema';
 export const getStatsRoute = createRoute({
   method: 'get',
   path: '/',
+  tags: ['stats'],
   responses: {
     200: {
       content: {

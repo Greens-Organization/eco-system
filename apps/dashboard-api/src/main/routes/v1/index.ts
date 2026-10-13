@@ -78,6 +78,7 @@ v1.get(
     // Relative: right on any host. The docs are only reachable where the API
     // is — the internal network (card N6).
     servers: [{ url: CONSTANTS.API_REST_V1, description: 'This server' }],
+    pageTitle: 'Eco System API',
     theme: 'purple',
     layout: 'modern',
     metaData: {

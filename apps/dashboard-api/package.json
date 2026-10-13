@@ -20,7 +20,7 @@
     "@pack/email": "workspace:*",
     "@pack/observability": "workspace:*",
     "@pack/testing": "workspace:*",
-    "@scalar/hono-api-reference": "0.11.16",
+    "@scalar/hono-api-reference": "0.12.6",
     "drizzle-orm": "0.45.3",
     "hono": "catalog:",
     "zod": "catalog:"
