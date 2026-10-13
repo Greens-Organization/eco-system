@@ -19,14 +19,14 @@ services:
       timeout: 3s
       retries: 15
   redis:
-    image: redis:7-alpine
+    image: redis:7.4.9-alpine
     container_name: eco-system-redis-local
     ports:
       - 6379:6379
     networks:
       - eco_system_network
-    environment:
-      - REDIS_PASSWORD=redis
+    # The password lives here only (requirepass); apps/dashboard-api/.env.example
+    # REDIS_URL matches it.
     command: redis-server --requirepass eco_system_redis
     volumes:
       - "redis_data:/data"

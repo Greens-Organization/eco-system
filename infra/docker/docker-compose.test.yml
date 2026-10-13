@@ -5,7 +5,7 @@ name: eco-api-test
 
 services:
   pg-test:
-    image: postgres:18-alpine
+    image: postgres:18.1-alpine
     container_name: eco-api-pg-test
     ports:
       - '5436:5432'
@@ -24,7 +24,7 @@ services:
       start_period: 3s
 
   redis-test:
-    image: redis:7-alpine
+    image: redis:7.4.9-alpine
     container_name: eco-api-redis-test
     ports:
       - '6380:6379'
