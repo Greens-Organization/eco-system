@@ -590,9 +590,10 @@ camada do BFF:
 - **Pins fora do catálogo:** 42 versões literais vs 44 `catalog:` — contraria
   `CLAUDE.md` §5. Três duplicam chave do catálogo (`@lucide/svelte`, `pino`,
   `pino-pretty`). `translate` do i18n usa `languine@latest`.
-- **Biome ignora** todo o código do design-system (`components/ui`, `lib`,
-  `hooks`, `styles`) e `scripts/**`; ignores mortos (`apps/docs`,
-  `apps/email`). Sem override para `apps/dashboard/static/**` (favicon).
+- ✅ (fase 8) **Biome ignorava** todo o código do design-system e tinha
+  ignores mortos (`apps/docs`, `apps/email`): removidos. Segue ignorado
+  `scripts/**` (não existe pasta hoje) e `study`. O override de
+  `apps/dashboard/static/**` já existia.
 - **turbo.json:** nenhuma env no hash (`envMode: loose`, sem `env`/`globalEnv`);
   `globalDependencies` aponta para `.env.*local`, que não existe — editar
   `.env` não invalida cache. `test` depende de `^test` sem motivo.
@@ -648,11 +649,17 @@ origem, agora em `tasks/done/`.
   `disableSignUp` ficam **fora** — quem forka decide pelo projeto. O 2FA já
   foi feito (N6). O sign-up com auto-sign-in também sai: `autoSignIn: false`
   é deliberado (N6, anti-enumeração). Fica só o reset de senha.
-- **G4 — Design system** (era §4). Os necessários para N4: `table`, `card`,
-  `pagination`, `dialog`/`alert-dialog`, `form`/`label`, `toast`
-  (`svelte-sonner`). Os demais (`alert`, `tabs`, `switch`/`checkbox`/
-  `radio-group`, `popover`, `command`, `progress`) só se alguma tela pedir.
-  Tirar o código do design system do ignore do biome antes (ver Infra).
+- ✅ **G4 — Design system** (fase 8, 2026-10-12). `table`, `card`,
+  `pagination`, `dialog`, `alert-dialog`, `label` e `sonner` (toast) vindos
+  do shadcn-svelte 1.7.0 oficial (CLI num esqueleto descartável, imports
+  reescritos para relativos — receita no CLAUDE.md); `svelte-sonner` 1.1.0 →
+  1.2.1 no catálogo (o componente pede ≥1.2). `form` ficou de fora: as telas
+  usam form actions nativas do SvelteKit. O design system saiu do ignore do
+  Biome (e os ignores mortos `apps/docs`/`apps/email` também): 259 achados,
+  quase todos formatação/ordem de imports; 2 reais no sidebar do shadcn — a
+  atribuição dentro de expressão do `toggle` reescrita, o `document.cookie`
+  (preferência de UI) justificado. `svelte-check` 0 erros. Os demais
+  componentes só se alguma tela pedir.
 - [x] **G5 — Scripts agregados na raiz** (era §8). **Feito (2026-10-12,
   `80b18d0`):** `check`, `typecheck`, `setup`, `test:e2e`, (`check` e
   `typecheck` viraram `verify` e `bun check` + `check:svelte` no Bun 1.4.3),
@@ -736,7 +743,7 @@ no mesmo commit da mudança de comportamento.
 | 5 ✅ | Bun-first | **N3** (tipos/config/docs, `NodeTracerProvider`, `Bun.spawnSync`) — fechada 2026-10-12 |
 | 6 ✅ | Deploy | 🔴 4 Dockerfile da API em bun 1.4.2 buildado, **G7**, **G6**, pins das imagens — fechada 2026-10-12 |
 | 7 ✅ | Banco | **N2** `/v1/me` + **O1** spans de DB + doc de como forkar o schema — fechada 2026-10-12 |
-| 8 | Design system | **G4** |
+| 8 ✅ | Design system | **G4** — fechada 2026-10-12 |
 | 9 | Telas | **N4** + **G3** (só reset de senha), uma tela por fatia: Profile (com o antigo Settings) → Customers → Employees → Dashboard; **e2e de navegador (Playwright)** |
 | 10 | Observabilidade do dashboard | **O2** |
 | 11 | Dependências | patches, depois **H1** um major por fatia |

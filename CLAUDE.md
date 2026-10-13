@@ -297,6 +297,15 @@ better-auth's base64 payload and breaks HMAC verification on the next request.
 Things that look like leftovers or cleanup targets but are deliberate. Each was
 measured or debugged; changing one regresses something.
 
+- **Design-system components are copied, not generated in place** — the
+  shadcn-svelte CLI expects a SvelteKit app (`$lib` aliases, `svelte-kit
+  sync`) and this package is not one. To add one: run
+  `bunx shadcn-svelte@<version> add <name> --no-deps` in a throwaway SvelteKit
+  skeleton, copy `src/lib/components/ui/<name>/` into
+  `packages/design-system/components/ui/`, rewrite `$lib/utils.js` →
+  `../../../lib/utils.js` and `$lib/components/ui/<x>/index.js` →
+  `../<x>/index.js`, add any new dependency through the catalog, then
+  `biome check --write`. The package is linted and formatted like the rest.
 - **The v1 routes are mock data, except `GET /v1/me`** — the template has no
   domain on purpose (each fork models its own). `stats`, `customers` and
   `employees` stay mocked; do not "fix" them by inventing tables. `/v1/me` is
