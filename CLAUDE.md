@@ -152,7 +152,7 @@ bunx biome check .                    # 0 errors
 bun check                             # 0 errors, 258 files across 11 projects
 bunx turbo run check:svelte --force   # 0 errors in dashboard + design-system
 bunx turbo run build --force          # api binary + dashboard vite build
-bunx turbo run test --force           # 208 pass / 0 fail
+bunx turbo run test --force           # 215 pass / 0 fail
 bun run test:coverage                 # same, under each workspace's coverage floor
 bun run test:e2e                      # 76 pass (needs Docker)
 bun run test:browser                  # 20 pass (needs Docker)
@@ -226,8 +226,16 @@ look at it. For behavior changes, exercise the endpoint or route.
   lets the load balancer drop the instance, `server.stop(false)` is awaited
   (in-flight requests finish), then DB, Redis and telemetry close — the
   telemetry flush is capped at 2 s (`settleWithin`) so a dead collector
-  cannot hang it. SIGTERM/SIGINT exit 0, a crash exits 1. `HOST` is passed to
-  `Bun.serve`. Hono applies
+  cannot hang it. SIGTERM/SIGINT exit 0, a crash exits 1. Under `bun --hot`
+  / `--watch` (`isDevReload`, from `process.execArgv`) a crash only logs:
+  a reload that hits a half-saved file or an unresolved import is an
+  unhandled rejection, and draining then closed DB and Redis under a
+  process Bun keeps alive (a dev API stuck at `/ready` 503, sign-ins
+  hanging). `--hot` re-runs the module with no teardown hook
+  (oven-sh/bun#7337), so `replaceProcessHandlers` drops the previous run's
+  handlers. Crash reasons go through `crashReason`: Bun's ResolveMessage is
+  circular and pino logged it as "[unable to serialize…]". `HOST` is passed
+  to `Bun.serve`. Hono applies
   middleware in registration order, so `/v1/openapi` and the Scalar UI —
   registered earlier — stay public by design.
 
@@ -603,7 +611,7 @@ The 2026-10-11 sweep is closed (`tasks/done/full-sweep-2026-10-11.md`).
 1. **CI is written but unproven** — the workflow has never run on GitHub.
    Unit tests used to depend on the local `.env`; they now pass in a clean
    checkout (verified in a worktree with no `.env` files).
-2. **Test coverage is concentrated** in 10 of 13 workspaces (208 unit + 76
+2. **Test coverage is concentrated** in 10 of 13 workspaces (215 unit + 76
    API e2e + 20 browser); `cache`, `storage` and `design-system` have none.
    Per-file coverage floors guard against regressions, not gaps: a file no
    test imports is not measured at all.

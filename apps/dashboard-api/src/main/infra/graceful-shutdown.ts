@@ -67,6 +67,91 @@ export function exitCodeFor(signal: string): 0 | 1 {
   return signal === 'SIGTERM' || signal === 'SIGINT' ? 0 : 1;
 }
 
+/**
+ * Whether Bun reloads this process on save (`--hot` in place, `--watch` by
+ * restarting). Then a crash is usually an edit in progress (a file saved
+ * half-written, an import that does not resolve yet), not a dying process.
+ */
+export function isDevReload(
+  execArgv: readonly string[] = process.execArgv
+): boolean {
+  return execArgv.includes('--hot') || execArgv.includes('--watch');
+}
+
+/**
+ * A crash reason pino can log. Bun's ResolveMessage (a failed import) is an
+ * Error whose own fields are circular; pino's err serializer gives up on it
+ * and logged "[unable to serialize…]" instead of the message.
+ */
+export function crashReason(reason: unknown): {
+  err: { type: string; message: string; stack?: string };
+} {
+  if (reason instanceof Error) {
+    return {
+      err: { type: reason.name, message: reason.message, stack: reason.stack },
+    };
+  }
+  return { err: { type: typeof reason, message: String(reason) } };
+}
+
+/**
+ * What an uncaught exception or unhandled rejection does. In production it
+ * drains and exits 1 (the orchestrator restarts the process). Under
+ * `--hot`/`--watch` it only logs: draining closes the database and Redis
+ * under a process that Bun keeps alive and reloads on the next save, which
+ * left a dev API answering 503 on /ready and hanging every sign-in.
+ */
+export function createCrashHandler(opts: {
+  label: string;
+  signal: string;
+  devReload: boolean;
+  isShuttingDown: () => boolean;
+  shutdown: (signal: string) => Promise<void>;
+}): (reason: unknown) => void {
+  return (reason) => {
+    if (opts.devReload) {
+      log.error(
+        crashReason(reason),
+        `${opts.label} (bun --hot/--watch: still running, fix and save)`
+      );
+      return;
+    }
+    log.error(crashReason(reason), opts.label);
+    if (opts.isShuttingDown()) return;
+    opts.shutdown(opts.signal).catch((err) => {
+      log.error(crashReason(err), `Error during ${opts.label} shutdown`);
+      process.exit(1);
+    });
+  };
+}
+
+type ProcessHandler = [event: string, listener: (...args: never[]) => void];
+
+const REGISTERED = Symbol.for('@app/dashboard-api/process-handlers');
+
+/**
+ * Registers process handlers, dropping the ones a previous run of this module
+ * added. `--hot` re-runs the module on every save without a teardown hook
+ * (oven-sh/bun#7337), so the old handlers would stack up, each bound to the
+ * server of its own run. `once` events are re-armed the same way.
+ */
+export function replaceProcessHandlers(
+  handlers: { on?: ProcessHandler[]; once?: ProcessHandler[] },
+  target: NodeJS.EventEmitter = process
+): void {
+  const store = globalThis as { [REGISTERED]?: ProcessHandler[] };
+  for (const [event, listener] of store[REGISTERED] ?? []) {
+    target.off(event, listener as (...args: unknown[]) => void);
+  }
+  for (const [event, listener] of handlers.on ?? []) {
+    target.on(event, listener as (...args: unknown[]) => void);
+  }
+  for (const [event, listener] of handlers.once ?? []) {
+    target.once(event, listener as (...args: unknown[]) => void);
+  }
+  store[REGISTERED] = [...(handlers.on ?? []), ...(handlers.once ?? [])];
+}
+
 export function createGracefulShutdown(
   server: Server<unknown>,
   options = { timeout: 10_000, gracePeriod: 3000 }
@@ -100,32 +185,35 @@ export function createGracefulShutdown(
       log.info('Graceful shutdown completed');
       process.exit(exitCodeFor(signal));
     } catch (error) {
-      log.error({ error }, 'Error during shutdown');
+      log.error(crashReason(error), 'Error during shutdown');
       clearTimeout(timeout);
       process.exit(1);
     }
   }
 
-  process.once('SIGTERM', () => shutdown('SIGTERM'));
-  process.once('SIGINT', () => shutdown('SIGINT'));
+  const devReload = isDevReload();
+  const crash = (label: string, signal: string) =>
+    createCrashHandler({
+      label,
+      signal,
+      devReload,
+      isShuttingDown: () => isShuttingDown,
+      shutdown,
+    });
 
-  process.once('uncaughtException', (error, origin) => {
-    log.error({ error, origin }, 'Uncaught exception');
-    if (!isShuttingDown) {
-      shutdown('UNCAUGHT_EXCEPTION').catch((err) => {
-        log.error({ err }, 'Error during uncaught exception shutdown');
-        process.exit(1);
-      });
-    }
-  });
-
-  process.once('unhandledRejection', (reason) => {
-    log.error({ reason }, 'Unhandled rejection');
-    if (!isShuttingDown) {
-      shutdown('UNHANDLED_REJECTION').catch((err) => {
-        log.error({ err }, 'Error during unhandled rejection shutdown');
-        process.exit(1);
-      });
-    }
+  replaceProcessHandlers({
+    // once: a second Ctrl+C falls through to the default and kills at once.
+    once: [
+      ['SIGTERM', () => shutdown('SIGTERM')],
+      ['SIGINT', () => shutdown('SIGINT')],
+    ],
+    // on: a second crash while draining is logged, not left to the default.
+    on: [
+      ['uncaughtException', crash('Uncaught exception', 'UNCAUGHT_EXCEPTION')],
+      [
+        'unhandledRejection',
+        crash('Unhandled rejection', 'UNHANDLED_REJECTION'),
+      ],
+    ],
   });
 }
