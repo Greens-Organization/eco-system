@@ -211,8 +211,10 @@ To see traces/metrics locally:
 
 ```bash
 bun run docker:obs:up
-# set OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318 in the API env, then
-# generate traffic against the API. Grafana: http://localhost:3001
+# set OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318 in the API and the
+# dashboard env, then use the dashboard. Each page is one trace: the
+# dashboard's handle/load/action spans with the API's spans (and its DB
+# queries) beneath them. Grafana: http://localhost:3001
 ```
 
 ## Internationalization

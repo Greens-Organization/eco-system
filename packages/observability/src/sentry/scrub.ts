@@ -1,4 +1,4 @@
-import type { ErrorEvent, EventHint } from '@sentry/bun';
+import type { ErrorEvent, EventHint } from '@sentry/core';
 
 /**
  * Request-context fields allowed into Sentry (LGPD: no PII). `ip`/`user_agent`

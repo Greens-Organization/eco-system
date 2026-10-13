@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import type { ErrorEvent, EventHint } from '@sentry/bun';
+import type { ErrorEvent, EventHint } from '@sentry/core';
 import { scrubPii, sentryContextAllowlist } from '../src/sentry/scrub';
 
 const hint = {} as EventHint;

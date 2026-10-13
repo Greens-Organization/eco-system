@@ -17,6 +17,12 @@ const COMPOSE = [
   'eco-browser-test',
 ];
 const DASHBOARD = resolve(import.meta.dir, '../..');
+// `bun run --filter` (the root script) puts a `node` that is really Bun first
+// on PATH. Playwright and the dashboard build must run on Node.
+const PATH = (process.env.PATH ?? '')
+  .split(':')
+  .filter((dir) => !/\/bun-node-[^/]+$/.test(dir))
+  .join(':');
 
 function step(cmd: string[], cwd: string, env: Record<string, string> = {}) {
   const { exitCode } = Bun.spawnSync(cmd, {
@@ -40,7 +46,11 @@ function run(): number {
       step(['bun', 'run', 'build'], DASHBOARD);
     const { exitCode } = Bun.spawnSync(
       ['bunx', 'playwright', 'test', ...process.argv.slice(2)],
-      { cwd: DASHBOARD, stdio: ['inherit', 'inherit', 'inherit'] }
+      {
+        cwd: DASHBOARD,
+        env: { ...process.env, PATH },
+        stdio: ['inherit', 'inherit', 'inherit'],
+      }
     );
     return exitCode ?? 1;
   } catch (err) {

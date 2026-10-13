@@ -99,6 +99,10 @@ page (and its same-named inputs) on screen until the data arrives. The test
 compose has fixed container names, so this suite and `test:e2e` cannot run
 at the same time.
 
+`bun run --filter` puts a Bun-backed `node` shim first on `PATH` for the
+scripts it runs; `test/browser/run.ts` drops it so Playwright and
+`node build` get the real Node.
+
 `drizzle-kit` must run under Bun (`bun x --bun`, as the `@pack/db` scripts do):
 the schema imports `bun`, so a bare `bunx drizzle-kit` fails to resolve it.
 
@@ -457,9 +461,23 @@ returned to the client, sent to Sentry as a tag.
 
 Sentry handles **errors only**. OpenTelemetry owns **traces + metrics** and
 exports via OTLP to Grafana through an independent `BasicTracerProvider` /
-`MeterProvider` (`instrumentation.ts`), with the `AsyncLocalStorage` context
+`MeterProvider` (`telemetry.ts`), with the `AsyncLocalStorage` context
 manager and W3C propagation registered explicitly (no Node-specific SDK). HTTP spans come from `@hono/otel`, not
 require-hook auto-instrumentation, so Bun import order is not fragile.
+
+Two entries start that core: `@pack/observability/instrumentation`
+(`@sentry/bun`, the API) and `…/instrumentation/node` (`@sentry/node`, the
+dashboard — `@sentry/bun` patches `Bun.serve` and throws under Node).
+`captureError` goes through `@sentry/core`, which both register into.
+
+The dashboard loads it from `src/instrumentation.server.ts` and turns on
+SvelteKit's own spans (`kit.experimental.tracing` / `instrumentation`,
+experimental since Kit 2.31): `sveltekit.handle.root`, each sequenced hook,
+`sveltekit.load`, `sveltekit.form_action`. `authFetch` and
+`createApiClient` send `traceparent` (`traceHeaders()`), so a page is one
+trace down to the API's DB spans, and both services log the same
+`trace_id`. Its `handleError` reports 5xx to Sentry with the `errorId` as
+`support_id`. It flushes on adapter-node's `sveltekit:shutdown`.
 
 > `BatchSpanProcessor` is fire-and-forget: if the OTLP endpoint is down it drops
 > spans silently. The app side is proven once `trace_id` appears in the access

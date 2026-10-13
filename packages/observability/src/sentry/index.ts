@@ -1,4 +1,4 @@
-import * as Sentry from '@sentry/bun';
+import * as Sentry from '@sentry/core';
 import { sentryContextAllowlist } from './scrub';
 
 export * from './scrub';
@@ -23,8 +23,8 @@ export function sentryCaptureOptions(fields: Record<string, unknown>) {
 
 /**
  * Capture a technical/critical error in Sentry (PII allowlisted). No-op when
- * Sentry is not initialized (no SENTRY_DSN) — dev/CI/tests. Keeps `@sentry/bun`
- * encapsulated in this package so consumers depend on the abstraction.
+ * Sentry is not initialized (no SENTRY_DSN) — dev/CI/tests. `@sentry/core` holds the
+ * client both runtime SDKs register, so this works under Bun and Node.
  */
 export function captureError(
   error: unknown,

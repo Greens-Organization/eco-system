@@ -10,6 +10,7 @@ import {
   CLIENT_IP_SIGNATURE_HEADER,
   signClientIp,
 } from '@pack/auth/client-ip';
+import { traceHeaders } from '@pack/observability/propagation';
 
 export type AuthFetchFailure = {
   ok: false;
@@ -35,7 +36,8 @@ export type AuthFetchResult =
  * server.
  *
  * Pass `requestId` to forward `x-request-id` to the API so its logs
- * share the same correlation id as the dashboard's `logHandle`.
+ * share the same correlation id as the dashboard's `logHandle`; the active
+ * span goes as `traceparent`, so the API's spans join the dashboard's trace.
  */
 export async function authFetch(
   url: string,
@@ -62,6 +64,9 @@ export async function authFetch(
   }
   if (userAgent) merged.set('user-agent', userAgent);
   if (requestId) merged.set('x-request-id', requestId);
+  for (const [name, value] of Object.entries(traceHeaders())) {
+    merged.set(name, value);
+  }
 
   try {
     const response = await fetch(url, {

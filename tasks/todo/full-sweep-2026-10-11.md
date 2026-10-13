@@ -740,9 +740,19 @@ origem, agora em `tasks/done/`.
   as convenções de banco (`SELECT user`, `db.system.name=postgresql`).
   Provado com coletor OTLP falso: `SELECT user` é filho de `GET /v1/me`, no
   trace propagado do `traceparent`.
-- **O2 (era F7) — Observabilidade no dashboard**: Sentry + OTel no SvelteKit
+- ✅ **O2 (era F7) — Observabilidade no dashboard**: Sentry + OTel no SvelteKit
   (`hooks.server.ts` já tem `logHandle` e `requestId`), propagação de trace
   dashboard → API.
+  **Feito (fase 10, 2026-10-12):** núcleo de telemetria agnóstico de runtime
+  (`telemetry.ts`) com entradas Bun (`@sentry/bun`) e Node (`@sentry/node`);
+  `instrumentation.server.ts` + tracing experimental do Kit; `traceparent`
+  em `authFetch` e `createApiClient`; 5xx do `handleError` no Sentry.
+  Verificado com coletor OTLP falso (um trace do `sveltekit.handle.root` até
+  o `db findOne` da API, mesmo `trace_id` nos dois logs) e com ingest de
+  Sentry falso (evento com `support_id`, sem cookie nem query). `/metrics`
+  fica fora (decisão do dono: parte própria depois). Sentry no navegador
+  ficou de fora: exigiria `connect-src` externo ou túnel pelo BFF —
+  listado nos opcionais.
 - **O3 (era F7) — Manifests k8s/HPA** usando o split `/status` vs `/ready`.
   Opcional; depende da G7.
 - F4 (`pack-env.ts` sem teste) e o tail sampling do F6 seguem **fora por
@@ -769,11 +779,11 @@ no mesmo commit da mudança de comportamento.
 | 7 ✅ | Banco | **N2** `/v1/me` + **O1** spans de DB + doc de como forkar o schema — fechada 2026-10-12 |
 | 8 ✅ | Design system | **G4** — fechada 2026-10-12 |
 | 9 ✅ | Telas | **N4** + **G3** (reset de senha) + **e2e de navegador (Playwright)** — fechada 2026-10-12 |
-| 10 | Observabilidade do dashboard | **O2** |
+| 10 ✅ | Observabilidade do dashboard | **O2** — fechada 2026-10-12 |
 | 11 | Dependências | patches, depois **H1** um major por fatia |
 | 12 | Higiene | pins fora do catálogo, ignores do biome, hash de env no turbo, código morto |
 | 13 | Release | **G10** — último commit |
-| — | **Opcionais (o dono decide depois)** | **O3** manifests k8s/HPA; captcha no login (escalada do limite por conta); "confiar neste dispositivo" no 2FA; budget de bundle (`ANALYZE=1`); redirect de `/settings` → `/profile`; ordenação por coluna nas listas; skeleton de loading |
+| — | **Opcionais (o dono decide depois)** | **O3** manifests k8s/HPA; captcha no login (escalada do limite por conta); "confiar neste dispositivo" no 2FA; budget de bundle (`ANALYZE=1`); redirect de `/settings` → `/profile`; ordenação por coluna nas listas; skeleton de loading; Sentry no navegador (via túnel no BFF) |
 
 Fases 0–1 primeiro: sem CI, o resto é mudança sem rede. A fase 11 fica depois
 das telas para não brigar com SvelteKit 3 no meio do N4.

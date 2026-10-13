@@ -90,6 +90,10 @@ services:
       API_URL: http://api:3002
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       CLIENT_IP_SECRET: ${CLIENT_IP_SECRET}
+      SERVICE_NAME: dashboard
+      # Same collector and Sentry project as the API: one trace spans both.
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
       # Behind a TLS proxy that sets X-Forwarded-For, uncomment so the client
       # IP (rate limits, device list) is the visitor's, not the proxy's:
       # ADDRESS_HEADER: X-Forwarded-For

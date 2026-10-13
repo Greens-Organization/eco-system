@@ -6,6 +6,13 @@ const config = {
   preprocess: vitePreprocess(),
   kit: {
     adapter: adapter(),
+    // OpenTelemetry spans for handle, load and form actions, and
+    // src/instrumentation.server.ts loaded before the app (experimental
+    // since Kit 2.31). Off at runtime without OTEL_EXPORTER_OTLP_ENDPOINT.
+    experimental: {
+      tracing: { server: true },
+      instrumentation: { server: true },
+    },
     // Kit adds a per-request nonce to its own scripts; ModeWatcher's inline
     // theme script gets it through `injectCspNonce` (hooks.server.ts).
     csp: {

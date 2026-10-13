@@ -5,6 +5,7 @@ import {
   resolveLocale,
 } from '@pack/i18n';
 import { log } from '@pack/observability/logger';
+import { captureError } from '@pack/observability/sentry';
 import type { Handle, HandleServerError } from '@sveltejs/kit';
 import { error, redirect } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
@@ -191,6 +192,14 @@ export const handleError: HandleServerError = ({
     requestLog.warn({ status, errorId }, message);
   } else {
     requestLog.error({ err: error, status, errorId }, message);
+    // No-op without SENTRY_DSN. The errorId is what the user quotes back.
+    captureError(error, {
+      support_id: errorId,
+      classification: 'technical_error',
+      route: event.route.id,
+      method: event.request.method,
+      status_code: status,
+    });
   }
 
   return { message, errorId };
