@@ -1,6 +1,7 @@
 <script lang="ts">
 import { Button } from '@pack/design-system/components/ui/button';
 import { enhance } from '$app/forms';
+import { page } from '$app/state';
 import { useLocale, useTranslation } from '$lib/i18n/context.svelte';
 
 interface Props {
@@ -21,6 +22,11 @@ let loading = $state(false);
 </svelte:head>
 
 <div class="flex flex-col gap-6">
+    {#if page.url.searchParams.get("reset") === "1"}
+        <p class="rounded-md bg-muted px-3 py-2 text-sm" role="status">
+            {t.app.auth.reset.done}
+        </p>
+    {/if}
     <div class="flex flex-col gap-2 text-center">
         <h1 class="text-2xl font-bold">{t.app.auth.signIn.title}</h1>
         <p class="text-sm text-muted-foreground">
@@ -68,6 +74,13 @@ let loading = $state(false);
                 class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
         </div>
+
+        <a
+            href="/{locale}/forgot-password"
+            class="-mt-2 self-end text-sm text-muted-foreground hover:underline"
+        >
+            {t.app.auth.forgotLink}
+        </a>
 
         {#if form?.error}
             <div

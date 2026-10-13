@@ -14,7 +14,12 @@ import { clearAuthCookies, forwardSetCookies } from '$lib/server/auth-cookies';
 import { injectCspNonce, SECURITY_HEADERS } from '$lib/server/security-headers';
 import { resolveSession } from '$lib/server/session';
 
-const unauthenticatedPaths = ['/sign-in', '/sign-up'];
+const unauthenticatedPaths = [
+  '/sign-in',
+  '/sign-up',
+  '/forgot-password',
+  '/reset-password',
+];
 
 function isProtectedPath(pathname: string): boolean {
   // Strip locale prefix before checking
@@ -60,7 +65,8 @@ const logHandle: Handle = async ({ event, resolve }) => {
 const securityHandle: Handle = async ({ event, resolve }) => {
   const response = await injectCspNonce(await resolve(event));
   for (const [name, value] of Object.entries(SECURITY_HEADERS)) {
-    response.headers.set(name, value);
+    // A page may tighten one (the reset page: no Referer at all).
+    if (!response.headers.has(name)) response.headers.set(name, value);
   }
   return response;
 };

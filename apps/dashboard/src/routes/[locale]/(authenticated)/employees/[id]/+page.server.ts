@@ -17,12 +17,7 @@ const EmployeeSchema = z.object({
 
 type Employee = z.infer<typeof EmployeeSchema>;
 
-export const load: PageServerLoad = async ({
-  params,
-  request,
-  locals,
-  cookies,
-}) => {
+export const load: PageServerLoad = async ({ params, locals, cookies }) => {
   const api = createApiClient(cookies, locals.requestId);
   const result = await safeFetch<Employee>(
     api.employees[':id'].$get({ param: { id: params.id } }),

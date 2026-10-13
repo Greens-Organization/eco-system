@@ -16,12 +16,7 @@ const CustomerSchema = z.object({
 
 type Customer = z.infer<typeof CustomerSchema>;
 
-export const load: PageServerLoad = async ({
-  params,
-  request,
-  locals,
-  cookies,
-}) => {
+export const load: PageServerLoad = async ({ params, locals, cookies }) => {
   const api = createApiClient(cookies, locals.requestId);
   const result = await safeFetch<Customer>(
     api.customers[':id'].$get({ param: { id: params.id } }),

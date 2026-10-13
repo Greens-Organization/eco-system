@@ -6,6 +6,7 @@ process.env.DATABASE_URL ??= 'postgresql://user:pass@localhost:5432/eco_test';
 process.env.BETTER_AUTH_SECRET ??= 'test-secret-not-for-prod-0123456789';
 process.env.BETTER_AUTH_URL ??= 'http://localhost:3000';
 process.env.ORIGIN_ALLOWED ??= 'http://localhost:3000';
+process.env.SMTP_FROM ??= 'test@eco.local';
 process.env.CLIENT_IP_SECRET ??= 'test-client-ip-secret-not-for-prod-0123';
 const { schema } = await import('../pack-env');
 
@@ -15,6 +16,7 @@ const base = {
   BETTER_AUTH_SECRET: 's'.repeat(32),
   CLIENT_IP_SECRET: 'x'.repeat(32),
   ORIGIN_ALLOWED: 'http://localhost:3000',
+  SMTP_FROM: 'app@eco.local',
 };
 
 describe('@pack/auth pack-env schema', () => {

@@ -210,6 +210,25 @@
         "useBackup": "Use a backup code instead",
         "useApp": "Use the authenticator app instead",
         "backToSignIn": "Back to sign in"
+      },
+      "forgotLink": "Forgot your password?",
+      "forgot": {
+        "title": "Reset your password",
+        "description": "Enter your email and we will send you a link to choose a new password.",
+        "submit": "Send link",
+        "sent": "If an account exists for that email, a link is on its way. Check your inbox.",
+        "back": "Back to sign in"
+      },
+      "reset": {
+        "title": "Choose a new password",
+        "description": "At least 8 characters.",
+        "newPassword": "New password",
+        "confirmPassword": "Confirm the new password",
+        "submit": "Save new password",
+        "mismatch": "The passwords do not match.",
+        "done": "Password changed. Sign in with the new one.",
+        "invalidLink": "This link is invalid or has expired. Ask for a new one.",
+        "requestNew": "Ask for a new link"
       }
     },
     "list": {

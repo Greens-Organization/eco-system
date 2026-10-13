@@ -210,6 +210,25 @@
         "useBackup": "Usar un código de respaldo",
         "useApp": "Usar la app de autenticación",
         "backToSignIn": "Volver al inicio de sesión"
+      },
+      "forgotLink": "¿Olvidaste tu contraseña?",
+      "forgot": {
+        "title": "Restablecer la contraseña",
+        "description": "Escribe tu correo y te enviaremos un enlace para elegir una nueva contraseña.",
+        "submit": "Enviar enlace",
+        "sent": "Si existe una cuenta con ese correo, el enlace va en camino. Revisa tu bandeja de entrada.",
+        "back": "Volver al inicio de sesión"
+      },
+      "reset": {
+        "title": "Elige una nueva contraseña",
+        "description": "Al menos 8 caracteres.",
+        "newPassword": "Nueva contraseña",
+        "confirmPassword": "Confirma la nueva contraseña",
+        "submit": "Guardar nueva contraseña",
+        "mismatch": "Las contraseñas no coinciden.",
+        "done": "Contraseña cambiada. Inicia sesión con la nueva.",
+        "invalidLink": "Este enlace no es válido o venció. Pide uno nuevo.",
+        "requestNew": "Pedir un nuevo enlace"
       }
     },
     "list": {

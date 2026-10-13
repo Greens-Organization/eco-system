@@ -368,9 +368,10 @@ Falta:
 - [x] **Deploy (fase 6):** `ORIGIN` e `ADDRESS_HEADER`/`XFF_DEPTH`
   documentados e no compose; API sem porta publicada (Scalar e `/v1/openapi`
   ficam na rede interna junto).
-- [ ] **Reset de senha (G3):** não aguardar o envio do e-mail (latência do
-  SMTP revela a conta), `transaction: true` no adapter drizzle,
-  `Referrer-Policy: no-referrer` na página, link apontando para o dashboard.
+- [x] **Reset de senha (G3, fase 9d):** o envio do e-mail não é aguardado,
+  `transaction: true` no adapter drizzle, `Referrer-Policy: no-referrer` na
+  página, link para o dashboard (origem fora de `trustedOrigins` é
+  descartada), `disableOriginCheck: false` explícito. e2e com Mailpit.
 - [ ] Acesso direto à API sem `x-real-ip` cai no balde `no-trusted-ip`: OK
   enquanto só o dashboard alcança a API; se algum outro cliente surgir, usar
   `trustedProxies`.
@@ -642,13 +643,17 @@ origem, agora em `tasks/done/`.
   `userMessageFor`), `src/lib/api/safe-fetch.ts` (erro + zod),
   `packages/i18n/src/format.ts`. Somar: o fix do logout de 5 min (🔴 1) e a
   limpeza de cookie `__Secure-*`.
-- **G3 — Fluxos de auth** (era §6). Sign-up com auto-sign-in (hoje redireciona
+- ✅ **G3 — Fluxos de auth** (era §6). Sign-up com auto-sign-in (hoje redireciona
   para `/sign-in` e descarta o `Set-Cookie`); forgot/reset password (o
   `revokeSessionsOnPasswordReset` já está configurado, falta UI e envio via
   `@pack/email`). **Decidido (2026-10-12):** verificação de e-mail e
   `disableSignUp` ficam **fora** — quem forka decide pelo projeto. O 2FA já
   foi feito (N6). O sign-up com auto-sign-in também sai: `autoSignIn: false`
   é deliberado (N6, anti-enumeração). Fica só o reset de senha.
+  ✅ **Reset feito (fase 9d, 2026-10-12):** `/{locale}/forgot-password` e
+  `/{locale}/reset-password`, e-mail en/pt/es (`emails/reset-password.ts`),
+  Mailpit no compose de teste, 5 e2e + 4 unitários, sondado ponta a ponta
+  pelo dashboard.
 - ✅ **G4 — Design system** (fase 8, 2026-10-12). `table`, `card`,
   `pagination`, `dialog`, `alert-dialog`, `label` e `sonner` (toast) vindos
   do shadcn-svelte 1.7.0 oficial (CLI num esqueleto descartável, imports

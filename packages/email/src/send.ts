@@ -16,19 +16,28 @@ export interface SendEmailHtmlOptions {
   }>;
 }
 
-// Create transporter singleton
+// Create transporter singleton. No auth block when no user: a local SMTP
+// sink (Mailpit in the e2e compose) takes mail without one.
 const transporter = nodemailer.createTransport({
   host: env.SMTP_HOST,
   port: env.SMTP_PORT,
-  auth: {
-    user: env.SMTP_USER,
-    pass: env.SMTP_PASS,
-  },
+  ...(env.SMTP_USER
+    ? { auth: { user: env.SMTP_USER, pass: env.SMTP_PASS } }
+    : {}),
 });
 
-const shouldSendEmail =
-  process.env.NODE_ENV === 'production' ||
-  process.env.NODE_ENV === 'development';
+/**
+ * Mail goes out when SMTP is configured, in any environment. Without it,
+ * development just logs what would be sent; production refuses, so a missing
+ * SMTP_HOST is an error someone sees, not mail silently dropped.
+ */
+function smtpConfigured(what: string): boolean {
+  if (env.SMTP_HOST) return true;
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(`SMTP_HOST is not set: cannot send ${what}`);
+  }
+  return false;
+}
 
 /**
  * Send email with HTML string.
@@ -39,11 +48,10 @@ const shouldSendEmail =
 export const sendEmailHtml = async (
   options: SendEmailHtmlOptions
 ): Promise<void> => {
-  if (!shouldSendEmail) {
-    console.log('[DEV] Email HTML que seria enviado:', {
+  if (!smtpConfigured('email')) {
+    console.log('[email] SMTP not configured; would send:', {
       to: options.to,
       subject: options.subject,
-      from: options.from || env.SMTP_FROM,
     });
     return;
   }
@@ -88,8 +96,10 @@ export const sendEmailHtml = async (
 export const sendBatchEmailHtml = async (
   emails: SendEmailHtmlOptions[]
 ): Promise<void> => {
-  if (!shouldSendEmail) {
-    console.log(`[DEV] ${emails.length} emails que seriam enviados em batch`);
+  if (!smtpConfigured('a batch')) {
+    console.log(
+      `[email] SMTP not configured; would send ${emails.length} emails`
+    );
     return;
   }
 

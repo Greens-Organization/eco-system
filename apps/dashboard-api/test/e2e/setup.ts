@@ -12,6 +12,10 @@ process.env.DATABASE_URL =
   'postgresql://eco_user:eco_password@localhost:5436/eco_test';
 // Mesmo motivo: o Redis de teste (sessões e rate limit do better-auth).
 process.env.REDIS_URL = 'redis://localhost:6380';
+// Mailpit from the test compose: password-reset mail really goes out.
+process.env.SMTP_HOST = 'localhost';
+process.env.SMTP_PORT = '1025';
+process.env.SMTP_USER = '';
 process.env.BETTER_AUTH_SECRET ||= 'test-secret-not-for-prod-0123456789';
 process.env.CLIENT_IP_SECRET ||= 'e2e-client-ip-secret-not-for-prod-0123456789';
 process.env.BETTER_AUTH_URL ||= 'http://localhost:3002';
@@ -36,8 +40,10 @@ if (isE2E) {
 
   afterEach(async () => {
     const { flushRedis, truncateAll } = await import('./helpers/reset');
+    const { clearMail } = await import('./helpers/mail');
     await truncateAll();
     await flushRedis();
+    await clearMail();
   });
 
   afterAll(async () => {

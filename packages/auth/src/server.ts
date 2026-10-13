@@ -1,5 +1,7 @@
 import { createNamespace } from '@pack/cache';
 import { db } from '@pack/db';
+import { sendEmailHtml } from '@pack/email';
+import { log } from '@pack/observability/logger';
 import { argon2Adapter } from '@pack/tools';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
@@ -8,9 +10,16 @@ import { env } from '../pack-env';
 import { accountThrottle } from './account-throttle';
 import { CLIENT_IP_HEADER } from './client-ip';
 import { AUTH_COOKIE } from './cookies';
+import { resetEmail, resetLink } from './emails/reset-password';
 import { requirePasswordToDeleteUser } from './require-password';
 
 const store = createNamespace('auth');
+
+/** Where the browser is: the dashboard's public origin and the allowed ones. */
+const trustedOrigins = [
+  new URL(env.BETTER_AUTH_URL).origin,
+  ...env.ORIGIN_ALLOWED.map((origin) => new URL(origin).origin),
+];
 
 /** Name shown next to the account in the authenticator app. */
 const TOTP_ISSUER = 'eco-system';
@@ -23,6 +32,9 @@ export const auth = betterAuth({
   basePath: '/auth',
   database: drizzleAdapter(db, {
     provider: 'pg',
+    // Multi-step writes (a password reset spends the token, revokes the
+    // sessions and sets the password) commit together or not at all.
+    transaction: true,
   }),
   trustedOrigins: env.ORIGIN_ALLOWED,
 
@@ -66,6 +78,26 @@ export const auth = betterAuth({
     minPasswordLength: 8,
     maxPasswordLength: 128,
     revokeSessionsOnPasswordReset: true,
+    // better-auth answers the same way for unknown emails; this keeps the
+    // timing the same too. Not awaited: SMTP latency would reveal that the
+    // account exists. The link expires in 1 h and works once.
+    sendResetPassword: async ({ user, url, token }) => {
+      const link = resetLink(url, token);
+      // better-auth already rejects an untrusted redirectTo; a mailed token
+      // to a foreign site is an account takeover, so check again here.
+      if (!link || !trustedOrigins.includes(link.origin)) {
+        log.warn({ origin: link?.origin }, 'auth.reset.untrusted_link');
+        return;
+      }
+      const { subject, html } = resetEmail(link);
+      if (!env.SMTP_HOST && process.env.NODE_ENV !== 'production') {
+        // Local development without SMTP: the link has to go somewhere.
+        log.info({ link: link.toString() }, 'auth.reset.link (dev only)');
+      }
+      void sendEmailHtml({ to: user.email, subject, html }).catch((error) =>
+        log.error({ err: error }, 'auth.reset.send_failed')
+      );
+    },
     // Without a session to hand out, a duplicate email gets the same answer
     // as a new one, so sign-up does not reveal who is registered.
     autoSignIn: false,
@@ -81,6 +113,9 @@ export const auth = betterAuth({
   ],
 
   advanced: {
+    // better-auth turns the Origin/redirect checks off under NODE_ENV=test;
+    // keep them on so the e2e suite runs what production runs.
+    disableOriginCheck: false,
     cookiePrefix: AUTH_COOKIE.prefix,
     defaultCookieAttributes: { sameSite: 'strict' },
     // Only ever set by the dashboard and signed (`client-ip.ts`); the API's

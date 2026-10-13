@@ -27,7 +27,7 @@ const StatsSchema = z.object({
 
 type Stats = z.infer<typeof StatsSchema>;
 
-export const load: PageServerLoad = async ({ request, locals, cookies }) => {
+export const load: PageServerLoad = async ({ locals, cookies }) => {
   const api = createApiClient(cookies, locals.requestId);
   const result = await safeFetch<Stats>(
     api.stats.$get(),

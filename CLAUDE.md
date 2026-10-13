@@ -103,6 +103,7 @@ the schema imports `bun`, so a bare `bunx drizzle-kit` fails to resolve it.
 | 5432 | postgres |
 | 6379 | redis |
 | 5436 / 6380 | e2e postgres / redis (`docker-compose.test.yml`) |
+| 1025 / 8025 | e2e Mailpit SMTP / UI and API (`docker-compose.test.yml`) |
 
 ---
 
@@ -266,6 +267,15 @@ The API mounts it at `/auth`. Policy (owner decisions, 2026-10-12; tested in
   guesses fit in a day, under NIST's 100.
 - **Sign-up** does not sign in (`autoSignIn: false`), so a duplicate email gets
   the same answer as a new one.
+- **Password reset**: `/{locale}/forgot-password` always shows the same
+  message, and the API does not await the mail (SMTP latency would reveal
+  which accounts exist). The link points at `/{locale}/reset-password` on the
+  dashboard; `sendResetPassword` drops a link whose origin is not in
+  `trustedOrigins`, and the page is served with `Referrer-Policy: no-referrer`
+  (`securityHandle` never overwrites a header a page set). A reset signs every
+  device out. `advanced.disableOriginCheck: false` is explicit because
+  better-auth skips the origin check under `NODE_ENV=test`; e2e requests
+  send an `Origin`. Tested against real mail in `password-reset.e2e.test.ts`.
 - **2FA (TOTP) is optional**, turned on per user in Profile (`twoFactor`
   plugin, table `two_factor`, tested in `two-factor.e2e.test.ts`). For such a
   user the password step returns `twoFactorRedirect` plus a `two_factor`
@@ -363,8 +373,9 @@ measured or debugged; changing one regresses something.
 - **`@pack/email` takes an HTML string, not a component** — the react-email
   templates were removed in 2026-09 so no React remains in the monorepo.
   Templating is the caller's choice; `sendEmailHtml` and `sendBatchEmailHtml`
-  only do SMTP over nodemailer, and both no-op unless `NODE_ENV` is
-  `production` or `development`.
+  only do SMTP over nodemailer. With no `SMTP_HOST` they log and skip, except
+  in production, where they throw; SMTP auth is sent only when `SMTP_USER`
+  is set (Mailpit takes none).
 
 ---
 

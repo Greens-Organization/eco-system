@@ -26,12 +26,7 @@ const CustomersSchema = z.object({
 
 type Customers = z.infer<typeof CustomersSchema>;
 
-export const load: PageServerLoad = async ({
-  request,
-  locals,
-  cookies,
-  url,
-}) => {
+export const load: PageServerLoad = async ({ locals, cookies, url }) => {
   const query = readListQuery(url, CUSTOMER_STATUSES);
   const api = createApiClient(cookies, locals.requestId);
   const result = await safeFetch<Customers>(

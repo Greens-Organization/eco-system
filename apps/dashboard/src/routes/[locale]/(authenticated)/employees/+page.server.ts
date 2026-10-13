@@ -27,12 +27,7 @@ const EmployeesSchema = z.object({
 
 type Employees = z.infer<typeof EmployeesSchema>;
 
-export const load: PageServerLoad = async ({
-  request,
-  locals,
-  cookies,
-  url,
-}) => {
+export const load: PageServerLoad = async ({ locals, cookies, url }) => {
   const query = readListQuery(url, EMPLOYEE_STATUSES);
   const api = createApiClient(cookies, locals.requestId);
   const result = await safeFetch<Employees>(

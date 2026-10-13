@@ -1,4 +1,4 @@
-# Postgres e Redis efêmeros pros testes e2e do apps/dashboard-api. Sem persistência — some
+# Postgres, Redis e Mailpit (SMTP de teste) efêmeros pros e2e do apps/dashboard-api. Sem persistência — some
 # no `down`. Portas 5436 e 6380 pra não colidir com o dev (5432, 6379).
 # Subidos/derrubados pelo runner `apps/dashboard-api/test/e2e/run.ts`.
 name: eco-api-test
@@ -31,6 +31,19 @@ services:
     command: redis-server --save '' --appendonly no
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+  # Catches the mail the API sends (password reset); tests read it over HTTP.
+  mailpit:
+    image: axllent/mailpit:v1.27.10
+    container_name: eco-api-mailpit-test
+    ports:
+      - '1025:1025'
+      - '8025:8025'
+    healthcheck:
+      test: ['CMD', '/mailpit', 'readyz']
       interval: 2s
       timeout: 3s
       retries: 15

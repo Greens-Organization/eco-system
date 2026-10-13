@@ -210,6 +210,25 @@
         "useBackup": "Usar um código de backup",
         "useApp": "Usar o app autenticador",
         "backToSignIn": "Voltar ao login"
+      },
+      "forgotLink": "Esqueceu a senha?",
+      "forgot": {
+        "title": "Redefinir a senha",
+        "description": "Informe seu e-mail e enviaremos um link para escolher uma nova senha.",
+        "submit": "Enviar link",
+        "sent": "Se existir uma conta com esse e-mail, um link está a caminho. Confira sua caixa de entrada.",
+        "back": "Voltar ao login"
+      },
+      "reset": {
+        "title": "Escolha uma nova senha",
+        "description": "Pelo menos 8 caracteres.",
+        "newPassword": "Nova senha",
+        "confirmPassword": "Confirme a nova senha",
+        "submit": "Salvar nova senha",
+        "mismatch": "As senhas não coincidem.",
+        "done": "Senha trocada. Entre com a nova senha.",
+        "invalidLink": "Este link é inválido ou expirou. Peça um novo.",
+        "requestNew": "Pedir um novo link"
       }
     },
     "list": {

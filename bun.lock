@@ -75,6 +75,8 @@
       "dependencies": {
         "@pack/cache": "workspace:*",
         "@pack/db": "workspace:*",
+        "@pack/email": "workspace:*",
+        "@pack/observability": "workspace:*",
         "@pack/tools": "workspace:*",
         "better-auth": "1.7.6",
         "zod": "catalog:",

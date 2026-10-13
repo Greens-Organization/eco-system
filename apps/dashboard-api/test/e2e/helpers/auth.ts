@@ -3,6 +3,9 @@ import type { TestApp } from './app';
 
 const SESSION_COOKIE = 'better-auth.session_token';
 
+/** The dashboard origin the e2e env trusts (setup.ts ORIGIN_ALLOWED). */
+export const TEST_ORIGIN = 'http://localhost:3000';
+
 export interface TestUser {
   email: string;
   password: string;
@@ -26,6 +29,8 @@ export function clientIp(): string {
 export function authHeaders(ip = clientIp()): Record<string, string> {
   return {
     'content-type': 'application/json',
+    // What the dashboard sends: better-auth checks it (CSRF).
+    origin: TEST_ORIGIN,
     ...signClientIp(ip, process.env.CLIENT_IP_SECRET ?? ''),
   };
 }

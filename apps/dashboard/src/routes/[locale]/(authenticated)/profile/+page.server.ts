@@ -29,7 +29,7 @@ type Me = z.infer<typeof MeSchema>;
 
 /** The user's row from the API (`GET /v1/me`), the source of truth. */
 async function loadMe(event: RequestEvent) {
-  const { locals, cookies, request } = event;
+  const { locals, cookies } = event;
   const api = createApiClient(cookies, locals.requestId);
   const result = await safeFetch<Me>(api.me.$get(), MeSchema, locals.log);
   if (!result.success && result.status === 401) {
