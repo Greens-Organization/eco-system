@@ -1,38 +1,40 @@
 <script lang="ts">
-	import * as Tooltip from "../../../components/ui/tooltip/index.js";
-	import { cn, type WithElementRef } from "../../../lib/utils.js";
-	import type { HTMLAttributes } from "svelte/elements";
-	import {
-		SIDEBAR_COOKIE_MAX_AGE,
-		SIDEBAR_COOKIE_NAME,
-		SIDEBAR_WIDTH,
-		SIDEBAR_WIDTH_ICON,
-	} from "./constants.js";
-	import { setSidebar } from "./context.svelte.js";
+import type { HTMLAttributes } from 'svelte/elements';
+import * as Tooltip from '../../../components/ui/tooltip/index.js';
+import { cn, type WithElementRef } from '../../../lib/utils.js';
+import {
+  SIDEBAR_COOKIE_MAX_AGE,
+  SIDEBAR_COOKIE_NAME,
+  SIDEBAR_WIDTH,
+  SIDEBAR_WIDTH_ICON,
+} from './constants.js';
+import { setSidebar } from './context.svelte.js';
 
-	let {
-		ref = $bindable(null),
-		open = $bindable(true),
-		onOpenChange = () => {},
-		class: className,
-		style,
-		children,
-		...restProps
-	}: WithElementRef<HTMLAttributes<HTMLDivElement>> & {
-		open?: boolean;
-		onOpenChange?: (open: boolean) => void;
-	} = $props();
+let {
+  ref = $bindable(null),
+  open = $bindable(true),
+  onOpenChange = () => {},
+  class: className,
+  style,
+  children,
+  ...restProps
+}: WithElementRef<HTMLAttributes<HTMLDivElement>> & {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+} = $props();
 
-	const sidebar = setSidebar({
-		open: () => open,
-		setOpen: (value: boolean) => {
-			open = value;
-			onOpenChange(value);
+const sidebar = setSidebar({
+  open: () => open,
+  setOpen: (value: boolean) => {
+    open = value;
+    onOpenChange(value);
 
-			// This sets the cookie to keep the sidebar state.
-			document.cookie = `${SIDEBAR_COOKIE_NAME}=${open}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
-		},
-	});
+    // Remembers whether the sidebar is open across visits: a UI preference,
+    // not a credential (shadcn's pattern).
+    // biome-ignore lint/suspicious/noDocumentCookie: a non-sensitive UI preference cookie
+    document.cookie = `${SIDEBAR_COOKIE_NAME}=${open}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+  },
+});
 </script>
 
 <svelte:window onkeydown={sidebar.handleShortcutKeydown} />

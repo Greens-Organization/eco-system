@@ -3,7 +3,7 @@
 @import "./colors.css";
 @source "../**/*.{ts,svelte}";
 
-@plugin '@tailwindcss/typography';
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 

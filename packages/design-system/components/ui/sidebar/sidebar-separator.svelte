@@ -1,13 +1,13 @@
 <script lang="ts">
-	import { Separator } from "../../../components/ui/separator/index.js";
-	import { cn } from "../../../lib/utils.js";
-	import type { ComponentProps } from "svelte";
+import type { ComponentProps } from 'svelte';
+import { Separator } from '../../../components/ui/separator/index.js';
+import { cn } from '../../../lib/utils.js';
 
-	let {
-		ref = $bindable(null),
-		class: className,
-		...restProps
-	}: ComponentProps<typeof Separator> = $props();
+let {
+  ref = $bindable(null),
+  class: className,
+  ...restProps
+}: ComponentProps<typeof Separator> = $props();
 </script>
 
 <Separator
