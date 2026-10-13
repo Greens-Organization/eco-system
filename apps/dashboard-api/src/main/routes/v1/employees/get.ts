@@ -1,19 +1,25 @@
 import type { RouteHandler } from '@hono/zod-openapi';
 import { createRoute } from '@hono/zod-openapi';
+import { AppError } from '@pack/observability/errors';
+import { listPage } from '@/main/infra/listing';
 import type { Variables } from '..';
-import { employeesSchemaRes } from './schema';
+import { EMPLOYEES } from './data';
+import {
+  employeeParamsSchema,
+  employeeSchema,
+  employeesQuerySchema,
+  employeesSchemaRes,
+} from './schema';
 
 export const getEmployeesRoute = createRoute({
+  tags: ['employees'],
   method: 'get',
   path: '/',
+  request: { query: employeesQuerySchema },
   responses: {
     200: {
-      content: {
-        'application/json': {
-          schema: employeesSchemaRes,
-        },
-      },
-      description: 'List employees',
+      content: { 'application/json': { schema: employeesSchemaRes } },
+      description: 'A page of employees, filtered by `q` and `status`',
     },
   },
 });
@@ -22,40 +28,38 @@ export const getEmployeesHandler: RouteHandler<
   typeof getEmployeesRoute,
   { Variables: Variables }
 > = async (c) => {
-  const employees = [
-    {
-      id: '1',
-      name: 'Erin Walsh',
-      email: 'erin.walsh@example.com',
-      role: 'Engineering Manager',
-      department: 'Engineering',
-      status: 'active',
-    },
-    {
-      id: '2',
-      name: 'Frank Ocean',
-      email: 'frank.ocean@example.com',
-      role: 'Backend Engineer',
-      department: 'Engineering',
-      status: 'active',
-    },
-    {
-      id: '3',
-      name: 'Grace Hopper',
-      email: 'grace.hopper@example.com',
-      role: 'Product Designer',
-      department: 'Design',
-      status: 'active',
-    },
-    {
-      id: '4',
-      name: 'Henry Ford',
-      email: 'henry.ford@example.com',
-      role: 'Sales Lead',
-      department: 'Sales',
-      status: 'inactive',
-    },
-  ];
+  const { items, ...page } = listPage(
+    EMPLOYEES,
+    c.req.valid('query'),
+    (employee) => [
+      employee.name,
+      employee.email,
+      employee.role,
+      employee.department,
+    ]
+  );
+  return c.json({ employees: items, ...page }, 200);
+};
 
-  return c.json({ employees, total: employees.length });
+export const getEmployeeRoute = createRoute({
+  tags: ['employees'],
+  method: 'get',
+  path: '/{id}',
+  request: { params: employeeParamsSchema },
+  responses: {
+    200: {
+      content: { 'application/json': { schema: employeeSchema } },
+      description: 'One employee',
+    },
+  },
+});
+
+export const getEmployeeHandler: RouteHandler<
+  typeof getEmployeeRoute,
+  { Variables: Variables }
+> = async (c) => {
+  const { id } = c.req.valid('param');
+  const employee = EMPLOYEES.find((item) => item.id === id);
+  if (!employee) throw new AppError('NOT_FOUND', 'Employee not found');
+  return c.json(employee, 200);
 };

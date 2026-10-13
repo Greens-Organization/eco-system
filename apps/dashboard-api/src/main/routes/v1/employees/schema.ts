@@ -1,28 +1,22 @@
-import z from 'zod';
+import { z } from '@hono/zod-openapi';
+import { listQuerySchema, pageSchema } from '@/main/infra/listing';
+import { EMPLOYEE_STATUSES } from './data';
 
-export const employeesSchemaRes = z.object({
-  employees: z
-    .array(
-      z.object({
-        id: z.string(),
-        name: z.string(),
-        email: z.string(),
-        role: z.string(),
-        department: z.string(),
-        status: z.string(),
-      })
-    )
-    .openapi({
-      example: [
-        {
-          id: '1',
-          name: 'Erin Walsh',
-          email: 'erin.walsh@example.com',
-          role: 'Engineering Manager',
-          department: 'Engineering',
-          status: 'active',
-        },
-      ],
-    }),
-  total: z.number().openapi({ example: 3 }),
+export const employeeSchema = z.object({
+  id: z.string().openapi({ example: '1' }),
+  name: z.string().openapi({ example: 'Erin Walsh' }),
+  email: z.string().openapi({ example: 'erin.walsh@example.com' }),
+  role: z.string().openapi({ example: 'Engineering Manager' }),
+  department: z.string().openapi({ example: 'Engineering' }),
+  status: z.enum(EMPLOYEE_STATUSES).openapi({ example: 'active' }),
+});
+
+export const employeesQuerySchema = listQuerySchema(EMPLOYEE_STATUSES);
+
+export const employeesSchemaRes = pageSchema.extend({
+  employees: z.array(employeeSchema),
+});
+
+export const employeeParamsSchema = z.object({
+  id: z.string().openapi({ param: { name: 'id', in: 'path' }, example: '1' }),
 });
