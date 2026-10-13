@@ -6,8 +6,8 @@ import {
   reasonFor,
   redactEmail,
   userMessageFor,
-} from '$lib/auth-proxy';
-import { env } from '$lib/env';
+} from '#lib/auth-proxy.js';
+import { env } from '#lib/env.js';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {

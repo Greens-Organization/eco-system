@@ -6,14 +6,23 @@ import {
 } from '@pack/i18n';
 import { log } from '@pack/observability/logger';
 import { captureError } from '@pack/observability/sentry';
-import type { Handle, HandleServerError } from '@sveltejs/kit';
 import { error, redirect } from '@sveltejs/kit';
-import { sequence } from '@sveltejs/kit/hooks';
-import { authFetch } from '$lib/auth-proxy';
-import { env } from '$lib/env';
-import { clearAuthCookies, forwardSetCookies } from '$lib/server/auth-cookies';
-import { injectCspNonce, SECURITY_HEADERS } from '$lib/server/security-headers';
-import { resolveSession } from '$lib/server/session';
+import {
+  type Handle,
+  type HandleServerError,
+  sequence,
+} from '@sveltejs/kit/hooks';
+import { authFetch } from '#lib/auth-proxy.js';
+import { env } from '#lib/env.js';
+import {
+  clearAuthCookies,
+  forwardSetCookies,
+} from '#lib/server/auth-cookies.js';
+import {
+  injectCspNonce,
+  SECURITY_HEADERS,
+} from '#lib/server/security-headers.js';
+import { resolveSession } from '#lib/server/session.js';
 
 const unauthenticatedPaths = [
   '/sign-in',
@@ -169,38 +178,33 @@ export const handle = sequence(
 );
 
 /**
- * Catch unhandled errors from load functions, form actions, and the
- * resolve chain. Stamps each with an `errorId` so the UI (+error.svelte)
- * can show it and the user can quote it back when filing a bug.
+ * Every error thrown while responding, except redirects (Kit 3 passes
+ * expected ones too). Stamps each with an `errorId` so the UI
+ * (+error.svelte) can show it and the user can quote it back.
+ *
+ * - `unknown` (a bug, or something our code calls threw): full `err` in the
+ *   log and Sentry; the user sees Kit's generic 500 message.
+ * - `framework` (Kit's own, e.g. a 404 from a typo): one warn line.
+ * - `app` / `validation` (`error(...)` from our code): whoever threw it
+ *   already logged why, so nothing more here.
  */
-export const handleError: HandleServerError = ({
-  error,
-  event,
-  status,
-  message,
-}) => {
+export const handleError: HandleServerError = ({ kind, error, event }) => {
   const errorId = crypto.randomUUID();
   const requestLog = event.locals.log ?? log;
 
-  // 4xx are user-driven and expected (404 from typos, 401 from
-  // expired sessions, 403 from missing permissions). Logging the
-  // full stack drowns real 5xx bugs in noise — emit a single warn
-  // line with status + correlation id and let the rest stay quiet.
-  // Genuine 5xx exceptions still get the full `err` serializer
-  // (stack, cause, name) so we have what we need to debug.
-  if (status >= 400 && status < 500) {
-    requestLog.warn({ status, errorId }, message);
-  } else {
-    requestLog.error({ err: error, status, errorId }, message);
+  if (kind === 'unknown') {
+    requestLog.error({ err: error, status: 500, errorId }, 'unhandled');
     // No-op without SENTRY_DSN. The errorId is what the user quotes back.
     captureError(error, {
       support_id: errorId,
       classification: 'technical_error',
       route: event.route.id,
       method: event.request.method,
-      status_code: status,
+      status_code: 500,
     });
+  } else if (kind === 'framework') {
+    requestLog.warn({ status: error.status, errorId }, error.message);
   }
 
-  return { message, errorId };
+  return { errorId };
 };

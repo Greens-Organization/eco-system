@@ -1,6 +1,6 @@
 <script lang="ts">
 import type { Snippet } from 'svelte';
-import { setI18n } from '$lib/i18n/context.svelte';
+import { setI18n } from '#lib/i18n/context.svelte.js';
 
 interface Props {
   data: { locale: App.Locals['locale']; dictionary: App.Locals['dictionary'] };

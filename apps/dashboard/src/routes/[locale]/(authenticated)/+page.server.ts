@@ -1,8 +1,8 @@
 import { redirect } from '@sveltejs/kit';
 import z from 'zod';
-import { createApiClient } from '$lib/api/hono-client';
-import { safeFetch } from '$lib/api/safe-fetch';
-import { clearAuthCookies } from '$lib/server/auth-cookies';
+import { createApiClient } from '#lib/api/hono-client.js';
+import { safeFetch } from '#lib/api/safe-fetch.js';
+import { clearAuthCookies } from '#lib/server/auth-cookies.js';
 import type { PageServerLoad } from './$types';
 
 const StatsSchema = z.object({

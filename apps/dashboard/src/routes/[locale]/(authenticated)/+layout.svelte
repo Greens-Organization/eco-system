@@ -2,7 +2,7 @@
 import * as Sidebar from '@pack/design-system/components/ui/sidebar';
 import { Toaster } from '@pack/design-system/components/ui/sonner';
 import type { Snippet } from 'svelte';
-import AppSidebar from '$lib/components/sidebar/app-sidebar.svelte';
+import AppSidebar from '#lib/components/sidebar/app-sidebar.svelte';
 import type { LayoutData } from './$types';
 
 interface Props {

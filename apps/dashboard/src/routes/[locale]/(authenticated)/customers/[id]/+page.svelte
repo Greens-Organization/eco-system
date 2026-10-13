@@ -1,8 +1,8 @@
 <script lang="ts">
 import * as Card from '@pack/design-system/components/ui/card';
-import Header from '$lib/components/header.svelte';
-import StatusBadge from '$lib/components/list/status-badge.svelte';
-import { useLocale, useTranslation } from '$lib/i18n/context.svelte';
+import Header from '#lib/components/header.svelte';
+import StatusBadge from '#lib/components/list/status-badge.svelte';
+import { useLocale, useTranslation } from '#lib/i18n/context.svelte.js';
 import type { PageData } from './$types';
 
 let { data }: { data: PageData } = $props();

@@ -2,7 +2,7 @@
 import '../app.css';
 import { DesignSystemProvider } from '@pack/design-system/providers';
 import type { Snippet } from 'svelte';
-import { CSP_NONCE_PLACEHOLDER } from '$lib/csp';
+import { CSP_NONCE_PLACEHOLDER } from '#lib/csp.js';
 
 interface Props {
   children?: Snippet;

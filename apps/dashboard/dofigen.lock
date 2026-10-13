@@ -1,49 +1,5 @@
 effective: |
   builders:
-    deps:
-      fromImage:
-        path: oven/bun
-        digest: sha256:ec06c3b6cea04192ae6770c434f668ca41d343ad19fa6472216c7b48be39c598
-      workdir: /app/
-      run:
-      - bun install --frozen-lockfile --filter @app/dashboard-svelte
-      cache:
-      - target: /root/.bun/install/cache
-      bind:
-      - target: bunfig.toml
-        source: bunfig.toml
-      - target: bun.lock
-        source: bun.lock
-      - target: package.json
-        source: package.json
-      - target: apps/dashboard/package.json
-        source: apps/dashboard/package.json
-      - target: apps/dashboard-api/package.json
-        source: apps/dashboard-api/package.json
-      - target: packages/auth/package.json
-        source: packages/auth/package.json
-      - target: packages/cache/package.json
-        source: packages/cache/package.json
-      - target: packages/db/package.json
-        source: packages/db/package.json
-      - target: packages/design-system/package.json
-        source: packages/design-system/package.json
-      - target: packages/email/package.json
-        source: packages/email/package.json
-      - target: packages/i18n/package.json
-        source: packages/i18n/package.json
-      - target: packages/observability/package.json
-        source: packages/observability/package.json
-      - target: packages/seo/package.json
-        source: packages/seo/package.json
-      - target: packages/storage/package.json
-        source: packages/storage/package.json
-      - target: packages/testing/package.json
-        source: packages/testing/package.json
-      - target: packages/tools/package.json
-        source: packages/tools/package.json
-      - target: packages/tsconfig/package.json
-        source: packages/tsconfig/package.json
     runtime-deps:
       fromImage:
         path: oven/bun
@@ -88,9 +44,55 @@ effective: |
         source: packages/tools/package.json
       - target: packages/tsconfig/package.json
         source: packages/tsconfig/package.json
+    deps:
+      fromImage:
+        path: oven/bun
+        digest: sha256:ec06c3b6cea04192ae6770c434f668ca41d343ad19fa6472216c7b48be39c598
+      workdir: /app/
+      run:
+      - bun install --frozen-lockfile --filter @app/dashboard-svelte
+      cache:
+      - target: /root/.bun/install/cache
+      bind:
+      - target: bunfig.toml
+        source: bunfig.toml
+      - target: bun.lock
+        source: bun.lock
+      - target: package.json
+        source: package.json
+      - target: apps/dashboard/package.json
+        source: apps/dashboard/package.json
+      - target: apps/dashboard-api/package.json
+        source: apps/dashboard-api/package.json
+      - target: packages/auth/package.json
+        source: packages/auth/package.json
+      - target: packages/cache/package.json
+        source: packages/cache/package.json
+      - target: packages/db/package.json
+        source: packages/db/package.json
+      - target: packages/design-system/package.json
+        source: packages/design-system/package.json
+      - target: packages/email/package.json
+        source: packages/email/package.json
+      - target: packages/i18n/package.json
+        source: packages/i18n/package.json
+      - target: packages/observability/package.json
+        source: packages/observability/package.json
+      - target: packages/seo/package.json
+        source: packages/seo/package.json
+      - target: packages/storage/package.json
+        source: packages/storage/package.json
+      - target: packages/testing/package.json
+        source: packages/testing/package.json
+      - target: packages/tools/package.json
+        source: packages/tools/package.json
+      - target: packages/tsconfig/package.json
+        source: packages/tsconfig/package.json
     build:
       fromBuilder: deps
       workdir: /app/apps/dashboard
+      arg:
+        ORIGIN: ''
       copy:
       - paths:
         - .
@@ -104,8 +106,8 @@ effective: |
     user: '1000'
   workdir: /app/apps/dashboard
   env:
-    NODE_ENV: production
     PORT: '3000'
+    NODE_ENV: production
   copy:
   - fromBuilder: runtime-deps
     paths:
@@ -141,16 +143,16 @@ images:
           digest: sha256:ec06c3b6cea04192ae6770c434f668ca41d343ad19fa6472216c7b48be39c598
 resources:
   dofigen.yml:
-    hash: a27af9f9b0250600b03cb2d5e0c25a037a0573c8c6edb5c527fa816fb4cfd671
+    hash: 6d7238632b66a886f44541f87c2af1dee2e3cf799b52779f0e5a2a663892e972
     content: |
       # Build from the repo root: docker build -f apps/dashboard/Dockerfile .
       # The root .dockerignore applies (no node_modules, no .env files).
       # After editing: `dofigen update` (pins image digests), then `dofigen generate`.
       #
       # The image runs the adapter-node build on Node (owner decision N3). Runtime
-      # config comes from env at start: ORIGIN, API_URL, BETTER_AUTH_SECRET,
-      # CLIENT_IP_SECRET, and behind a TLS proxy ADDRESS_HEADER / XFF_DEPTH (see
-      # the deploy notes in the README).
+      # config comes from env at start: API_URL, BETTER_AUTH_SECRET,
+      # CLIENT_IP_SECRET, and behind a TLS proxy PROTOCOL_HEADER / HOST_HEADER /
+      # ADDRESS_HEADER / XFF_DEPTH (see the deploy notes in the README).
 
       builders:
         # Every dependency (dev included: Vite builds the app), from the lockfile.
@@ -188,6 +190,9 @@ resources:
             org.opencontainers.image.stage: build
           copy:
             - . /app/
+          # Public origin for plain-http deploys (vite.config.ts `paths.origin`).
+          arg:
+            ORIGIN: ""
           run: bun run build
 
         # What the build leaves external (pino, zod, uqr…), hoisted into one plain

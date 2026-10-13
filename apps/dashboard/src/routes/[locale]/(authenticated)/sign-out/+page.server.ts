@@ -1,8 +1,8 @@
 import { defaultLocale } from '@pack/i18n';
 import { redirect } from '@sveltejs/kit';
-import { authFetch, reasonFor } from '$lib/auth-proxy';
-import { env } from '$lib/env';
-import { clearAuthCookies } from '$lib/server/auth-cookies';
+import { authFetch, reasonFor } from '#lib/auth-proxy.js';
+import { env } from '#lib/env.js';
+import { clearAuthCookies } from '#lib/server/auth-cookies.js';
 import type { Actions } from './$types';
 
 export const actions: Actions = {

@@ -1,12 +1,12 @@
 <script lang="ts">
 import * as Table from '@pack/design-system/components/ui/table';
 import { formatNumber } from '@pack/i18n';
-import Header from '$lib/components/header.svelte';
-import ListPagination from '$lib/components/list/list-pagination.svelte';
-import ListToolbar from '$lib/components/list/list-toolbar.svelte';
-import StatusBadge from '$lib/components/list/status-badge.svelte';
-import { useLocale, useTranslation } from '$lib/i18n/context.svelte';
-import { CUSTOMER_STATUSES } from '$lib/resources';
+import Header from '#lib/components/header.svelte';
+import ListPagination from '#lib/components/list/list-pagination.svelte';
+import ListToolbar from '#lib/components/list/list-toolbar.svelte';
+import StatusBadge from '#lib/components/list/status-badge.svelte';
+import { useLocale, useTranslation } from '#lib/i18n/context.svelte.js';
+import { CUSTOMER_STATUSES } from '#lib/resources.js';
 import type { PageData } from './$types';
 
 let { data }: { data: PageData } = $props();

@@ -1,6 +1,6 @@
 import { getSessionCookie, readSessionCache } from '@pack/auth/cookies';
 import z from 'zod';
-import type { AuthFetchResult } from '$lib/auth-proxy';
+import type { AuthFetchResult } from '#lib/auth-proxy.js';
 
 const SessionPayloadSchema = z.object({
   session: z.looseObject({

@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 import { resolve } from 'node:path';
-import { DATABASE_URL } from './stack';
+import { DASHBOARD, DATABASE_URL } from './stack';
 
 // Browser e2e: brings up the test compose, migrates, builds the dashboard
 // (SKIP_BUILD=1 reuses build/), runs Playwright and always tears the
@@ -16,7 +16,7 @@ const COMPOSE = [
   '-p',
   'eco-browser-test',
 ];
-const DASHBOARD = resolve(import.meta.dir, '../..');
+const DASHBOARD_DIR = resolve(import.meta.dir, '../..');
 // The root bunfig's `[run] bun = true` puts a `node` that is really Bun first
 // on PATH for scripts run from the root (the root test:browser, via
 // --filter). Playwright and the dashboard build must run on Node.
@@ -44,11 +44,12 @@ function run(): number {
   try {
     step(['bun', 'src/migrate.ts'], `${ROOT}/packages/db`, { DATABASE_URL });
     if (process.env.SKIP_BUILD !== '1')
-      step(['bun', 'run', 'build'], DASHBOARD);
+      // The tests serve plain http: bake that origin in (paths.origin).
+      step(['bun', 'run', 'build'], DASHBOARD_DIR, { ORIGIN: DASHBOARD });
     const { exitCode } = Bun.spawnSync(
       ['bunx', 'playwright', 'test', ...process.argv.slice(2)],
       {
-        cwd: DASHBOARD,
+        cwd: DASHBOARD_DIR,
         env: { ...process.env, PATH },
         stdio: ['inherit', 'inherit', 'inherit'],
       }

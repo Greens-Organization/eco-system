@@ -5,9 +5,9 @@ import DollarSign from '@lucide/svelte/icons/dollar-sign';
 import TrendingUp from '@lucide/svelte/icons/trending-up';
 import Users from '@lucide/svelte/icons/users';
 import { formatCurrency, formatNumber } from '@pack/i18n';
-import Header from '$lib/components/header.svelte';
-import SignupsChart from '$lib/components/signups-chart.svelte';
-import { useLocale, useTranslation } from '$lib/i18n/context.svelte';
+import Header from '#lib/components/header.svelte';
+import SignupsChart from '#lib/components/signups-chart.svelte';
+import { useLocale, useTranslation } from '#lib/i18n/context.svelte.js';
 import type { PageData } from './$types';
 
 let { data }: { data: PageData } = $props();

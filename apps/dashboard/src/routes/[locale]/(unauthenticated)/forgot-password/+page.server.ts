@@ -1,7 +1,7 @@
 import { defaultLocale } from '@pack/i18n';
 import { fail, redirect } from '@sveltejs/kit';
-import { reasonFor, redactEmail, userMessageFor } from '$lib/auth-proxy';
-import { callAuth } from '$lib/server/auth-api';
+import { reasonFor, redactEmail, userMessageFor } from '#lib/auth-proxy.js';
+import { callAuth } from '#lib/server/auth-api.js';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {

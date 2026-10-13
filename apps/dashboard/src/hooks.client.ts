@@ -1,26 +1,24 @@
-import type { HandleClientError } from '@sveltejs/kit';
-import { log } from '$lib/logger';
+import type { HandleClientError } from '@sveltejs/kit/hooks';
+import { log } from '#lib/logger.js';
 
 /**
- * Catch unhandled errors thrown during client-side navigation,
- * load functions, and component lifecycles. Stamps an `errorId`
- * so it correlates with whatever the user sees in +error.svelte.
+ * Catch errors thrown during client-side navigation, load functions and
+ * component lifecycles. Stamps an `errorId` so it correlates with whatever
+ * the user sees in +error.svelte. Only `unknown` errors are bugs; `app` and
+ * `framework` ones (a 404, an `error(...)`) are expected.
  */
-export const handleError: HandleClientError = ({ error, event, status }) => {
+export const handleError: HandleClientError = ({ kind, error, event }) => {
   const errorId = crypto.randomUUID();
-  log.error(
-    {
-      err: error instanceof Error ? error.message : error,
-      stack: error instanceof Error ? error.stack : undefined,
-      path: event.url.pathname,
-      status,
-      errorId,
-    },
-    'unhandled'
-  );
-  return {
-    message:
-      error instanceof Error ? error.message : 'An unexpected error occurred.',
-    errorId,
-  };
+  if (kind === 'unknown') {
+    log.error(
+      {
+        err: error instanceof Error ? error.message : error,
+        stack: error instanceof Error ? error.stack : undefined,
+        path: event.url.pathname,
+        errorId,
+      },
+      'unhandled'
+    );
+  }
+  return { errorId };
 };

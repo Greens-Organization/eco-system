@@ -28,6 +28,7 @@ RUN \
 
 # build
 FROM deps AS build
+ARG ORIGIN
 WORKDIR /app/apps/dashboard
 COPY \
     --link \
@@ -61,8 +62,8 @@ RUN \
 # runtime
 FROM node@sha256:930557a230abacbc3f4fd9b8648abf8f4bee1e17cb72195dcdfb2f709bc85b33 AS runtime
 ENV \
-    NODE_ENV="production" \
-    PORT="3000"
+    PORT="3000" \
+    NODE_ENV="production"
 WORKDIR /app/apps/dashboard
 COPY \
     --from=runtime-deps \

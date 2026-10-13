@@ -1,4 +1,6 @@
+import adapter from '@sveltejs/adapter-node';
 import { sveltekit } from '@sveltejs/kit/vite';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig, type Plugin } from 'vite';
 
@@ -43,7 +45,50 @@ function bundleStats(top = 20): Plugin {
 }
 
 export default defineConfig(({ command }) => ({
-  plugins: [tailwindcss(), sveltekit(), analyze && bundleStats()],
+  plugins: [
+    tailwindcss(),
+    sveltekit({
+      preprocess: vitePreprocess(),
+      adapter: adapter(),
+      // The public origin form actions are checked against (CSRF). Fixed at
+      // build time from ORIGIN; unset, adapter-node derives it from the
+      // request (Host, or HOST_HEADER / PROTOCOL_HEADER) and assumes https —
+      // right behind a TLS proxy, so set ORIGIN for a plain-http deploy.
+      paths: { origin: process.env.ORIGIN || undefined },
+      // Kit adds a per-request nonce to its own scripts; ModeWatcher's inline
+      // theme script gets it through `injectCspNonce` (hooks.server.ts).
+      csp: {
+        mode: 'nonce',
+        directives: {
+          'default-src': ['self'],
+          'script-src': ['self'],
+          // Svelte and bits-ui set inline style attributes.
+          'style-src': ['self', 'unsafe-inline'],
+          // genericAvatar() draws placeholder avatars from DiceBear.
+          'img-src': ['self', 'data:', 'https://api.dicebear.com'],
+          'font-src': ['self'],
+          'connect-src': ['self'],
+          'object-src': ['none'],
+          'base-uri': ['self'],
+          'form-action': ['self'],
+          // The admin panel is never framed (clickjacking).
+          'frame-ancestors': ['none'],
+        },
+      },
+      alias: {
+        '@api/*': '../dashboard-api/src/*',
+        // Transitive API path aliases (needed to typecheck AppType imports)
+        '@/core/*': '../dashboard-api/src/core/*',
+        '@/infra/*': '../dashboard-api/src/infra/*',
+        '@/main/*': '../dashboard-api/src/main/*',
+      },
+      // OpenTelemetry spans for handle, load and form actions. Kit loads
+      // src/instrumentation.server.ts before the app on its own. Off at
+      // runtime without OTEL_EXPORTER_OTLP_ENDPOINT.
+      tracing: { server: true },
+    }),
+    analyze && bundleStats(),
+  ],
   server: {
     port: 3000,
     // Pre-transform the heavy layout + sidebar tree during server boot so the

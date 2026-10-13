@@ -1,8 +1,8 @@
 <script lang="ts">
 import { Button } from '@pack/design-system/components/ui/button';
+import { useLocale, useTranslation } from '#lib/i18n/context.svelte.js';
 import { enhance } from '$app/forms';
 import { page } from '$app/state';
-import { useLocale, useTranslation } from '$lib/i18n/context.svelte';
 
 interface Props {
   form?: {

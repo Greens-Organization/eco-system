@@ -1,8 +1,8 @@
 <script lang="ts">
 import { buttonVariants } from '@pack/design-system/components/ui/button';
+import { useTranslation } from '#lib/i18n/context.svelte.js';
+import { withParams } from '#lib/list-query.js';
 import { page as pageState } from '$app/state';
-import { useTranslation } from '$lib/i18n/context.svelte';
-import { withParams } from '$lib/list-query';
 
 interface Props {
   page: number;

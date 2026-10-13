@@ -1,18 +1,25 @@
 import { fail, type RequestEvent, redirect } from '@sveltejs/kit';
 import { renderSVG } from 'uqr';
 import z from 'zod';
-import { createApiClient } from '$lib/api/hono-client';
-import { safeFetch } from '$lib/api/safe-fetch';
-import { localizeAuthError, reasonFor, userMessageFor } from '$lib/auth-proxy';
-import { callAuth, errorBody } from '$lib/server/auth-api';
-import { clearAuthCookies, forwardSetCookies } from '$lib/server/auth-cookies';
+import { createApiClient } from '#lib/api/hono-client.js';
+import { safeFetch } from '#lib/api/safe-fetch.js';
+import {
+  localizeAuthError,
+  reasonFor,
+  userMessageFor,
+} from '#lib/auth-proxy.js';
+import { callAuth, errorBody } from '#lib/server/auth-api.js';
+import {
+  clearAuthCookies,
+  forwardSetCookies,
+} from '#lib/server/auth-cookies.js';
 import {
   type ListedSession,
   ListedSessionsSchema,
   timeAgo,
   toDevices,
   tokenFor,
-} from '$lib/server/devices';
+} from '#lib/server/devices.js';
 import type { Actions, PageServerLoad } from './$types';
 
 const MeSchema = z.object({

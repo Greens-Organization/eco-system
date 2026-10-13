@@ -1,8 +1,12 @@
 # Varredura completa — 2026-10-11
 
-> Branch `alpha/eco-system-v2` (96 commits à frente de `main`). Estado medido
-> hoje: typecheck **13/13**, biome **5 erros conhecidos**, testes **70 pass /
-> 0 fail** (6 tasks). E2E não executado.
+> Branch `alpha/eco-system-v2`. Estado medido na abertura (2026-10-11):
+> typecheck 13/13, biome 5 erros, 70 testes. **Estado em 2026-10-13:** biome
+> 0, `bun check` 0 em 265 arquivos, `check:svelte` 0, 205 unitários + 76 e2e
+> da API + 15 de navegador, todos passando; pisos de cobertura ok.
+> **Aberto:** só a fase 13 (G10, depende de decisões do dono), os commits das
+> fases 6–12 (snapshots prontos, GPG travado), a primeira execução do CI no
+> GitHub (sem upstream) e os opcionais.
 > Método: 4 auditorias read-only (api, dashboard, packages, infra/docs). Os
 > itens 🔴 de bug foram re-conferidos no código antes de entrar aqui.
 > **Card único do backlog** (consolidado em 2026-10-12): absorve os itens
@@ -397,9 +401,9 @@ Falta:
   `transaction: true` no adapter drizzle, `Referrer-Policy: no-referrer` na
   página, link para o dashboard (origem fora de `trustedOrigins` é
   descartada), `disableOriginCheck: false` explícito. e2e com Mailpit.
-- [ ] Acesso direto à API sem `x-real-ip` cai no balde `no-trusted-ip`: OK
-  enquanto só o dashboard alcança a API; se algum outro cliente surgir, usar
-  `trustedProxies`.
+- [x] **Aceito (ressalva, não tarefa):** acesso direto à API sem `x-real-ip`
+  cai no balde `no-trusted-ip`. OK enquanto só o dashboard alcança a API; se
+  algum outro cliente surgir, usar `trustedProxies`.
 
 Não se aplica, pelo princípio do BFF: `svelteKitHandler` e `sveltekitCookies`
 (exigem a instância do `auth`, com banco, no dashboard);
@@ -536,7 +540,7 @@ camada do BFF:
    **Feito:** `resetRefusal` (`src/reset-guard.ts`): só host local
    (localhost/127.0.0.1/::1) e nunca `NODE_ENV=production`; 6 testes; recusa
    conferida em runtime (host remoto e produção → exit 1). Typo corrigido.
-6. **Seed inseguro** (`admin.seed.ts`). ✅ parcial (2026-10-12): o admin
+6. ✅ **(fase 3, 2026-10-12)** **Seed inseguro** (`admin.seed.ts`). ✅ parcial (2026-10-12): o admin
    semeado **não conseguia entrar** — gravava `account.accountId = email`, e o
    better-auth 1.7 só aceita a credencial com `accountId === user.id` ("User
    not found" → 401). Corrigido (`accountId: newUser.id`), com e2e
@@ -593,9 +597,9 @@ camada do BFF:
   nonce, `frame-ancestors 'none'`, `X-Frame-Options`, `nosniff`,
   `Referrer-Policy`, `Permissions-Policy`; Chromium sem violações (build e
   dev); o tema do mode-watcher recebe o nonce via placeholder.
-- `apps/api/.env.example` com credenciais "genergia" que não batem com o
-  compose — fork novo não conecta. (✅ parcial: `REDIS_URL` corrigido no N6;
-  falta o `DATABASE_URL`, que ainda aponta `genergia_*@db-pg`.)
+- ✅ (N6 + fase 6) `apps/api/.env.example` com credenciais "genergia" que não
+  batiam com o compose. `REDIS_URL` corrigido no N6, `DATABASE_URL` na fase 6
+  (G6): os dois `.env.example` batem com `docker-compose.infra.yml`.
 - ✅ (fase 4) `safeFetch` engolia erros sem log: agora loga cada falha com a
   causa (o layout já não faz fetch desde a fase 1).
 
@@ -663,10 +667,11 @@ origem, agora em `tasks/done/`.
   sem `.env`: 19/19 tasks; e2e 7/7 local. **Pendente:** o workflow nunca rodou
   no GitHub (branch sem upstream) — conferir na primeira PR. Budget de bundle
   via `ANALYZE=1` (era §15) segue aberto.
-- **G2 — Testes do dashboard** (era P0 #3). **Feito em grande parte (fase 1):**
-  40 testes em `apps/dashboard/test/unit` (`bun test` puro, sem Vite) para
+- ✅ **G2 — Testes do dashboard** (era P0 #3). **Feito (fases 1 e 12):**
+  testes em `apps/dashboard/test/unit` (`bun test` puro, sem Vite) para
   `auth-proxy`, `safe-fetch`, sessão, proxy e cookies; `test/**` entrou no
-  `svelte-check`. Falta `packages/i18n/src/format.ts`. Texto original: Lógica pura, sem infra:
+  `svelte-check`; o `packages/i18n/src/format.ts` ganhou testes na fase 12
+  (com locale e paridade dos dicionários). Texto original: Lógica pura, sem infra:
   `src/lib/auth-proxy.ts` (`localizeAuthError`, `redactEmail`,
   `userMessageFor`), `src/lib/api/safe-fetch.ts` (erro + zod),
   `packages/i18n/src/format.ts`. Somar: o fix do logout de 5 min (🔴 1) e a
@@ -738,11 +743,16 @@ origem, agora em `tasks/done/`.
   commit; feitos OTel 2.11/0.222 (processadores de log recebem
   `{ exporter }`), Sentry 11 (ver abaixo), nodemailer 10 (traz tipos; sai o
   `@types/nodemailer`), intl-localematcher 0.9 (mesmos resultados), Scalar
-  0.12 (`pageTitle`). Regra: versão com 2+ semanas. **Bloqueados:**
-  `typescript` 7 — o pacote não tem mais a API JS do compilador e o
-  `svelte-check` 4.7.6 (último) exige `^5 || ^6`; esperar o svelte-check.
-  `@sveltejs/kit` 3 + `adapter-node` 6 — saíram em 2026-10-01, elegíveis a
-  partir de 2026-10-15; fatia própria nessa data. **Sentry 11** tirou o
+  0.12 (`pageTitle`). Em 2026-10-13, a pedido do dono, tudo para o mais
+  recente com `bun update -r --latest` (a regra anterior de "2+ semanas"
+  caiu). **`typescript` fica no 6.0.3** (o dono testou o 7 e voltou): o
+  pacote 7 não tem mais a API JS do compilador, o `svelte-check` 4.7.6
+  (último) exige `^5 || ^6`, e o modo `--tsgo` dele deu 10 falsos erros. O
+  TS 7 já roda no `bun check`; trocar quando o svelte-check suportar.
+  `@sveltejs/kit` 3 + `adapter-node` 6 — **feitos em 2026-10-13** (o dono
+  pediu tudo no mais recente): config no `vite.config.ts`, `#lib`, env em
+  `src/env.ts`, `handleError` por `kind`, `paths.origin` no build no lugar
+  do `ORIGIN`, `@opentelemetry/api` em `dependencies` (a imagem não subia). **Sentry 11** tirou o
   `sendDefaultPii` e passou a coletar usuário, cookies, headers, corpos,
   query e variáveis locais por padrão: tudo desligado em `dataCollection`,
   `scrubPii` passou a limpar `vars` dos frames, e as opções viraram
@@ -767,8 +777,11 @@ origem, agora em `tasks/done/`.
   dashboard → API.
   **Feito (fase 10, 2026-10-12):** núcleo de telemetria agnóstico de runtime
   (`telemetry.ts`) com entradas Bun (`@sentry/bun`) e Node (`@sentry/node`);
-  `instrumentation.server.ts` + tracing experimental do Kit; `traceparent`
-  em `authFetch` e `createApiClient`; 5xx do `handleError` no Sentry.
+  `instrumentation.server.ts` + spans do Kit; `traceparent` em `authFetch` e
+  `createApiClient`; erros do `handleError` no Sentry. Revisto no Kit 3
+  (2026-10-13): `tracing: { server: true }` no `vite.config.ts` (o Kit carrega
+  o arquivo de instrumentação sozinho) e só erros `unknown` vão ao Sentry
+  (um 404 não). Reprovado de novo com os coletores falsos.
   Verificado com coletor OTLP falso (um trace do `sveltekit.handle.root` até
   o `db findOne` da API, mesmo `trace_id` nos dois logs) e com ingest de
   Sentry falso (evento com `support_id`, sem cookie nem query). `/metrics`
@@ -802,9 +815,9 @@ no mesmo commit da mudança de comportamento.
 | 8 ✅ | Design system | **G4** — fechada 2026-10-12 |
 | 9 ✅ | Telas | **N4** + **G3** (reset de senha) + **e2e de navegador (Playwright)** — fechada 2026-10-12 |
 | 10 ✅ | Observabilidade do dashboard | **O2** — fechada 2026-10-12 |
-| 11 ✅ | Dependências | patches + **H1** (OTel, Sentry 11, nodemailer 10, localematcher 0.9, Scalar 0.12) — fechada 2026-10-12; TS 7 bloqueado pelo svelte-check, Kit 3 a partir de 2026-10-15 |
+| 11 ✅ | Dependências | patches + **H1** (OTel, Sentry 11, nodemailer 10, localematcher 0.9, Scalar 0.12) — fechada 2026-10-12. Depois, a pedido do dono, `bun update -r --latest`: tudo no mais recente, inclusive **SvelteKit 3 + adapter-node 6**. TS 7 só no `bun check`: o modo `--tsgo` do svelte-check deu falsos erros |
 | 12 ✅ | Higiene | pins fora do catálogo, hash de env no turbo, código morto, infra de teste (N5) — fechada 2026-10-12 |
-| 13 | Release | **G10** — último commit |
+| 13 | Release | **G10** — último commit; espera o dono: nome no lugar de `eco-system`/`GRN Group`, destino de `screenshots/`, revisão dos opcionais antes de apagar `tasks/` |
 | — | **Opcionais (o dono decide depois)** | **O3** manifests k8s/HPA; captcha no login (escalada do limite por conta); "confiar neste dispositivo" no 2FA; budget de bundle (`ANALYZE=1`); redirect de `/settings` → `/profile`; ordenação por coluna nas listas; skeleton de loading; Sentry no navegador (via túnel no BFF) |
 
 Fases 0–1 primeiro: sem CI, o resto é mudança sem rede. A fase 11 fica depois

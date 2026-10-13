@@ -39,7 +39,6 @@ export const apiEnv = {
 export const dashboardEnv = {
   NODE_ENV: 'production',
   PORT: String(DASHBOARD_PORT),
-  ORIGIN: DASHBOARD,
   API_URL: API,
   BETTER_AUTH_SECRET,
   CLIENT_IP_SECRET,

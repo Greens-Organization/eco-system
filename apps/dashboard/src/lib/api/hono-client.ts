@@ -2,8 +2,8 @@ import type { AppType } from '@api/main/routes/v1';
 import { traceHeaders } from '@pack/observability/propagation';
 import type { Cookies } from '@sveltejs/kit';
 import { hc } from 'hono/client';
-import { env } from '$lib/env';
-import { cookieHeader } from '$lib/server/cookie-header';
+import { env } from '#lib/env.js';
+import { cookieHeader } from '#lib/server/cookie-header.js';
 
 /**
  * Creates a typed Hono RPC client with cookie, requestId and trace

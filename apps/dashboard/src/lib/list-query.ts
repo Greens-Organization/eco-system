@@ -27,10 +27,10 @@ export function readListQuery<S extends string>(
 
 /** The same URL with some params replaced; `undefined` removes one. */
 export function withParams(
-  url: URL,
+  url: { readonly href: string },
   changes: Record<string, string | number | undefined>
 ): string {
-  const next = new URL(url);
+  const next = new URL(url.href);
   for (const [key, value] of Object.entries(changes)) {
     if (value === undefined || value === '') next.searchParams.delete(key);
     else next.searchParams.set(key, String(value));

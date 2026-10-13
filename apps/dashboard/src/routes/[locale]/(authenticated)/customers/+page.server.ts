@@ -1,10 +1,10 @@
 import { redirect } from '@sveltejs/kit';
 import z from 'zod';
-import { createApiClient } from '$lib/api/hono-client';
-import { safeFetch } from '$lib/api/safe-fetch';
-import { readListQuery, toApiQuery } from '$lib/list-query';
-import { CUSTOMER_STATUSES } from '$lib/resources';
-import { clearAuthCookies } from '$lib/server/auth-cookies';
+import { createApiClient } from '#lib/api/hono-client.js';
+import { safeFetch } from '#lib/api/safe-fetch.js';
+import { readListQuery, toApiQuery } from '#lib/list-query.js';
+import { CUSTOMER_STATUSES } from '#lib/resources.js';
+import { clearAuthCookies } from '#lib/server/auth-cookies.js';
 import type { PageServerLoad } from './$types';
 
 const PAGE_SIZE = 10;

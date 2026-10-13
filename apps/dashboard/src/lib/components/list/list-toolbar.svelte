@@ -1,6 +1,6 @@
 <script lang="ts">
 import { Button } from '@pack/design-system/components/ui/button';
-import { useTranslation } from '$lib/i18n/context.svelte';
+import { useTranslation } from '#lib/i18n/context.svelte.js';
 
 interface Props {
   q?: string;

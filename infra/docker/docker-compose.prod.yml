@@ -5,8 +5,9 @@
 #   cp infra/docker/.env.prod.example infra/docker/.env.prod   # fill it in
 #   docker compose -f infra/docker/docker-compose.prod.yml --env-file infra/docker/.env.prod up -d --build
 #
-# Behind a TLS proxy, set ORIGIN to the public https URL and the proxy's
-# client-address header (ADDRESS_HEADER / XFF_DEPTH) — see the README.
+# Behind a TLS proxy, uncomment the dashboard's ADDRESS_HEADER / XFF_DEPTH
+# (the visitor's IP), and HOST_HEADER / PROTOCOL_HEADER if the proxy rewrites
+# Host — see the README.
 name: eco-prod
 
 services:
@@ -85,8 +86,10 @@ services:
     build:
       context: ../..
       dockerfile: apps/dashboard/Dockerfile
+      # Baked into the build: the origin form actions are checked against.
+      args:
+        ORIGIN: ${PUBLIC_URL}
     environment:
-      ORIGIN: ${PUBLIC_URL}
       API_URL: http://api:3002
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       CLIENT_IP_SECRET: ${CLIENT_IP_SECRET}
@@ -94,8 +97,11 @@ services:
       # Same collector and Sentry project as the API: one trace spans both.
       SENTRY_DSN: ${SENTRY_DSN:-}
       OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
-      # Behind a TLS proxy that sets X-Forwarded-For, uncomment so the client
-      # IP (rate limits, device list) is the visitor's, not the proxy's:
+      # Behind a TLS proxy, uncomment so the client IP (rate limits, device
+      # list) is the visitor's; the two *_HOST/PROTOCOL lines only if the
+      # proxy rewrites Host (form actions check the origin):
+      # PROTOCOL_HEADER: X-Forwarded-Proto
+      # HOST_HEADER: X-Forwarded-Host
       # ADDRESS_HEADER: X-Forwarded-For
       # XFF_DEPTH: '1'
     ports:

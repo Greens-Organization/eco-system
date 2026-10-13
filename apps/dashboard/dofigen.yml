@@ -3,9 +3,9 @@
 # After editing: `dofigen update` (pins image digests), then `dofigen generate`.
 #
 # The image runs the adapter-node build on Node (owner decision N3). Runtime
-# config comes from env at start: ORIGIN, API_URL, BETTER_AUTH_SECRET,
-# CLIENT_IP_SECRET, and behind a TLS proxy ADDRESS_HEADER / XFF_DEPTH (see
-# the deploy notes in the README).
+# config comes from env at start: API_URL, BETTER_AUTH_SECRET,
+# CLIENT_IP_SECRET, and behind a TLS proxy PROTOCOL_HEADER / HOST_HEADER /
+# ADDRESS_HEADER / XFF_DEPTH (see the deploy notes in the README).
 
 builders:
   # Every dependency (dev included: Vite builds the app), from the lockfile.
@@ -43,6 +43,9 @@ builders:
       org.opencontainers.image.stage: build
     copy:
       - . /app/
+    # Public origin for plain-http deploys (vite.config.ts `paths.origin`).
+    arg:
+      ORIGIN: ""
     run: bun run build
 
   # What the build leaves external (pino, zod, uqr…), hoisted into one plain

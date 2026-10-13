@@ -172,8 +172,15 @@ digests) and `dofigen generate`.
 Behind a TLS-terminating proxy, the dashboard needs two things from
 `adapter-node`:
 
-- `ORIGIN` set to the public `https` URL (the compose sets it from
-  `PUBLIC_URL`). Without it every form action answers 403.
+- The right public origin, which every form action is checked against
+  (CSRF; a mismatch answers 403). adapter-node 6 has no runtime `ORIGIN`:
+  it takes the request's `Host` and assumes `https`. Behind a TLS proxy
+  that keeps `Host`, that is already right. A proxy that rewrites `Host`
+  needs `HOST_HEADER=X-Forwarded-Host` (and `PROTOCOL_HEADER` if it is not
+  https), commented in the compose — set them only behind a proxy that
+  overwrites those headers. A plain-http deploy bakes the origin into the
+  image instead: the `ORIGIN` build arg (`paths.origin`), which the compose
+  sets from `PUBLIC_URL`.
 - The proxy's client-address header, so rate limits and the device list see
   the visitor rather than the proxy: `ADDRESS_HEADER=X-Forwarded-For` and
   `XFF_DEPTH` = the number of proxies in front (commented in the compose).

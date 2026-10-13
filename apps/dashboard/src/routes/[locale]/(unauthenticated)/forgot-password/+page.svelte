@@ -1,7 +1,7 @@
 <script lang="ts">
 import { Button } from '@pack/design-system/components/ui/button';
+import { useLocale, useTranslation } from '#lib/i18n/context.svelte.js';
 import { enhance } from '$app/forms';
-import { useLocale, useTranslation } from '$lib/i18n/context.svelte';
 
 interface Props {
   form?: { sent?: boolean; error?: string; requestId?: string } | null;

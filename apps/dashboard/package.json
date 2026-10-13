@@ -17,6 +17,7 @@
     "clean:hard": "git clean -xdf .cache .svelte-kit build node_modules"
   },
   "dependencies": {
+    "@opentelemetry/api": "catalog:",
     "pino": "catalog:",
     "pino-pretty": "catalog:"
   },
@@ -45,5 +46,9 @@
     "uqr": "catalog:",
     "vite": "catalog:",
     "zod": "catalog:"
+  },
+  "imports": {
+    "#lib": "./src/lib/index.js",
+    "#lib/*": "./src/lib/*"
   }
 }

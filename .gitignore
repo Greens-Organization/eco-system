@@ -9,6 +9,7 @@ node_modules/
 
 # Build output and caches
 .svelte-kit/
+.svelte-check/
 build/
 dist/
 .turbo/

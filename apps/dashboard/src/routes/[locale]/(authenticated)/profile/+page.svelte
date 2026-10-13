@@ -7,11 +7,11 @@ import { Button } from '@pack/design-system/components/ui/button';
 import { genericAvatar } from '@pack/design-system/lib/utils';
 import { mode, toggleMode } from 'mode-watcher';
 import { toast } from 'svelte-sonner';
+import Header from '#lib/components/header.svelte';
+import LanguageSelector from '#lib/components/language-selector.svelte';
+import { useLocale, useTranslation } from '#lib/i18n/context.svelte.js';
 import { enhance } from '$app/forms';
 import { page } from '$app/state';
-import Header from '$lib/components/header.svelte';
-import LanguageSelector from '$lib/components/language-selector.svelte';
-import { useLocale, useTranslation } from '$lib/i18n/context.svelte';
 import type { ActionData, PageData } from './$types';
 
 let { data, form }: { data: PageData; form: ActionData } = $props();

@@ -13,7 +13,7 @@ commit that changed the behavior.
 
 ```
 apps/dashboard-api Hono + Bun HTTP API, OpenAPI (zod) + Scalar, OTel
-apps/dashboard     SvelteKit 2 / Svelte 5 admin dashboard
+apps/dashboard     SvelteKit 3 / Svelte 5 admin dashboard
 packages/*         @pack/* shared libraries
 infra/docker       compose stacks: infra, observability, test
 tasks/todo|done    task tracker
@@ -80,14 +80,17 @@ The `typescript` package (6.0.3, root devDependency) is only for
 `svelte-check` and the editor. `bun check` matches TypeScript 7.0.2
 (`bun -p process.versions.typescript`), so the editor can in rare cases
 disagree with it. It stays on 6: the `typescript@7` package no longer ships
-the JS compiler API, and `svelte-check` 4.7.6 (latest) requires
-`typescript ^5 || ^6`. Move when `svelte-check` supports 7.
+the JS compiler API, and `svelte-check` 4.7.6 (latest) needs it. Its
+`--tsgo` mode (TS 7 aliased as `@typescript/native` next to TS 6) was
+tried and is not ready: it reports false errors on the `<script module>`
+exports of design-system components imported from the dashboard, and in the
+design-system itself checks 134 files where the normal mode checks 4752.
 
 `@app/dashboard-api`, `@app/dashboard-svelte`, `@pack/auth`, `@pack/db`,
 `@pack/observability`, `@pack/tools`, `@pack/testing`, `@pack/email`,
 `@pack/i18n` and `@pack/seo` define `test`. The
 dashboard's run under plain `bun test` (no Vite), so they cover `src/lib`
-modules that do not import `$env`/`$app`; keep server logic there
+modules that do not import `$app/*`; keep server logic there
 (`src/lib/server/*`) and inject what touches the network.
 
 The browser suite (`apps/dashboard/test/browser`, Playwright, Chromium) drives
@@ -182,8 +185,9 @@ look at it. For behavior changes, exercise the endpoint or route.
   `workspaces.catalogs.dev` (type, check and test tooling). Reference them
   as `"catalog:"` / `"catalog:dev"` — never pin a version inside a package;
   every workspace follows this. All versions are exact (no `^`), so
-  `bun update` is a no-op by design. Upgrades take the newest release at
-  least two weeks old.
+  plain `bun update -r` only refreshes transitive deps in `bun.lock`;
+  `bun update -r --latest` moves every pin, catalogs included. Run the whole
+  gate (`verify`, `test:coverage`, `test:e2e`, `test:browser`) after.
 - **Runtime config** is a per-package `pack-env.ts` with a zod schema. Invalid
   env fails loudly at startup; no silent fallbacks. Secrets have a minimum
   length (`BETTER_AUTH_SECRET`, `CLIENT_IP_SECRET`: 32), URLs have no
@@ -224,6 +228,25 @@ look at it. For behavior changes, exercise the endpoint or route.
 
 ### Dashboard
 
+- **SvelteKit 3.** Kit's config is the `sveltekit({...})` options in
+  `vite.config.ts` (there is no `svelte.config.js`): adapter, CSP,
+  `tracing`, `paths.origin`, and the `@api/*` type-only `alias` — deprecated
+  in Kit 3 (a build warning) but still needed for `AppType`, whose source
+  uses the API's own `@/…` paths. `src/lib` is imported as `#lib/….js`
+  (`package.json` `imports`), not `$lib`. Env vars are declared in
+  `src/env.ts` (`defineEnvVars`, zod schemas, optional only while
+  `building`) and read from `$app/env/private` through `#lib/env.js`; Kit
+  validates them at start and fails loudly.
+- **Origin.** Form actions are CSRF-checked against the app's origin.
+  adapter-node 6 has no runtime `ORIGIN`: it takes the request `Host` and
+  assumes https (or `HOST_HEADER` / `PROTOCOL_HEADER`). `paths.origin`
+  comes from `ORIGIN` **at build time** — the Docker build arg, the browser
+  test runner — for plain-http deploys. A wrong origin is a 403 on every
+  form.
+- `handleError` (server and client) receives every error in Kit 3:
+  `unknown` ones are logged as errors and sent to Sentry; `framework` ones
+  (a 404 from Kit) are one warn line; `app` ones (`error(...)` in our code)
+  are not logged again — the throwing code already did.
 - Routes are `[locale]/(authenticated)/…` and `[locale]/(unauthenticated)/…`.
   Route groups do not appear in the URL: the panel is `/{locale}`, not
   `/dashboard`. Locales: `en` (default), `pt`, `es`. A path without a locale
@@ -248,7 +271,7 @@ look at it. For behavior changes, exercise the endpoint or route.
 - `hooks.server.ts` composes `securityHandle → logHandle → localeHandle →
   sessionHandle → i18nHandle`, and redirects unauthenticated requests to
   `/{locale}/sign-in`.
-- **CSP** is Kit's (`svelte.config.js` `kit.csp`, nonce mode): scripts only
+- **CSP** is Kit's (the `sveltekit({ csp })` options in `vite.config.ts`, nonce mode): scripts only
   from self or with the per-request nonce, `frame-ancestors 'none'`, images
   also from DiceBear (`genericAvatar`). `securityHandle` adds
   `nosniff`, `X-Frame-Options`, `Referrer-Policy` and `Permissions-Policy`.
@@ -354,17 +377,19 @@ measured or debugged; changing one regresses something.
   `employees` stay mocked; do not "fix" them by inventing tables. `/v1/me` is
   the one database-backed example (`traced` query, e2e), and README "Adding
   your own data" is the recipe.
-- **The dashboard's runtime deps are `devDependencies`** — only `pino` and
-  `pino-pretty` sit in `dependencies`. adapter-node bundles devDependencies
+- **The dashboard's runtime deps are `devDependencies`** — only `pino`,
+  `pino-pretty` and `@opentelemetry/api` sit in `dependencies`. adapter-node bundles devDependencies
   and leaves dependencies external, so this keeps the image's
   `node_modules` at ~3 MB instead of ~330 MB of workspace dev tooling
   (drizzle-kit, typescript, rolldown…). pino stays external because its
-  transport resolves the worker via `__dirname`. A new runtime dep of the
-  dashboard goes in `devDependencies` unless it must not be bundled.
-- **`$lib/env.ts` skips validation while `building`** — `vite build` imports
-  server modules to analyse the app, and the Docker build has no runtime env
-  (no secrets in images). The schema still runs, and fails loudly, at server
-  start.
+  transport resolves the worker via `__dirname`; Kit's tracing imports
+  `@opentelemetry/api` and the adapter leaves it external, so the image
+  failed to start without it. A new runtime dep of the dashboard goes in
+  `devDependencies` unless it must not be bundled.
+- **`src/env.ts` makes every variable optional while `building`** —
+  `vite build` runs the app to analyse it, and the Docker build has no
+  runtime env (no secrets in images). Kit still validates, and fails loudly,
+  at server start.
 - **`CSP_NONCE_PLACEHOLDER` in the root layout** — Kit only fills
   `%sveltekit.nonce%` in app.html and never hands the nonce to components,
   but ModeWatcher's inline theme script needs it. The layout renders the
@@ -493,13 +518,13 @@ dashboard — `@sentry/bun` patches `Bun.serve` and throws under Node).
 `captureError` goes through `@sentry/core`, which both register into.
 
 The dashboard loads it from `src/instrumentation.server.ts` and turns on
-SvelteKit's own spans (`kit.experimental.tracing` / `instrumentation`,
-experimental since Kit 2.31): `sveltekit.handle.root`, each sequenced hook,
+SvelteKit's own spans (`tracing: { server: true }`; Kit 3 loads the
+instrumentation file on its own): `sveltekit.handle.root`, each sequenced hook,
 `sveltekit.load`, `sveltekit.form_action`. `authFetch` and
 `createApiClient` send `traceparent` (`traceHeaders()`), so a page is one
 trace down to the API's DB spans, and both services log the same
-`trace_id`. Its `handleError` reports 5xx to Sentry with the `errorId` as
-`support_id`. It flushes on adapter-node's `sveltekit:shutdown`.
+`trace_id`. Its `handleError` reports `unknown` errors to Sentry with the
+`errorId` as `support_id`. It flushes on adapter-node's `sveltekit:shutdown`.
 
 > `BatchSpanProcessor` is fire-and-forget: if the OTLP endpoint is down it drops
 > spans silently. The app side is proven once `trace_id` appears in the access

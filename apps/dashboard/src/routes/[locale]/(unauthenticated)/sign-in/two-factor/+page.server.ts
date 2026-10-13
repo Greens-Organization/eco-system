@@ -1,8 +1,12 @@
 import { defaultLocale } from '@pack/i18n';
 import { fail, type RequestEvent, redirect } from '@sveltejs/kit';
-import { localizeAuthError, reasonFor, userMessageFor } from '$lib/auth-proxy';
-import { callAuth, errorBody } from '$lib/server/auth-api';
-import { forwardSetCookies } from '$lib/server/auth-cookies';
+import {
+  localizeAuthError,
+  reasonFor,
+  userMessageFor,
+} from '#lib/auth-proxy.js';
+import { callAuth, errorBody } from '#lib/server/auth-api.js';
+import { forwardSetCookies } from '#lib/server/auth-cookies.js';
 import type { Actions, PageServerLoad } from './$types';
 
 // Set by the API when a password sign-in needs a second factor (~10 min).

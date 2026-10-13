@@ -7,9 +7,9 @@ import User from '@lucide/svelte/icons/user';
 import * as DropdownMenu from '@pack/design-system/components/ui/dropdown-menu';
 import { genericAvatar } from '@pack/design-system/lib/utils';
 import { mode, toggleMode } from 'mode-watcher';
+import { useLocale, useTranslation } from '#lib/i18n/context.svelte.js';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
-import { useLocale, useTranslation } from '$lib/i18n/context.svelte';
 
 const t = useTranslation();
 

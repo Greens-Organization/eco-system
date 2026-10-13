@@ -4,8 +4,8 @@ import {
   locales,
   removeLocaleFromPathname,
 } from '@pack/i18n';
+import { useLocale, useTranslation } from '#lib/i18n/context.svelte.js';
 import { page } from '$app/state';
-import { useLocale, useTranslation } from '$lib/i18n/context.svelte';
 
 const locale = useLocale();
 const t = useTranslation();

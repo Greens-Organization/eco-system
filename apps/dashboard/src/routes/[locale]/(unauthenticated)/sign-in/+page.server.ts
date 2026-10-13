@@ -5,9 +5,9 @@ import {
   reasonFor,
   redactEmail,
   userMessageFor,
-} from '$lib/auth-proxy';
-import { callAuth } from '$lib/server/auth-api';
-import { forwardSetCookies } from '$lib/server/auth-cookies';
+} from '#lib/auth-proxy.js';
+import { callAuth } from '#lib/server/auth-api.js';
+import { forwardSetCookies } from '#lib/server/auth-cookies.js';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {

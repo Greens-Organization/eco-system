@@ -1,9 +1,9 @@
 import { error, redirect } from '@sveltejs/kit';
 import z from 'zod';
-import { createApiClient } from '$lib/api/hono-client';
-import { safeFetch } from '$lib/api/safe-fetch';
-import { CUSTOMER_STATUSES } from '$lib/resources';
-import { clearAuthCookies } from '$lib/server/auth-cookies';
+import { createApiClient } from '#lib/api/hono-client.js';
+import { safeFetch } from '#lib/api/safe-fetch.js';
+import { CUSTOMER_STATUSES } from '#lib/resources.js';
+import { clearAuthCookies } from '#lib/server/auth-cookies.js';
 import type { PageServerLoad } from './$types';
 
 const CustomerSchema = z.object({

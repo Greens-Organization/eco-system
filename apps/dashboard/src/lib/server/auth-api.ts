@@ -1,6 +1,6 @@
 import type { RequestEvent } from '@sveltejs/kit';
-import { type AuthFetchResult, authFetch } from '$lib/auth-proxy';
-import { env } from '$lib/env';
+import { type AuthFetchResult, authFetch } from '#lib/auth-proxy.js';
+import { env } from '#lib/env.js';
 import { cookieHeader } from './cookie-header';
 
 /**
