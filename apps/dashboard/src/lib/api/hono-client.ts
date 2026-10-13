@@ -1,9 +1,12 @@
-import type { AppType } from '@api/main/routes/v1';
+// Type-only (erased at build): the API's own `#…` imports resolve through its
+// package.json, so the dashboard needs no path alias for them.
+
 import { traceHeaders } from '@pack/observability/propagation';
 import type { Cookies } from '@sveltejs/kit';
 import { hc } from 'hono/client';
 import { env } from '#lib/env.js';
 import { cookieHeader } from '#lib/server/cookie-header.js';
+import type { AppType } from '../../../../dashboard-api/src/main/routes/v1/index.ts';
 
 /**
  * Creates a typed Hono RPC client with cookie, requestId and trace

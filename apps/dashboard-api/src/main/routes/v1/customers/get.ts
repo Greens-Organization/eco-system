@@ -1,7 +1,7 @@
 import type { RouteHandler } from '@hono/zod-openapi';
 import { createRoute } from '@hono/zod-openapi';
 import { AppError } from '@pack/observability/errors';
-import { listPage } from '@/main/infra/listing';
+import { listPage } from '#main/infra/listing';
 import type { Variables } from '..';
 import { CUSTOMERS } from './data';
 import {

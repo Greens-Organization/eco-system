@@ -1,6 +1,6 @@
 import { auth } from '@pack/auth/server';
 import { createMiddleware } from 'hono/factory';
-import { OpenStatusApiError } from '@/main/infra/openapi/utils';
+import { OpenStatusApiError } from '#main/infra/openapi/utils';
 import { handlerRoute } from './observability';
 
 export type AuthVariables = {

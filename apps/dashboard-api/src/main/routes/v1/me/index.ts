@@ -1,5 +1,5 @@
 import { OpenAPIHono } from '@hono/zod-openapi';
-import { handleZodError } from '@/main/infra/openapi/utils';
+import { handleZodError } from '#main/infra/openapi/utils';
 import type { Variables } from '../index';
 import { getMeHandler, getMeRoute } from './get';
 

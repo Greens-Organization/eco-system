@@ -30,5 +30,10 @@
     "@types/bun": "catalog:dev",
     "pino-pretty": "catalog:",
     "postgres": "catalog:"
+  },
+  "imports": {
+    "#core/*": "./src/core/*.ts",
+    "#infra/*": "./src/infra/*.ts",
+    "#main/*": "./src/main/*.ts"
   }
 }

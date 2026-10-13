@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'bun:test';
 import type { z } from 'zod';
-import { customersSchemaRes } from '@/main/routes/v1/customers/schema';
-import { employeesSchemaRes } from '@/main/routes/v1/employees/schema';
-import { meSchemaRes } from '@/main/routes/v1/me/schema';
-import { statsSchemaRes } from '@/main/routes/v1/stats/schema';
+import { customersSchemaRes } from '#main/routes/v1/customers/schema';
+import { employeesSchemaRes } from '#main/routes/v1/employees/schema';
+import { meSchemaRes } from '#main/routes/v1/me/schema';
+import { statsSchemaRes } from '#main/routes/v1/stats/schema';
 import { buildTestApp, request } from '../helpers/app';
 import { authenticate, authHeaders } from '../helpers/auth';
 

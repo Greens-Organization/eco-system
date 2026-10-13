@@ -1,8 +1,8 @@
 import { OpenAPIHono } from '@hono/zod-openapi';
 import { Scalar } from '@scalar/hono-api-reference';
-import { CONSTANTS } from '@/infra/common/constants';
-import { handleZodError } from '@/main/infra/openapi/utils';
-import { type AppVariables, authMiddleware } from '@/main/middleware';
+import { CONSTANTS } from '#infra/common/constants';
+import { handleZodError } from '#main/infra/openapi/utils';
+import { type AppVariables, authMiddleware } from '#main/middleware/index';
 import customersRoute from './customers';
 import employeesRoute from './employees';
 import meRoute from './me';

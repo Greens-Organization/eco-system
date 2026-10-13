@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
-import { customersSchemaRes } from '@/main/routes/v1/customers/schema';
-import { employeesSchemaRes } from '@/main/routes/v1/employees/schema';
+import { customersSchemaRes } from '#main/routes/v1/customers/schema';
+import { employeesSchemaRes } from '#main/routes/v1/employees/schema';
 import { buildTestApp, request } from '../helpers/app';
 import { authenticate } from '../helpers/auth';
 

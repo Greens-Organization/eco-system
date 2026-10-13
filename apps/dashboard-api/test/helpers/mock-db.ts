@@ -7,7 +7,7 @@ import { mock } from 'bun:test';
  *
  *   import { mockDb } from '../helpers/mock-db';
  *   mockDb();
- *   const { something } = await import('@/...');
+ *   const { something } = await import('#main/...');
  *
  * Most unit tests here use dependency injection (e.g. `createReadyRoute({ ping
  * })`) and don't need this; it's for units that import `@pack/db` directly.

@@ -15,7 +15,7 @@ import { auth as bAuth } from '@pack/auth/server';
 import { setContext } from '@pack/observability/context';
 import { log } from '@pack/observability/logger';
 import { Hono } from 'hono';
-import { env } from '@/core/env';
+import { env } from '#core/env';
 
 export const auth = new Hono();
 

@@ -75,13 +75,6 @@ export default defineConfig(({ command }) => ({
           'frame-ancestors': ['none'],
         },
       },
-      alias: {
-        '@api/*': '../dashboard-api/src/*',
-        // Transitive API path aliases (needed to typecheck AppType imports)
-        '@/core/*': '../dashboard-api/src/core/*',
-        '@/infra/*': '../dashboard-api/src/infra/*',
-        '@/main/*': '../dashboard-api/src/main/*',
-      },
       // OpenTelemetry spans for handle, load and form actions. Kit loads
       // src/instrumentation.server.ts before the app on its own. Off at
       // runtime without OTEL_EXPORTER_OTLP_ENDPOINT.

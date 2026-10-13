@@ -202,6 +202,11 @@ look at it. For behavior changes, exercise the endpoint or route.
 
 ### API
 
+- Internal imports use the API's `package.json` `imports`: `#core/…`,
+  `#infra/…`, `#main/…` (no extension; a folder is `…/index`). TypeScript
+  resolves them from the nearest `package.json`, so the dashboard can
+  type-check `AppType` without knowing the API's paths. No `@/` tsconfig
+  paths.
 - Routes live in `apps/dashboard-api/src/main/routes/v1/<name>/` as
   `schema.ts` + `get.ts` + `index.ts`, registered on the v1 router with an
   OpenAPI tag. Database queries go through `traced(operation, table, query)`
@@ -230,9 +235,9 @@ look at it. For behavior changes, exercise the endpoint or route.
 
 - **SvelteKit 3.** Kit's config is the `sveltekit({...})` options in
   `vite.config.ts` (there is no `svelte.config.js`): adapter, CSP,
-  `tracing`, `paths.origin`, and the `@api/*` type-only `alias` — deprecated
-  in Kit 3 (a build warning) but still needed for `AppType`, whose source
-  uses the API's own `@/…` paths. `src/lib` is imported as `#lib/….js`
+  `tracing`, `paths.origin`; no `alias` (deprecated in Kit 3). `AppType`
+  is a type-only relative import of the API's `routes/v1/index.ts`.
+  `src/lib` is imported as `#lib/….js`
   (`package.json` `imports`), not `$lib`. Env vars are declared in
   `src/env.ts` (`defineEnvVars`, zod schemas, optional only while
   `building`) and read from `$app/env/private` through `#lib/env.js`; Kit

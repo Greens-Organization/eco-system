@@ -1,4 +1,4 @@
-import { buildApp } from '@/main/app';
+import { buildApp } from '#main/app';
 
 export type TestApp = ReturnType<typeof buildApp>;
 

@@ -1,5 +1,5 @@
 import { z } from '@hono/zod-openapi';
-import { listQuerySchema, pageSchema } from '@/main/infra/listing';
+import { listQuerySchema, pageSchema } from '#main/infra/listing';
 import { EMPLOYEE_STATUSES } from './data';
 
 export const employeeSchema = z.object({

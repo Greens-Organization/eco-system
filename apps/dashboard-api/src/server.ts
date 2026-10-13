@@ -1,13 +1,13 @@
 // First import: boots the observability SDKs (Sentry/OTel) before the app.
 import '@pack/observability/instrumentation';
 import { log } from '@pack/observability/logger';
-import { env } from '@/core/env';
-import app from '@/main/app';
+import { env } from '#core/env';
+import app from '#main/app';
 import {
   createGracefulShutdown,
   shouldRegisterGracefulShutdown,
-} from '@/main/infra/graceful-shutdown';
-import { setup } from '@/main/setup';
+} from '#main/infra/graceful-shutdown';
+import { setup } from '#main/setup';
 
 async function main() {
   try {

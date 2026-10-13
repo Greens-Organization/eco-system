@@ -1,6 +1,6 @@
 import { pingDatabase } from '@pack/db';
 import { Hono } from 'hono';
-import { isServerShuttingDown } from '@/main/infra/graceful-shutdown';
+import { isServerShuttingDown } from '#main/infra/graceful-shutdown';
 
 export type ReadyDeps = {
   ping: () => Promise<void>;
