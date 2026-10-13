@@ -18,8 +18,12 @@ export const authMiddleware = createMiddleware<{ Variables: AuthVariables }>(
     // answer 401 for a route that does not exist.
     if (!handlerRoute(c)) return next();
 
+    // Straight from the session store (Redis), not the 60 s cookie cache: a
+    // revoked session (sign-out elsewhere, password change, device removed)
+    // loses access to data at once, not a minute later.
     const session = await auth.api.getSession({
       headers: c.req.raw.headers,
+      query: { disableCookieCache: true },
     });
 
     if (!session) {

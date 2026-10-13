@@ -33,10 +33,7 @@ export const load: PageServerLoad = async ({
   url,
 }) => {
   const query = readListQuery(url, CUSTOMER_STATUSES);
-  const api = createApiClient(
-    request.headers.get('cookie') ?? '',
-    locals.requestId
-  );
+  const api = createApiClient(cookies, locals.requestId);
   const result = await safeFetch<Customers>(
     api.customers.$get({ query: toApiQuery(query, PAGE_SIZE) }),
     CustomersSchema,

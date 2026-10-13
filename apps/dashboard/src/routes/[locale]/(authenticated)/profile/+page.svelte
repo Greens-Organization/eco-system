@@ -1,10 +1,12 @@
 <script lang="ts">
 import Moon from '@lucide/svelte/icons/moon';
 import Sun from '@lucide/svelte/icons/sun';
+import * as AlertDialog from '@pack/design-system/components/ui/alert-dialog';
 import { Badge } from '@pack/design-system/components/ui/badge';
 import { Button } from '@pack/design-system/components/ui/button';
 import { genericAvatar } from '@pack/design-system/lib/utils';
 import { mode, toggleMode } from 'mode-watcher';
+import { toast } from 'svelte-sonner';
 import { enhance } from '$app/forms';
 import { page } from '$app/state';
 import Header from '$lib/components/header.svelte';
@@ -46,11 +48,20 @@ const errorFor = (step: string) =>
   form && 'error' in form && form.step === step ? form.error : undefined;
 
 let busy = $state(false);
-const submit = () => {
+/** use:enhance handler; with `success`, a toast confirms it worked. */
+const submit = (success?: string) => () => {
   busy = true;
-  return async ({ update }: { update: () => Promise<void> }) => {
+  return async ({
+    result,
+    update,
+  }: {
+    result: { type: string };
+    update: (options?: { reset?: boolean }) => Promise<void>;
+  }) => {
     busy = false;
-    await update();
+    // Keep what the user typed if it failed; clear it once it worked.
+    await update({ reset: result.type === 'success' });
+    if (success && result.type === 'success') toast.success(success);
   };
 };
 
@@ -115,10 +126,31 @@ const rowClass = 'flex items-center justify-between gap-4';
             {t.app.profile.description}
         </h3>
         <div class="space-y-3 text-sm">
-            <div class={detailRowClass}>
-                <span class="font-medium">{t.app.profile.name}</span>
-                <span class="text-muted-foreground">{user?.name ?? "—"}</span>
-            </div>
+            <form
+                method="POST"
+                action="?/updateName"
+                use:enhance={submit(t.app.profile.edit.saved)}
+                class="{detailRowClass} flex-wrap"
+            >
+                <label for="profile-name" class="font-medium">{t.app.profile.name}</label>
+                <div class="flex items-center gap-2">
+                    <input
+                        id="profile-name"
+                        name="name"
+                        required
+                        maxlength={100}
+                        autocomplete="name"
+                        value={user?.name ?? ""}
+                        class="{inputClass} h-8"
+                    />
+                    <Button type="submit" size="sm" variant="outline" disabled={busy}>
+                        {t.app.profile.edit.save}
+                    </Button>
+                </div>
+                {#if errorFor("updateName")}
+                    <p class="w-full text-sm text-destructive" role="alert">{errorFor("updateName")}</p>
+                {/if}
+            </form>
             <div class={detailRowClass}>
                 <span class="font-medium">{t.app.profile.email}</span>
                 <span class="text-muted-foreground">{user?.email ?? "—"}</span>
@@ -186,6 +218,47 @@ const rowClass = 'flex items-center justify-between gap-4';
                 {t.app.settings.security.description}
             </p>
         </div>
+
+        <form
+            method="POST"
+            action="?/changePassword"
+            use:enhance={submit(t.app.settings.password.done)}
+            class="flex flex-col gap-2 border-b border-border/50 pb-4"
+        >
+            <span class="text-sm font-medium">{t.app.settings.password.title}</span>
+            <p class="text-sm text-muted-foreground">{t.app.settings.password.description}</p>
+            <label for="current-password" class="text-sm">{t.app.settings.password.current}</label>
+            <input
+                id="current-password"
+                name="currentPassword"
+                type="password"
+                required
+                autocomplete="current-password"
+                class={inputClass}
+            />
+            <label for="new-password" class="text-sm">{t.app.settings.password.new}</label>
+            <input
+                id="new-password"
+                name="newPassword"
+                type="password"
+                required
+                minlength={8}
+                maxlength={128}
+                autocomplete="new-password"
+                aria-describedby="new-password-hint"
+                class={inputClass}
+            />
+            <span id="new-password-hint" class="text-xs text-muted-foreground">{t.app.settings.password.hint}</span>
+            {#if errorFor("changePassword")}
+                <p class="text-sm text-destructive" role="alert">{errorFor("changePassword")}</p>
+            {/if}
+            {#if doneStep === "changePassword"}
+                <p class="text-sm text-muted-foreground" role="status">{t.app.settings.password.done}</p>
+            {/if}
+            <Button type="submit" size="sm" disabled={busy} class="w-fit">
+                {t.app.settings.password.submit}
+            </Button>
+        </form>
         <div class={rowClass}>
             <span class="text-sm font-medium"
                 >{t.app.settings.security.twoFactor}</span
@@ -209,7 +282,7 @@ const rowClass = 'flex items-center justify-between gap-4';
             <form
                 method="POST"
                 action="?/disable"
-                use:enhance={submit}
+                use:enhance={submit()}
                 class="flex flex-col gap-2"
             >
                 <label for="disable-password" class="text-sm font-medium"
@@ -267,7 +340,7 @@ const rowClass = 'flex items-center justify-between gap-4';
                 <form
                     method="POST"
                     action="?/confirm"
-                    use:enhance={submit}
+                    use:enhance={submit()}
                     class="flex flex-col gap-2"
                 >
                     <label for="confirm-code" class="text-sm font-medium"
@@ -298,7 +371,7 @@ const rowClass = 'flex items-center justify-between gap-4';
             <form
                 method="POST"
                 action="?/enable"
-                use:enhance={submit}
+                use:enhance={submit()}
                 class="flex flex-col gap-2"
             >
                 <label for="enable-password" class="text-sm font-medium"
@@ -373,7 +446,7 @@ const rowClass = 'flex items-center justify-between gap-4';
                                 >{t.app.settings.devices.thisDevice}</span
                             >
                         {:else}
-                            <form method="POST" action="?/signOutDevice" use:enhance={submit}>
+                            <form method="POST" action="?/signOutDevice" use:enhance={submit()}>
                                 <input type="hidden" name="id" value={device.id} />
                                 <Button
                                     type="submit"
@@ -391,7 +464,7 @@ const rowClass = 'flex items-center justify-between gap-4';
             </ul>
 
             {#if data.devices.length > 1}
-                <form method="POST" action="?/signOutOthers" use:enhance={submit}>
+                <form method="POST" action="?/signOutOthers" use:enhance={submit()}>
                     <Button type="submit" variant="outline" size="sm" disabled={busy}>
                         {t.app.settings.devices.signOutOthers}
                     </Button>
@@ -402,5 +475,60 @@ const rowClass = 'flex items-center justify-between gap-4';
                 {t.app.settings.devices.listFailed}
             </p>
         {/if}
+    </div>
+    <!-- Danger zone -->
+    <div class="{sectionClass} border border-destructive/40">
+        <div>
+            <h2 class="text-lg font-semibold text-destructive">{t.app.settings.danger.title}</h2>
+            <p class="text-sm text-muted-foreground">{t.app.settings.danger.description}</p>
+        </div>
+        {#if errorFor("deleteAccount")}
+            <p class="text-sm text-destructive" role="alert">{errorFor("deleteAccount")}</p>
+        {/if}
+        <AlertDialog.Root>
+            <AlertDialog.Trigger>
+                {#snippet child({ props })}
+                    <Button {...props} variant="destructive" size="sm" class="w-fit">
+                        {t.app.settings.danger.delete}
+                    </Button>
+                {/snippet}
+            </AlertDialog.Trigger>
+            <AlertDialog.Content>
+                <form method="POST" action="?/deleteAccount" use:enhance={submit()} class="flex flex-col gap-4">
+                    <AlertDialog.Header>
+                        <AlertDialog.Title>{t.app.settings.danger.confirmTitle}</AlertDialog.Title>
+                        <AlertDialog.Description>
+                            {t.app.settings.danger.confirmDescription}
+                        </AlertDialog.Description>
+                    </AlertDialog.Header>
+                    <label for="delete-password" class="sr-only">{t.app.settings.security.confirmPassword}</label>
+                    <input
+                        id="delete-password"
+                        name="password"
+                        type="password"
+                        required
+                        autocomplete="current-password"
+                        placeholder={t.app.settings.security.confirmPassword}
+                        class="{inputClass} max-w-none"
+                    />
+                    <AlertDialog.Footer>
+                        <AlertDialog.Cancel type="button">{t.app.common.cancel}</AlertDialog.Cancel>
+                        <Button type="submit" variant="destructive" disabled={busy}>
+                            {t.app.settings.danger.confirm}
+                        </Button>
+                    </AlertDialog.Footer>
+                </form>
+            </AlertDialog.Content>
+        </AlertDialog.Root>
+        <!-- The dialog needs JS; without it, the same form inline. -->
+        <noscript>
+            <form method="POST" action="?/deleteAccount" class="flex flex-col gap-2">
+                <label for="delete-password-nojs" class="text-sm">{t.app.settings.security.confirmPassword}</label>
+                <input id="delete-password-nojs" name="password" type="password" required autocomplete="current-password" class={inputClass} />
+                <button type="submit" class="w-fit rounded-md bg-destructive px-3 py-1.5 text-sm text-white">
+                    {t.app.settings.danger.confirm}
+                </button>
+            </form>
+        </noscript>
     </div>
 </div>

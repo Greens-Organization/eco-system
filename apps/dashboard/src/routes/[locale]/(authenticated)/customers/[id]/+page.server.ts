@@ -22,10 +22,7 @@ export const load: PageServerLoad = async ({
   locals,
   cookies,
 }) => {
-  const api = createApiClient(
-    request.headers.get('cookie') ?? '',
-    locals.requestId
-  );
+  const api = createApiClient(cookies, locals.requestId);
   const result = await safeFetch<Customer>(
     api.customers[':id'].$get({ param: { id: params.id } }),
     CustomerSchema,

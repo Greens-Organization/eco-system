@@ -129,6 +129,23 @@
         "signedOutOthers": "Done. Every other device was signed out.",
         "delayNote": "A signed-out device can stay open for up to a minute.",
         "listFailed": "Could not load your devices."
+      },
+      "password": {
+        "title": "Password",
+        "description": "Changing it signs out every other device.",
+        "current": "Current password",
+        "new": "New password",
+        "hint": "At least 8 characters.",
+        "submit": "Change password",
+        "done": "Password changed. Other devices were signed out."
+      },
+      "danger": {
+        "title": "Danger zone",
+        "description": "Deleting your account removes it and its sessions. This cannot be undone.",
+        "delete": "Delete account",
+        "confirmTitle": "Delete your account?",
+        "confirmDescription": "This cannot be undone. Enter your password to confirm.",
+        "confirm": "Delete forever"
       }
     },
     "profile": {
@@ -137,7 +154,11 @@
       "name": "Name",
       "email": "Email",
       "accountId": "Account ID",
-      "memberSince": "Member since"
+      "memberSince": "Member since",
+      "edit": {
+        "save": "Save",
+        "saved": "Your name was updated."
+      }
     },
     "errors": {
       "notFound": "Page not found",

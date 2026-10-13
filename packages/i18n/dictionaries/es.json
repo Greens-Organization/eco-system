@@ -129,6 +129,23 @@
         "signedOutOthers": "Listo. Se cerró la sesión en los demás dispositivos.",
         "delayNote": "Un dispositivo desconectado puede seguir abierto hasta un minuto.",
         "listFailed": "No se pudieron cargar tus dispositivos."
+      },
+      "password": {
+        "title": "Contraseña",
+        "description": "Cambiarla cierra la sesión en todos los demás dispositivos.",
+        "current": "Contraseña actual",
+        "new": "Nueva contraseña",
+        "hint": "Al menos 8 caracteres.",
+        "submit": "Cambiar contraseña",
+        "done": "Contraseña cambiada. Se cerró la sesión en los demás dispositivos."
+      },
+      "danger": {
+        "title": "Zona de peligro",
+        "description": "Eliminar la cuenta la borra junto con sus sesiones. No se puede deshacer.",
+        "delete": "Eliminar cuenta",
+        "confirmTitle": "¿Eliminar tu cuenta?",
+        "confirmDescription": "No se puede deshacer. Escribe tu contraseña para confirmar.",
+        "confirm": "Eliminar para siempre"
       }
     },
     "profile": {
@@ -137,7 +154,11 @@
       "name": "Nombre",
       "email": "Correo electrónico",
       "accountId": "ID de cuenta",
-      "memberSince": "Miembro desde"
+      "memberSince": "Miembro desde",
+      "edit": {
+        "save": "Guardar",
+        "saved": "Tu nombre fue actualizado."
+      }
     },
     "errors": {
       "notFound": "Página no encontrada",

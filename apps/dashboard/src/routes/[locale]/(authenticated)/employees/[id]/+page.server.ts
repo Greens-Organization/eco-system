@@ -23,10 +23,7 @@ export const load: PageServerLoad = async ({
   locals,
   cookies,
 }) => {
-  const api = createApiClient(
-    request.headers.get('cookie') ?? '',
-    locals.requestId
-  );
+  const api = createApiClient(cookies, locals.requestId);
   const result = await safeFetch<Employee>(
     api.employees[':id'].$get({ param: { id: params.id } }),
     EmployeeSchema,

@@ -1,6 +1,7 @@
 import type { RequestEvent } from '@sveltejs/kit';
 import { type AuthFetchResult, authFetch } from '$lib/auth-proxy';
 import { env } from '$lib/env';
+import { cookieHeader } from './cookie-header';
 
 /**
  * Call a better-auth endpoint on the API on behalf of the browser: its
@@ -21,7 +22,8 @@ export function callAuth(
     userAgent: event.request.headers.get('user-agent'),
     headers: {
       ...(body ? { 'Content-Type': 'application/json' } : {}),
-      Cookie: event.request.headers.get('cookie') ?? '',
+      // Not the request's header: an action may have replaced the session.
+      Cookie: cookieHeader(event.cookies),
       Origin: event.url.origin,
     },
     body: body ? JSON.stringify(body) : undefined,

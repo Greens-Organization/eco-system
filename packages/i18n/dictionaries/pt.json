@@ -129,6 +129,23 @@
         "signedOutOthers": "Pronto. Os outros dispositivos foram desconectados.",
         "delayNote": "Um dispositivo desconectado pode continuar aberto por até um minuto.",
         "listFailed": "Não foi possível carregar seus dispositivos."
+      },
+      "password": {
+        "title": "Senha",
+        "description": "Trocar a senha desconecta todos os outros dispositivos.",
+        "current": "Senha atual",
+        "new": "Nova senha",
+        "hint": "Pelo menos 8 caracteres.",
+        "submit": "Trocar senha",
+        "done": "Senha trocada. Os outros dispositivos foram desconectados."
+      },
+      "danger": {
+        "title": "Zona de perigo",
+        "description": "Excluir a conta remove ela e todas as sessões. Não dá para desfazer.",
+        "delete": "Excluir conta",
+        "confirmTitle": "Excluir sua conta?",
+        "confirmDescription": "Não dá para desfazer. Digite sua senha para confirmar.",
+        "confirm": "Excluir para sempre"
       }
     },
     "profile": {
@@ -137,7 +154,11 @@
       "name": "Nome",
       "email": "E-mail",
       "accountId": "ID da conta",
-      "memberSince": "Membro desde"
+      "memberSince": "Membro desde",
+      "edit": {
+        "save": "Salvar",
+        "saved": "Seu nome foi atualizado."
+      }
     },
     "errors": {
       "notFound": "Página não encontrada",

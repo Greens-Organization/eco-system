@@ -8,6 +8,7 @@ import { env } from '../pack-env';
 import { accountThrottle } from './account-throttle';
 import { CLIENT_IP_HEADER } from './client-ip';
 import { AUTH_COOKIE } from './cookies';
+import { requirePasswordToDeleteUser } from './require-password';
 
 const store = createNamespace('auth');
 
@@ -53,6 +54,9 @@ export const auth = betterAuth({
   // by the client IP that the dashboard forwards, shared through Redis.
   rateLimit: { enabled: true, storage: 'secondary-storage' },
 
+  // Profile → danger zone. Always with the password (plugin below).
+  user: { deleteUser: { enabled: true } },
+
   emailAndPassword: {
     enabled: true,
     password: {
@@ -73,6 +77,7 @@ export const auth = betterAuth({
     twoFactor({ issuer: TOTP_ISSUER }),
     // The password step's per-account limit, on top of the per-IP one.
     accountThrottle(store),
+    requirePasswordToDeleteUser(),
   ],
 
   advanced: {

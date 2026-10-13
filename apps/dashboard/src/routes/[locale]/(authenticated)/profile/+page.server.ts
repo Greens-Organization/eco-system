@@ -30,10 +30,7 @@ type Me = z.infer<typeof MeSchema>;
 /** The user's row from the API (`GET /v1/me`), the source of truth. */
 async function loadMe(event: RequestEvent) {
   const { locals, cookies, request } = event;
-  const api = createApiClient(
-    request.headers.get('cookie') ?? '',
-    locals.requestId
-  );
+  const api = createApiClient(cookies, locals.requestId);
   const result = await safeFetch<Me>(api.me.$get(), MeSchema, locals.log);
   if (!result.success && result.status === 401) {
     clearAuthCookies(cookies);
@@ -98,7 +95,10 @@ type Step =
   | 'confirm'
   | 'disable'
   | 'signOutDevice'
-  | 'signOutOthers';
+  | 'signOutOthers'
+  | 'updateName'
+  | 'changePassword'
+  | 'deleteAccount';
 
 /** Call a better-auth endpoint; on failure, the `fail()` to return. */
 async function call(
@@ -153,10 +153,16 @@ const field = async (request: Request, name: string) => {
   return typeof value === 'string' ? value.trim() : '';
 };
 
+/** A password exactly as typed: trimming would change it. */
+const secretField = (form: FormData, name: string) => {
+  const value = form.get(name);
+  return typeof value === 'string' ? value : '';
+};
+
 export const actions: Actions = {
   /** Start enrollment: a new secret and backup codes, not active yet. */
   enable: async (event) => {
-    const password = await field(event.request, 'password');
+    const password = secretField(await event.request.formData(), 'password');
     if (!password) {
       return fail(400, {
         step: 'enable' as const,
@@ -204,7 +210,7 @@ export const actions: Actions = {
   },
 
   disable: async (event) => {
-    const password = await field(event.request, 'password');
+    const password = secretField(await event.request.formData(), 'password');
     if (!password) {
       return fail(400, {
         step: 'disable' as const,
@@ -259,5 +265,62 @@ export const actions: Actions = {
     );
     if (!result.ok) return result.failure;
     return { step: 'signOutOthers' as const, done: true };
+  },
+
+  updateName: async (event) => {
+    const errors = event.locals.dictionary.app.errors;
+    const name = await field(event.request, 'name');
+    if (!name || name.length > 100) {
+      return fail(400, {
+        step: 'updateName' as const,
+        error: errors.missingFields,
+      });
+    }
+    const result = await call(event, 'updateName', '/update-user', { name });
+    if (!result.ok) return result.failure;
+    // better-auth re-issues the cookie cache with the new name.
+    forwardSetCookies(event.cookies, result.response.headers.getSetCookie());
+    return { step: 'updateName' as const, done: true };
+  },
+
+  /** New password; every other device is signed out. */
+  changePassword: async (event) => {
+    const errors = event.locals.dictionary.app.errors;
+    const form = await event.request.formData();
+    const currentPassword = secretField(form, 'currentPassword');
+    const newPassword = secretField(form, 'newPassword');
+    if (!currentPassword || !newPassword) {
+      return fail(400, {
+        step: 'changePassword' as const,
+        error: errors.missingFields,
+      });
+    }
+    const result = await call(event, 'changePassword', '/change-password', {
+      currentPassword,
+      newPassword,
+      revokeOtherSessions: true,
+    });
+    if (!result.ok) return result.failure;
+    // This device gets a new session; the old one was revoked with the rest.
+    forwardSetCookies(event.cookies, result.response.headers.getSetCookie());
+    return { step: 'changePassword' as const, done: true };
+  },
+
+  deleteAccount: async (event) => {
+    const errors = event.locals.dictionary.app.errors;
+    const password = secretField(await event.request.formData(), 'password');
+    if (!password) {
+      return fail(400, {
+        step: 'deleteAccount' as const,
+        error: errors.missingFields,
+      });
+    }
+    const result = await call(event, 'deleteAccount', '/delete-user', {
+      password,
+    });
+    if (!result.ok) return result.failure;
+
+    clearAuthCookies(event.cookies);
+    redirect(303, `/${event.locals.locale}/sign-in`);
   },
 };

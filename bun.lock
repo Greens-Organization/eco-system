@@ -38,6 +38,7 @@
         "mode-watcher": "catalog:",
         "svelte": "catalog:",
         "svelte-check": "4.7.6",
+        "svelte-sonner": "catalog:",
         "tailwindcss": "catalog:",
         "uqr": "catalog:",
         "vite": "catalog:",
