@@ -123,6 +123,27 @@ is what the browser sees, and an `https` URL turns on secure cookies.
 Grafana is published on 3001 rather than its native 3000 so the observability
 stack and `bun run dev` can run side by side.
 
+## Adding your own data
+
+The API ships **without a domain on purpose**: the database holds only
+better-auth's tables, and every v1 route is mock data except `GET /v1/me`,
+the worked example of a route backed by the database. To add your own:
+
+1. **Table** — a file in `packages/db/schema/<area>/`, exported from
+   `packages/db/schema/index.ts`; reuse the helpers in `schema/utils`
+   (`uuidv7()`, `createdAt()`, `updatedAt()`).
+2. **Migration** — `bun run db:generate` writes it to `packages/db/migrations`,
+   `bun run db:migrate` applies it (in production, the compose `migrate` job).
+3. **Route** — `apps/dashboard-api/src/main/routes/v1/<name>/` with
+   `schema.ts` (zod response), `get.ts` (`createRoute` + handler) and
+   `index.ts`, registered in `routes/v1/index.ts` — copy `me/`. Wrap each
+   query in `traced('SELECT', '<table>', () => …)` so it shows in the trace.
+4. **Dashboard** — in a `+page.server.ts`, `createApiClient(...)` then
+   `safeFetch(api.<name>.$get(), Schema, locals.log)`; the client is typed
+   from the API's routes.
+5. **Tests** — add the route to `test/e2e/routes/v1.e2e.test.ts` (401 without
+   a session, its schema with one).
+
 ## Deploy
 
 `infra/docker/docker-compose.prod.yml` is a production-like stack: Postgres,

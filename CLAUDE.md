@@ -117,10 +117,10 @@ there is no local hook. Before claiming work is done, run the checks yourself
 
 ```bash
 bunx biome check .                    # 0 errors
-bun check                             # 0 errors, 229 files across 11 projects
+bun check                             # 0 errors, 236 files across 11 projects
 bunx turbo run check:svelte --force   # 0 errors in dashboard + design-system
 bunx turbo run build --force          # api binary + dashboard vite build
-bunx turbo run test --force           # 174 pass / 0 fail
+bunx turbo run test --force           # 176 pass / 0 fail
 ```
 
 `bun check` is not cached by turbo and takes about half a second.
@@ -166,7 +166,9 @@ look at it. For behavior changes, exercise the endpoint or route.
 
 - Routes live in `apps/dashboard-api/src/main/routes/v1/<name>/` as
   `schema.ts` + `get.ts` + `index.ts`, registered on the v1 router with an
-  OpenAPI tag.
+  OpenAPI tag. Database queries go through `traced(operation, table, query)`
+  (`@pack/db`), which opens an OTel client span under the request's trace
+  (postgres.js has no auto-instrumentation).
 - Errors go through `AppError` and the central handler in
   `main/infra/error-handler.ts`.
 - `secureHeaders()` and a 1 MiB `bodyLimit` (413 `PAYLOAD_TOO_LARGE`) run on
@@ -295,6 +297,11 @@ better-auth's base64 payload and breaks HMAC verification on the next request.
 Things that look like leftovers or cleanup targets but are deliberate. Each was
 measured or debugged; changing one regresses something.
 
+- **The v1 routes are mock data, except `GET /v1/me`** — the template has no
+  domain on purpose (each fork models its own). `stats`, `customers` and
+  `employees` stay mocked; do not "fix" them by inventing tables. `/v1/me` is
+  the one database-backed example (`traced` query, e2e), and README "Adding
+  your own data" is the recipe.
 - **The dashboard's runtime deps are `devDependencies`** — only `pino` and
   `pino-pretty` sit in `dependencies`. adapter-node bundles devDependencies
   and leaves dependencies external, so this keeps the image's
@@ -468,7 +475,7 @@ executed in phases (one verified commit per slice). The only other card,
 1. **CI is written but unproven** — the workflow has never run on GitHub.
    Unit tests used to depend on the local `.env`; they now pass in a clean
    checkout (verified in a worktree with no `.env` files).
-2. **Test coverage is concentrated** in 9 of 13 workspaces (174 unit + 56
+2. **Test coverage is concentrated** in 9 of 13 workspaces (176 unit + 59
    e2e). `bun test --coverage` only lists files a test imported, so
    per-workspace percentages overstate it. Gaps and plan: card item N5.
 3. **Known bugs**: the remaining 🔴 item on the card is the Dockerfile

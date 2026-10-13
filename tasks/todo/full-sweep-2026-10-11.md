@@ -60,7 +60,7 @@ Unkey; typecheck/lint/test iguais ao baseline; `bun run dev` sobe as duas apps;
 > Fazer **antes** de corrigir o Dockerfile (item 🔴 4) — ele será regenerado de
 > qualquer forma.
 
-### N2. API sem domínio no banco — por design
+### N2. ✅ API sem domínio no banco — por design (fase 7, 2026-10-12)
 
 Hoje a API usa o Postgres só para auth (adapter Drizzle do better-auth) e para
 o `/ready` (`pingDatabase`). O schema em `packages/db/schema/` tem só as 4
@@ -86,6 +86,12 @@ Consequências a aplicar:
    lendo via `@pack/db`), consumida pelo dashboard (ex.: página `profile`) com
    `createApiClient` + `safeFetch` + zod. Cobrir no e2e (401 sem sessão, 200
    com o usuário do sign-up). As demais rotas v1 seguem mock.
+
+**Feito:** `GET /v1/me` (`routes/v1/me/`, tag `me`) lê o usuário com
+`traced` + drizzle; e2e (401, schema, é o usuário do sign-up); o Perfil
+carrega a rota (dados + "Membro desde", e o 2FA vem do banco, mais fresco
+que o cookie cache), conferido em pt/en. `CLAUDE.md` registra os mocks como
+deliberados; README "Adding your own data" é a receita de quem forka.
 
 ### N3. ✅ Remover menções a Node — repo Bun-first (fase 5, 2026-10-12)
 
@@ -249,8 +255,9 @@ itens abaixo, a fase em que cada um entra:
   (401 sem sessão, 200 com sessão em cada rota, 404 para rota inexistente).
 - [x] Fase 4: no e2e, status exatos, shape validado com o schema zod da rota,
   `customers`/`employees`, sign-out e cookie adulterado (`v1.e2e.test.ts`).
-- [ ] Fase 7: `/v1/me` no e2e. Testes de cache contra o redis do compose de
-  teste.
+- [x] Fase 7: `/v1/me` no e2e. Testes de cache contra o redis do compose de
+  teste: cobertos pelos e2e de sessão/rate limit/limite por conta, que leem
+  e escrevem o Redis de teste (namespace `auth:`, TTLs).
 - [ ] Fase 12:
   - `coverageThreshold` por workspace no `bunfig.toml`, começando pelo valor
     medido para só subir;
@@ -697,9 +704,11 @@ origem, agora em `tasks/done/`.
 
 ### De `observability-followups.md`
 
-- **O1 (era F3) — Spans de DB** no postgres.js/Drizzle. Faz sentido junto com
-  o `/v1/me` (N2): é a primeira rota que toca o banco fora do auth, e a que
-  vai provar o span no Tempo.
+- ✅ **O1 — Spans de DB** (fase 7). postgres.js não tem auto-instrumentação:
+  `traced(operation, table, query)` em `@pack/db` abre um span de cliente com
+  as convenções de banco (`SELECT user`, `db.system.name=postgresql`).
+  Provado com coletor OTLP falso: `SELECT user` é filho de `GET /v1/me`, no
+  trace propagado do `traceparent`.
 - **O2 (era F7) — Observabilidade no dashboard**: Sentry + OTel no SvelteKit
   (`hooks.server.ts` já tem `logHandle` e `requestId`), propagação de trace
   dashboard → API.
@@ -726,7 +735,7 @@ no mesmo commit da mudança de comportamento.
 | 4 ✅ | Correção da API | `route` no log, shutdown, `HOST`, 404 vs 401, `HTTPException` 5xx, Scalar em prod; + `safeFetch` com log, query no redirect de locale, `<html lang>` — fechada 2026-10-12 |
 | 5 ✅ | Bun-first | **N3** (tipos/config/docs, `NodeTracerProvider`, `Bun.spawnSync`) — fechada 2026-10-12 |
 | 6 ✅ | Deploy | 🔴 4 Dockerfile da API em bun 1.4.2 buildado, **G7**, **G6**, pins das imagens — fechada 2026-10-12 |
-| 7 | Banco | **N2** `/v1/me` + **O1** spans de DB + doc de como forkar o schema |
+| 7 ✅ | Banco | **N2** `/v1/me` + **O1** spans de DB + doc de como forkar o schema — fechada 2026-10-12 |
 | 8 | Design system | **G4** |
 | 9 | Telas | **N4** + **G3** (só reset de senha), uma tela por fatia: Profile (com o antigo Settings) → Customers → Employees → Dashboard; **e2e de navegador (Playwright)** |
 | 10 | Observabilidade do dashboard | **O2** |
