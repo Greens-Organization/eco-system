@@ -4,14 +4,22 @@ import * as Sidebar from '@pack/design-system/components/ui/sidebar';
 import type { Snippet } from 'svelte';
 import LanguageSelector from './language-selector.svelte';
 
+export type Crumb = { label: string; href: string };
+
 interface Props {
-  pages?: string[];
+  /** The trail above this page, each a real link. */
+  crumbs?: Crumb[];
+  /** This page: the last breadcrumb and the document title. */
   page: string;
   children?: Snippet;
 }
 
-let { pages = [], page, children }: Props = $props();
+let { crumbs = [], page, children }: Props = $props();
 </script>
+
+<svelte:head>
+    <title>{page} · eco-system</title>
+</svelte:head>
 
 <header
     class="flex h-16 shrink-0 items-center gap-2 border-b px-4"
@@ -27,13 +35,15 @@ let { pages = [], page, children }: Props = $props();
 
     <Breadcrumb.Root class="flex-1">
         <Breadcrumb.List>
-            {#each pages as p, i (i)}
+            {#each crumbs as crumb (crumb.href)}
                 <Breadcrumb.Item>
-                    <Breadcrumb.Link href="#">{p}</Breadcrumb.Link>
+                    <Breadcrumb.Link href={crumb.href}>{crumb.label}</Breadcrumb.Link>
                 </Breadcrumb.Item>
                 <Breadcrumb.Separator />
             {/each}
-            <Breadcrumb.Item>{page}</Breadcrumb.Item>
+            <Breadcrumb.Item>
+                <Breadcrumb.Page>{page}</Breadcrumb.Page>
+            </Breadcrumb.Item>
         </Breadcrumb.List>
     </Breadcrumb.Root>
 

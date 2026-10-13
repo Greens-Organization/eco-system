@@ -6,6 +6,7 @@ import { clearAuthCookies } from '$lib/server/auth-cookies';
 import type { PageServerLoad } from './$types';
 
 const StatsSchema = z.object({
+  signups: z.array(z.object({ date: z.string(), count: z.number() })),
   totalUsers: z.number(),
   activeUsers: z.number(),
   totalRevenue: z.number(),
@@ -13,7 +14,12 @@ const StatsSchema = z.object({
     z.object({
       id: z.string(),
       user: z.string(),
-      action: z.string(),
+      action: z.enum([
+        'workspace_created',
+        'billing_updated',
+        'member_invited',
+        'project_deleted',
+      ]),
       timestamp: z.string(),
     })
   ),

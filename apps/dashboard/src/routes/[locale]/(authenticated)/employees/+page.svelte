@@ -1,84 +1,86 @@
 <script lang="ts">
-import UserRound from '@lucide/svelte/icons/user-round';
-import { Badge } from '@pack/design-system/components/ui/badge';
+import * as Table from '@pack/design-system/components/ui/table';
 import { formatNumber } from '@pack/i18n';
 import Header from '$lib/components/header.svelte';
+import ListPagination from '$lib/components/list/list-pagination.svelte';
+import ListToolbar from '$lib/components/list/list-toolbar.svelte';
+import StatusBadge from '$lib/components/list/status-badge.svelte';
 import { useLocale, useTranslation } from '$lib/i18n/context.svelte';
+import { EMPLOYEE_STATUSES } from '$lib/resources';
+import type { PageData } from './$types';
 
-interface Props {
-  data: {
-    employees: {
-      employees: Array<{
-        id: string;
-        name: string;
-        email: string;
-        role: string;
-        department: string;
-        status: string;
-      }>;
-      total: number;
-    } | null;
-  };
-}
-
-let { data }: Props = $props();
+let { data }: { data: PageData } = $props();
 
 const t = useTranslation();
 const locale = useLocale();
 
-const employees = $derived(data.employees);
-
-function statusVariant(status: string): 'default' | 'outline' {
-  return status === 'active' ? 'default' : 'outline';
-}
+const statuses = $derived(
+  EMPLOYEE_STATUSES.map((value) => ({
+    value,
+    label: t.app.employees.status[value],
+  }))
+);
 </script>
 
 <Header
-    pages={[t.app.navigation.dashboard]}
-    page={t.app.navigation.employees}
+    crumbs={[{ label: t.app.navigation.dashboard, href: `/${locale}` }]}
+    page={t.app.employees.title}
 />
 
 <div class="flex flex-1 flex-col gap-4 p-4">
-    <div class="flex-1 rounded-xl bg-muted/50 p-6">
-        <div class="flex items-center gap-2 mb-4">
-            <UserRound class="size-5" />
-            <h2 class="text-lg font-semibold">{t.app.employees.title}</h2>
-            {#if employees}
-                <Badge variant="secondary">
-                    {formatNumber(employees.total, locale)}
-                </Badge>
+    <div class="flex flex-col gap-4 rounded-xl bg-muted/50 p-6">
+        <div class="flex flex-wrap items-end justify-between gap-4">
+            <ListToolbar
+                q={data.query.q}
+                status={data.query.status}
+                {statuses}
+                clearHref="/{locale}/employees"
+            />
+            {#if data.employees}
+                <span class="text-sm text-muted-foreground">
+                    {t.app.list.results.replace('{count}', formatNumber(data.employees.total, locale))}
+                </span>
             {/if}
         </div>
 
-        {#if employees?.employees.length}
-            <div class="space-y-4">
-                {#each employees.employees as employee (employee.id)}
-                    <div
-                        class="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0 border-border/50"
-                    >
-                        <div class="space-y-1">
-                            <p class="text-sm font-medium leading-none">
-                                {employee.name}
-                            </p>
-                            <p class="text-sm text-muted-foreground">
-                                {employee.role} · {employee.department}
-                            </p>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span
-                                class="hidden text-sm text-muted-foreground sm:inline"
-                            >
-                                {employee.email}
-                            </span>
-                            <Badge variant={statusVariant(employee.status)}>
-                                {employee.status}
-                            </Badge>
-                        </div>
-                    </div>
-                {/each}
-            </div>
+        {#if !data.employees}
+            <p class="text-sm text-destructive" role="alert">{t.app.list.loadFailed}</p>
+        {:else if data.employees.employees.length === 0}
+            <p class="text-sm text-muted-foreground">
+                {data.query.q || data.query.status ? t.app.list.noResults : t.app.employees.empty}
+            </p>
         {:else}
-            <p class="text-muted-foreground">{t.app.employees.empty}</p>
+            <Table.Root>
+                <Table.Header>
+                    <Table.Row>
+                        <Table.Head>{t.app.employees.columns.name}</Table.Head>
+                        <Table.Head>{t.app.employees.columns.role}</Table.Head>
+                        <Table.Head>{t.app.employees.columns.department}</Table.Head>
+                        <Table.Head>{t.app.employees.columns.status}</Table.Head>
+                    </Table.Row>
+                </Table.Header>
+                <Table.Body>
+                    {#each data.employees.employees as employee (employee.id)}
+                        <Table.Row>
+                            <Table.Cell class="font-medium">
+                                <a href="/{locale}/employees/{employee.id}" class="hover:underline">
+                                    {employee.name}
+                                </a>
+                                <div class="text-xs font-normal text-muted-foreground">{employee.email}</div>
+                            </Table.Cell>
+                            <Table.Cell>{employee.role}</Table.Cell>
+                            <Table.Cell class="text-muted-foreground">{employee.department}</Table.Cell>
+                            <Table.Cell>
+                                <StatusBadge
+                                    status={employee.status}
+                                    label={t.app.employees.status[employee.status]}
+                                />
+                            </Table.Cell>
+                        </Table.Row>
+                    {/each}
+                </Table.Body>
+            </Table.Root>
+            <ListPagination page={data.employees.page} pages={data.employees.pages} />
         {/if}
     </div>
 </div>

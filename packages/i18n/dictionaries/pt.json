@@ -44,15 +44,50 @@
       "activeUsers": "Usuários Ativos",
       "totalRevenue": "Receita Total",
       "recentActivity": "Atividade Recente",
-      "noActivity": "Nenhuma atividade encontrada"
+      "noActivity": "Nenhuma atividade encontrada",
+      "signups": "Cadastros nos últimos 7 dias",
+      "signupsSummary": "{total} cadastros nos últimos 7 dias",
+      "loadFailed": "Não foi possível carregar os dados do painel. Tente de novo em instantes.",
+      "viewAll": "Ver todos",
+      "actions": {
+        "workspace_created": "Criou um novo workspace",
+        "billing_updated": "Atualizou os dados de cobrança",
+        "member_invited": "Convidou um membro da equipe",
+        "project_deleted": "Excluiu um projeto"
+      }
     },
     "customers": {
       "title": "Clientes",
-      "empty": "Nenhum cliente encontrado"
+      "empty": "Nenhum cliente encontrado",
+      "columns": {
+        "name": "Nome",
+        "email": "E-mail",
+        "status": "Status",
+        "createdAt": "Cliente desde"
+      },
+      "status": {
+        "active": "Ativo",
+        "pending": "Pendente",
+        "inactive": "Inativo"
+      },
+      "detailTitle": "Cliente"
     },
     "employees": {
       "title": "Funcionários",
-      "empty": "Nenhum funcionário encontrado"
+      "empty": "Nenhum funcionário encontrado",
+      "columns": {
+        "name": "Nome",
+        "email": "E-mail",
+        "role": "Cargo",
+        "department": "Departamento",
+        "status": "Status"
+      },
+      "status": {
+        "active": "Ativo",
+        "on_leave": "De licença",
+        "inactive": "Inativo"
+      },
+      "detailTitle": "Funcionário"
     },
     "settings": {
       "appearance": "Aparência",
@@ -155,6 +190,22 @@
         "useApp": "Usar o app autenticador",
         "backToSignIn": "Voltar ao login"
       }
+    },
+    "list": {
+      "search": "Buscar",
+      "searchPlaceholder": "Nome ou e-mail",
+      "status": "Status",
+      "allStatuses": "Todos os status",
+      "apply": "Aplicar",
+      "clear": "Limpar",
+      "previous": "Anterior",
+      "next": "Próxima",
+      "pageOf": "Página {page} de {pages}",
+      "results": "{count} resultados",
+      "noResults": "Nada corresponde a esses filtros.",
+      "loadFailed": "Não foi possível carregar esta lista. Tente de novo em instantes.",
+      "back": "Voltar para a lista",
+      "id": "ID"
     }
   }
 }

@@ -44,15 +44,50 @@
       "activeUsers": "Active Users",
       "totalRevenue": "Total Revenue",
       "recentActivity": "Recent Activity",
-      "noActivity": "No activity found"
+      "noActivity": "No activity found",
+      "signups": "Sign-ups, last 7 days",
+      "signupsSummary": "{total} sign-ups in the last 7 days",
+      "loadFailed": "Could not load the dashboard data. Try again in a moment.",
+      "viewAll": "View all",
+      "actions": {
+        "workspace_created": "Created a new workspace",
+        "billing_updated": "Updated billing details",
+        "member_invited": "Invited a team member",
+        "project_deleted": "Deleted a project"
+      }
     },
     "customers": {
       "title": "Customers",
-      "empty": "No customers found"
+      "empty": "No customers found",
+      "columns": {
+        "name": "Name",
+        "email": "Email",
+        "status": "Status",
+        "createdAt": "Customer since"
+      },
+      "status": {
+        "active": "Active",
+        "pending": "Pending",
+        "inactive": "Inactive"
+      },
+      "detailTitle": "Customer"
     },
     "employees": {
       "title": "Employees",
-      "empty": "No employees found"
+      "empty": "No employees found",
+      "columns": {
+        "name": "Name",
+        "email": "Email",
+        "role": "Role",
+        "department": "Department",
+        "status": "Status"
+      },
+      "status": {
+        "active": "Active",
+        "on_leave": "On leave",
+        "inactive": "Inactive"
+      },
+      "detailTitle": "Employee"
     },
     "settings": {
       "appearance": "Appearance",
@@ -155,6 +190,22 @@
         "useApp": "Use the authenticator app instead",
         "backToSignIn": "Back to sign in"
       }
+    },
+    "list": {
+      "search": "Search",
+      "searchPlaceholder": "Name or email",
+      "status": "Status",
+      "allStatuses": "All statuses",
+      "apply": "Apply",
+      "clear": "Clear",
+      "previous": "Previous",
+      "next": "Next",
+      "pageOf": "Page {page} of {pages}",
+      "results": "{count} results",
+      "noResults": "Nothing matches these filters.",
+      "loadFailed": "Could not load this list. Try again in a moment.",
+      "back": "Back to the list",
+      "id": "ID"
     }
   }
 }

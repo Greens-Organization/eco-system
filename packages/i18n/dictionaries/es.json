@@ -44,15 +44,50 @@
       "activeUsers": "Usuarios Activos",
       "totalRevenue": "Ingresos Totales",
       "recentActivity": "Actividad Reciente",
-      "noActivity": "No se encontró actividad"
+      "noActivity": "No se encontró actividad",
+      "signups": "Registros en los últimos 7 días",
+      "signupsSummary": "{total} registros en los últimos 7 días",
+      "loadFailed": "No se pudieron cargar los datos del panel. Inténtalo de nuevo en un momento.",
+      "viewAll": "Ver todos",
+      "actions": {
+        "workspace_created": "Creó un nuevo espacio de trabajo",
+        "billing_updated": "Actualizó los datos de facturación",
+        "member_invited": "Invitó a un miembro del equipo",
+        "project_deleted": "Eliminó un proyecto"
+      }
     },
     "customers": {
       "title": "Clientes",
-      "empty": "No se encontraron clientes"
+      "empty": "No se encontraron clientes",
+      "columns": {
+        "name": "Nombre",
+        "email": "Correo",
+        "status": "Estado",
+        "createdAt": "Cliente desde"
+      },
+      "status": {
+        "active": "Activo",
+        "pending": "Pendiente",
+        "inactive": "Inactivo"
+      },
+      "detailTitle": "Cliente"
     },
     "employees": {
       "title": "Empleados",
-      "empty": "No se encontraron empleados"
+      "empty": "No se encontraron empleados",
+      "columns": {
+        "name": "Nombre",
+        "email": "Correo",
+        "role": "Cargo",
+        "department": "Departamento",
+        "status": "Estado"
+      },
+      "status": {
+        "active": "Activo",
+        "on_leave": "De baja",
+        "inactive": "Inactivo"
+      },
+      "detailTitle": "Empleado"
     },
     "settings": {
       "appearance": "Apariencia",
@@ -155,6 +190,22 @@
         "useApp": "Usar la app de autenticación",
         "backToSignIn": "Volver al inicio de sesión"
       }
+    },
+    "list": {
+      "search": "Buscar",
+      "searchPlaceholder": "Nombre o correo",
+      "status": "Estado",
+      "allStatuses": "Todos los estados",
+      "apply": "Aplicar",
+      "clear": "Limpiar",
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "pageOf": "Página {page} de {pages}",
+      "results": "{count} resultados",
+      "noResults": "Nada coincide con estos filtros.",
+      "loadFailed": "No se pudo cargar esta lista. Inténtalo de nuevo en un momento.",
+      "back": "Volver a la lista",
+      "id": "ID"
     }
   }
 }

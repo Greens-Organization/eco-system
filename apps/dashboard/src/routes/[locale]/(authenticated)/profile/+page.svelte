@@ -9,12 +9,13 @@ import { enhance } from '$app/forms';
 import { page } from '$app/state';
 import Header from '$lib/components/header.svelte';
 import LanguageSelector from '$lib/components/language-selector.svelte';
-import { useTranslation } from '$lib/i18n/context.svelte';
+import { useLocale, useTranslation } from '$lib/i18n/context.svelte';
 import type { ActionData, PageData } from './$types';
 
 let { data, form }: { data: PageData; form: ActionData } = $props();
 
 const t = useTranslation();
+const locale = useLocale();
 
 // The enrollment (QR + backup codes) arrives once, from `enable`. Rendered
 // straight from `form` (so it works without JS); `kept` holds it on screen in
@@ -82,7 +83,10 @@ const sectionClass = 'rounded-xl bg-muted/50 p-6 space-y-4';
 const rowClass = 'flex items-center justify-between gap-4';
 </script>
 
-<Header pages={[t.app.navigation.dashboard]} page={t.app.profile.title} />
+<Header
+    crumbs={[{ label: t.app.navigation.dashboard, href: `/${locale}` }]}
+    page={t.app.profile.title}
+/>
 
 <div class="flex flex-1 flex-col gap-4 p-4">
     <!-- Profile -->
