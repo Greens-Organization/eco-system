@@ -573,9 +573,8 @@ do it. Full strategy: `tasks/done/sampling-strategy.md`.
 
 Branch `alpha/eco-system-v2`, ahead of `main`, no upstream.
 
-The whole open backlog is one card, `tasks/todo/full-sweep-2026-10-11.md`,
-executed in phases (one verified commit per slice). The only other card,
-`i18n-paraglide-migration.md`, is deliberately parked. Largest open items:
+The 2026-10-11 sweep is closed (`tasks/done/full-sweep-2026-10-11.md`).
+`i18n-paraglide-migration.md` is deliberately parked. Largest open items:
 
 1. **CI is written but unproven** — the workflow has never run on GitHub.
    Unit tests used to depend on the local `.env`; they now pass in a clean
@@ -584,7 +583,7 @@ executed in phases (one verified commit per slice). The only other card,
    API e2e + 17 browser); `cache`, `storage` and `design-system` have none.
    Per-file coverage floors guard against regressions, not gaps: a file no
    test imports is not measured at all.
-3. **Known bugs**: none open on the card. Fixed: the Dockerfile (phase 6),
+3. **Known bugs**: none open. Fixed: the Dockerfile (phase 6),
    the 5-minute logout and the `/auth/*` 500 (phase 1), the
    rate limit (N6), the `db:reset` guard, the seed and the json-ld XSS
    (phase 3).

@@ -1,5 +1,9 @@
 # Varredura completa — 2026-10-11
 
+> ✅ **Fechado em 2026-10-13** (pedido do dono). Fases 0–12 feitas e
+> verificadas, mais as dependências no mais recente e o skeleton. G10
+> (release do template) e os opcionais ficam a cargo do dono.
+
 > Branch `alpha/eco-system-v2`. Estado medido na abertura (2026-10-11):
 > typecheck 13/13, biome 5 erros, 70 testes. **Estado em 2026-10-13:** biome
 > 0, `bun check` 0 em 265 arquivos, `check:svelte` 0, 205 unitários + 76 e2e
