@@ -157,7 +157,18 @@ que o Bun implementa.
 lista "irredutível" + `adapter-node` e o pin de Node que ele exige; baseline
 verde; dashboard sobe em dev e no build de produção.
 
-### N4. Completar as telas da sidebar (hoje são rasas)
+### ✅ N4. Completar as telas da sidebar (fase 9, 2026-10-12)
+
+**Feito:** listas de Customers/Employees com busca, filtro por status e
+paginação na URL (formulário GET, funciona sem JS), detalhe `/[id]` com 404,
+status traduzido; home com gráfico de cadastros dos 7 dias, links dos cards e
+estado de erro; Profile com `/v1/me`, renomear, trocar senha (derruba os
+outros dispositivos), dispositivos e exclusão de conta com `alert-dialog`;
+toasts; `<title>` e breadcrumb reais. **Ficou de fora:** ordenação por
+coluna e skeleton de loading (os loads são SSR, sem estado intermediário) —
+listados como opcionais no fim do card.
+
+Texto original:
 
 Todas as rotas da sidebar existem (`ac83234`, `98aac6d`, `02a51ae`,
 `86d6968`), mas são só leitura e mínimas. Estado e o que falta:
@@ -266,9 +277,17 @@ itens abaixo, a fase em que cada um entra:
   - remover o `^test` do turbo;
   - padronizar `test/`;
   - corrigir o comentário do `@pack/testing`.
-- [ ] **E2e de navegador (Playwright) no dashboard — no escopo** (decisão do
-  dono, 2026-10-12: "garantir tudo funcionando"). Entra na fase 9, junto das
-  telas. Testes de componente do design-system seguem fora.
+- [x] **E2e de navegador (Playwright) no dashboard — feito (fase 9e,
+  2026-10-12).** `apps/dashboard/test/browser`, 15 testes contra o build de
+  produção e a API reais (compose de teste): cadastro/entrada/saída, senha
+  errada, reset por e-mail (Mailpit), listas (página, busca, filtro, limpar,
+  detalhe, 404), sidebar, idioma, renomear, trocar senha, dispositivos, 2FA
+  (TOTP e código de backup), exclusão de conta. Fixture automática reprova
+  qualquer violação de CSP ou erro de página. Estável em 5 repetições (75/75).
+  Job `browser` no CI. Achou e corrigiu três bugs: a sidebar não lembrava o
+  estado no reload (o cookie era gravado e nunca lido), o erro da exclusão
+  de conta ficava atrás do overlay do diálogo, e trocar o idioma descartava
+  os filtros da lista. Testes de componente do design-system seguem fora.
 
 ### N6. API escondida do navegador + endurecimento do login (2026-10-12)
 
@@ -749,12 +768,12 @@ no mesmo commit da mudança de comportamento.
 | 6 ✅ | Deploy | 🔴 4 Dockerfile da API em bun 1.4.2 buildado, **G7**, **G6**, pins das imagens — fechada 2026-10-12 |
 | 7 ✅ | Banco | **N2** `/v1/me` + **O1** spans de DB + doc de como forkar o schema — fechada 2026-10-12 |
 | 8 ✅ | Design system | **G4** — fechada 2026-10-12 |
-| 9 | Telas | **N4** + **G3** (só reset de senha), uma tela por fatia: Profile (com o antigo Settings) → Customers → Employees → Dashboard; **e2e de navegador (Playwright)** |
+| 9 ✅ | Telas | **N4** + **G3** (reset de senha) + **e2e de navegador (Playwright)** — fechada 2026-10-12 |
 | 10 | Observabilidade do dashboard | **O2** |
 | 11 | Dependências | patches, depois **H1** um major por fatia |
 | 12 | Higiene | pins fora do catálogo, ignores do biome, hash de env no turbo, código morto |
 | 13 | Release | **G10** — último commit |
-| — | **Opcionais (o dono decide depois)** | **O3** manifests k8s/HPA; captcha no login (escalada do limite por conta); "confiar neste dispositivo" no 2FA; budget de bundle (`ANALYZE=1`); redirect de `/settings` → `/profile` |
+| — | **Opcionais (o dono decide depois)** | **O3** manifests k8s/HPA; captcha no login (escalada do limite por conta); "confiar neste dispositivo" no 2FA; budget de bundle (`ANALYZE=1`); redirect de `/settings` → `/profile`; ordenação por coluna nas listas; skeleton de loading |
 
 Fases 0–1 primeiro: sem CI, o resto é mudança sem rede. A fase 11 fica depois
 das telas para não brigar com SvelteKit 3 no meio do N4.

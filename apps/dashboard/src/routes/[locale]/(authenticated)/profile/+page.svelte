@@ -48,6 +48,7 @@ const errorFor = (step: string) =>
   form && 'error' in form && form.step === step ? form.error : undefined;
 
 let busy = $state(false);
+let deleteOpen = $state(false);
 /** use:enhance handler; with `success`, a toast confirms it worked. */
 const submit = (success?: string) => () => {
   busy = true;
@@ -482,10 +483,12 @@ const rowClass = 'flex items-center justify-between gap-4';
             <h2 class="text-lg font-semibold text-destructive">{t.app.settings.danger.title}</h2>
             <p class="text-sm text-muted-foreground">{t.app.settings.danger.description}</p>
         </div>
-        {#if errorFor("deleteAccount")}
+        <!-- Inside the dialog while it is open (its overlay hides the page);
+             here for the no-JS form. -->
+        {#if errorFor("deleteAccount") && !deleteOpen}
             <p class="text-sm text-destructive" role="alert">{errorFor("deleteAccount")}</p>
         {/if}
-        <AlertDialog.Root>
+        <AlertDialog.Root bind:open={deleteOpen}>
             <AlertDialog.Trigger>
                 {#snippet child({ props })}
                     <Button {...props} variant="destructive" size="sm" class="w-fit">
@@ -511,6 +514,9 @@ const rowClass = 'flex items-center justify-between gap-4';
                         placeholder={t.app.settings.security.confirmPassword}
                         class="{inputClass} max-w-none"
                     />
+                    {#if errorFor("deleteAccount")}
+                        <p class="text-sm text-destructive" role="alert">{errorFor("deleteAccount")}</p>
+                    {/if}
                     <AlertDialog.Footer>
                         <AlertDialog.Cancel type="button">{t.app.common.cancel}</AlertDialog.Cancel>
                         <Button type="submit" variant="destructive" disabled={busy}>

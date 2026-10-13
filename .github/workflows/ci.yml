@@ -52,3 +52,43 @@ jobs:
       - run: bun install --frozen-lockfile
       # Brings up infra/docker/docker-compose.test.yml, migrates, runs, tears down.
       - run: bun run test:e2e
+
+  browser:
+    name: Browser e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+
+      - run: bun install --frozen-lockfile
+
+      # Browsers are keyed by the Playwright version, which bun.lock pins.
+      - uses: actions/cache@v4
+        id: browsers
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+      - if: steps.browsers.outputs.cache-hit != 'true'
+        working-directory: apps/dashboard
+        run: bunx playwright install --with-deps chromium
+      - if: steps.browsers.outputs.cache-hit == 'true'
+        working-directory: apps/dashboard
+        run: bunx playwright install-deps chromium
+
+      # Test compose + API + the dashboard's production build, then Playwright.
+      - run: bun run test:browser
+
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            apps/dashboard/playwright-report
+            apps/dashboard/test-results
+          retention-days: 7

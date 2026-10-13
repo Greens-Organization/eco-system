@@ -20,6 +20,9 @@ apps/dashboard-api/dashboard-api
 # Tests
 coverage/
 *.lcov
+# Playwright output (apps/dashboard)
+test-results/
+playwright-report/
 
 # Logs
 logs/

@@ -9,6 +9,7 @@
     "dev": "turbo dev",
     "test": "turbo test",
     "test:e2e": "bun run --filter @app/dashboard-api test:e2e",
+    "test:browser": "bun run --filter @app/dashboard-svelte test:browser",
     "check:svelte": "turbo check:svelte",
     "verify": "biome check ./ && bun check && turbo check:svelte build",
     "setup": "bun install && bun run docker:infra:up && bun run db:migrate && bun run db:seed",
@@ -78,7 +79,8 @@
     },
     "catalogs": {
       "dev": {
-        "@types/bun": "1.4.3"
+        "@types/bun": "1.4.3",
+        "@playwright/test": "1.63.0"
       }
     }
   }

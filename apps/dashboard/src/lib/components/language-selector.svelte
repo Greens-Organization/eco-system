@@ -22,8 +22,10 @@ function handleChange(event: Event) {
   const currentPath = removeLocaleFromPathname(page.url.pathname);
   // Full browser navigation (not SvelteKit client routing) so the
   // dictionary, lang attribute, and any locale-bound state are reset
-  // from a fresh server render.
-  window.location.assign(addLocaleToPathname(currentPath, newLocale));
+  // from a fresh server render. The query (list filters) is kept.
+  window.location.assign(
+    addLocaleToPathname(currentPath, newLocale) + page.url.search
+  );
 }
 </script>
 

@@ -1,3 +1,5 @@
+export { SIDEBAR_COOKIE_NAME } from './constants.js';
+
 import { useSidebar } from './context.svelte.js';
 import Root from './sidebar.svelte';
 import Content from './sidebar-content.svelte';

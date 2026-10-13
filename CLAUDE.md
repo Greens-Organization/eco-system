@@ -54,6 +54,7 @@ bun run db:reset             # wipes every table; refused unless DATABASE_URL is
 bun run db:studio
 
 bun run test:e2e             # API e2e on an ephemeral compose, gated by E2E=1
+bun run test:browser         # Playwright: compose + API + dashboard build (SKIP_BUILD=1 reuses it)
 
 # Production-like stack (only the dashboard publishes a port), README "Deploy":
 docker compose -f infra/docker/docker-compose.prod.yml --env-file infra/docker/.env.prod up -d --build
@@ -87,6 +88,17 @@ dashboard's run under plain `bun test` (no Vite), so they cover `src/lib`
 modules that do not import `$env`/`$app`; keep server logic there
 (`src/lib/server/*`) and inject what touches the network.
 
+The browser suite (`apps/dashboard/test/browser`, Playwright, Chromium) drives
+the production build against the real API. Selectors come from the `en`
+dictionary, not literal copy. Each test and each extra device sends its own
+`x-forwarded-for` (the dashboard runs with `ADDRESS_HEADER`), so the 3 / 10 s
+sign-in limit applies per test. An automatic fixture fails any test that
+logs a CSP violation or an uncaught page error. After clicking a link, wait
+for the new URL before filling a field: client-side navigation keeps the old
+page (and its same-named inputs) on screen until the data arrives. The test
+compose has fixed container names, so this suite and `test:e2e` cannot run
+at the same time.
+
 `drizzle-kit` must run under Bun (`bun x --bun`, as the `@pack/db` scripts do):
 the schema imports `bun`, so a bare `bunx drizzle-kit` fails to resolve it.
 
@@ -104,24 +116,27 @@ the schema imports `bun`, so a bare `bunx drizzle-kit` fails to resolve it.
 | 6379 | redis |
 | 5436 / 6380 | e2e postgres / redis (`docker-compose.test.yml`) |
 | 1025 / 8025 | e2e Mailpit SMTP / UI and API (`docker-compose.test.yml`) |
+| 3030 / 3032 | browser tests: dashboard build / API (`apps/dashboard/test/browser/stack.ts`) |
 
 ---
 
 ## 4. Verification
 
 `.github/workflows/ci.yml` runs `biome ci`, `bun check`, `turbo check:svelte
-build` (`build` depends on `test`) and the API
-e2e suite on pull requests and on pushes to `main`, with bun/node from
+build` (`build` depends on `test`), the API
+e2e suite and the browser suite on pull requests and on pushes to `main`, with bun/node from
 `mise.toml`. It has not run on GitHub yet — this branch has no upstream — and
 there is no local hook. Before claiming work is done, run the checks yourself
 (`bun run verify` does all of them):
 
 ```bash
 bunx biome check .                    # 0 errors
-bun check                             # 0 errors, 236 files across 11 projects
+bun check                             # 0 errors, 258 files across 11 projects
 bunx turbo run check:svelte --force   # 0 errors in dashboard + design-system
 bunx turbo run build --force          # api binary + dashboard vite build
-bunx turbo run test --force           # 176 pass / 0 fail
+bunx turbo run test --force           # 191 pass / 0 fail
+bun run test:e2e                      # 76 pass (needs Docker)
+bun run test:browser                  # 15 pass (needs Docker)
 ```
 
 `bun check` is not cached by turbo and takes about half a second.
@@ -495,10 +510,10 @@ executed in phases (one verified commit per slice). The only other card,
 1. **CI is written but unproven** — the workflow has never run on GitHub.
    Unit tests used to depend on the local `.env`; they now pass in a clean
    checkout (verified in a worktree with no `.env` files).
-2. **Test coverage is concentrated** in 9 of 13 workspaces (176 unit + 59
-   e2e). `bun test --coverage` only lists files a test imported, so
+2. **Test coverage is concentrated** in 9 of 13 workspaces (191 unit + 76
+   API e2e + 15 browser). `bun test --coverage` only lists files a test imported, so
    per-workspace percentages overstate it. Gaps and plan: card item N5.
-3. **Known bugs**: the remaining 🔴 item on the card is the Dockerfile
-   (phase 6). Fixed: the 5-minute logout and the `/auth/*` 500 (phase 1), the
+3. **Known bugs**: none open on the card. Fixed: the Dockerfile (phase 6),
+   the 5-minute logout and the `/auth/*` 500 (phase 1), the
    rate limit (N6), the `db:reset` guard, the seed and the json-ld XSS
    (phase 3).
