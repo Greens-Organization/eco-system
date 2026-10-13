@@ -1,0 +1,240 @@
+effective: |
+  builders:
+    deps:
+      fromImage:
+        path: oven/bun
+        digest: sha256:ec06c3b6cea04192ae6770c434f668ca41d343ad19fa6472216c7b48be39c598
+      workdir: /app/
+      run:
+      - bun install --frozen-lockfile --filter @app/dashboard-svelte
+      cache:
+      - target: /root/.bun/install/cache
+      bind:
+      - target: bunfig.toml
+        source: bunfig.toml
+      - target: bun.lock
+        source: bun.lock
+      - target: package.json
+        source: package.json
+      - target: apps/dashboard/package.json
+        source: apps/dashboard/package.json
+      - target: apps/dashboard-api/package.json
+        source: apps/dashboard-api/package.json
+      - target: packages/auth/package.json
+        source: packages/auth/package.json
+      - target: packages/cache/package.json
+        source: packages/cache/package.json
+      - target: packages/db/package.json
+        source: packages/db/package.json
+      - target: packages/design-system/package.json
+        source: packages/design-system/package.json
+      - target: packages/email/package.json
+        source: packages/email/package.json
+      - target: packages/i18n/package.json
+        source: packages/i18n/package.json
+      - target: packages/observability/package.json
+        source: packages/observability/package.json
+      - target: packages/seo/package.json
+        source: packages/seo/package.json
+      - target: packages/storage/package.json
+        source: packages/storage/package.json
+      - target: packages/testing/package.json
+        source: packages/testing/package.json
+      - target: packages/tools/package.json
+        source: packages/tools/package.json
+      - target: packages/tsconfig/package.json
+        source: packages/tsconfig/package.json
+    runtime-deps:
+      fromImage:
+        path: oven/bun
+        digest: sha256:ec06c3b6cea04192ae6770c434f668ca41d343ad19fa6472216c7b48be39c598
+      workdir: /app/
+      run:
+      - bun install --frozen-lockfile --production --linker hoisted --filter @app/dashboard-svelte
+      cache:
+      - target: /root/.bun/install/cache
+      bind:
+      - target: bunfig.toml
+        source: bunfig.toml
+      - target: bun.lock
+        source: bun.lock
+      - target: package.json
+        source: package.json
+      - target: apps/dashboard/package.json
+        source: apps/dashboard/package.json
+      - target: apps/dashboard-api/package.json
+        source: apps/dashboard-api/package.json
+      - target: packages/auth/package.json
+        source: packages/auth/package.json
+      - target: packages/cache/package.json
+        source: packages/cache/package.json
+      - target: packages/db/package.json
+        source: packages/db/package.json
+      - target: packages/design-system/package.json
+        source: packages/design-system/package.json
+      - target: packages/email/package.json
+        source: packages/email/package.json
+      - target: packages/i18n/package.json
+        source: packages/i18n/package.json
+      - target: packages/observability/package.json
+        source: packages/observability/package.json
+      - target: packages/seo/package.json
+        source: packages/seo/package.json
+      - target: packages/storage/package.json
+        source: packages/storage/package.json
+      - target: packages/testing/package.json
+        source: packages/testing/package.json
+      - target: packages/tools/package.json
+        source: packages/tools/package.json
+      - target: packages/tsconfig/package.json
+        source: packages/tsconfig/package.json
+    build:
+      fromBuilder: deps
+      workdir: /app/apps/dashboard
+      copy:
+      - paths:
+        - .
+        target: /app/
+      run:
+      - bun run build
+  fromImage:
+    path: node
+    digest: sha256:930557a230abacbc3f4fd9b8648abf8f4bee1e17cb72195dcdfb2f709bc85b33
+  user:
+    user: '1000'
+  workdir: /app/apps/dashboard
+  env:
+    NODE_ENV: production
+    PORT: '3000'
+  copy:
+  - fromBuilder: runtime-deps
+    paths:
+    - /app/node_modules
+    target: /app/node_modules
+  - fromBuilder: build
+    paths:
+    - /app/apps/dashboard/build
+    target: /app/apps/dashboard/build
+  - paths:
+    - apps/dashboard/package.json
+    target: /app/apps/dashboard/package.json
+  entrypoint:
+  - node
+  - build
+  expose:
+  - port: 3000
+  healthcheck:
+    cmd: 'node -e ''fetch("http://localhost:3000/en/sign-in").then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))'''
+    interval: 30s
+    timeout: 10s
+    start: 15s
+    retries: 3
+images:
+  registry.hub.docker.com:443:
+    library:
+      node:
+        26.10.0-slim:
+          digest: sha256:930557a230abacbc3f4fd9b8648abf8f4bee1e17cb72195dcdfb2f709bc85b33
+    oven:
+      bun:
+        1.4.3:
+          digest: sha256:ec06c3b6cea04192ae6770c434f668ca41d343ad19fa6472216c7b48be39c598
+resources:
+  dofigen.yml:
+    hash: a27af9f9b0250600b03cb2d5e0c25a037a0573c8c6edb5c527fa816fb4cfd671
+    content: |
+      # Build from the repo root: docker build -f apps/dashboard/Dockerfile .
+      # The root .dockerignore applies (no node_modules, no .env files).
+      # After editing: `dofigen update` (pins image digests), then `dofigen generate`.
+      #
+      # The image runs the adapter-node build on Node (owner decision N3). Runtime
+      # config comes from env at start: ORIGIN, API_URL, BETTER_AUTH_SECRET,
+      # CLIENT_IP_SECRET, and behind a TLS proxy ADDRESS_HEADER / XFF_DEPTH (see
+      # the deploy notes in the README).
+
+      builders:
+        # Every dependency (dev included: Vite builds the app), from the lockfile.
+        deps:
+          fromImage: oven/bun:1.4.3
+          workdir: /app/
+          labels:
+            org.opencontainers.image.stage: deps
+          bind: &manifests
+            - bunfig.toml
+            - bun.lock
+            - package.json
+            - apps/dashboard/package.json
+            - apps/dashboard-api/package.json
+            - packages/auth/package.json
+            - packages/cache/package.json
+            - packages/db/package.json
+            - packages/design-system/package.json
+            - packages/email/package.json
+            - packages/i18n/package.json
+            - packages/observability/package.json
+            - packages/seo/package.json
+            - packages/storage/package.json
+            - packages/testing/package.json
+            - packages/tools/package.json
+            - packages/tsconfig/package.json
+          run: bun install --frozen-lockfile --filter @app/dashboard-svelte
+          cache:
+            - /root/.bun/install/cache
+
+        build:
+          fromBuilder: deps
+          workdir: /app/apps/dashboard
+          labels:
+            org.opencontainers.image.stage: build
+          copy:
+            - . /app/
+          run: bun run build
+
+        # What the build leaves external (pino, zod, uqr…), hoisted into one plain
+        # node_modules that Node resolves without Bun's isolated-linker symlinks.
+        # The @pack/* workspace packages are bundled into the build.
+        runtime-deps:
+          fromImage: oven/bun:1.4.3
+          workdir: /app/
+          labels:
+            org.opencontainers.image.stage: runtime-deps
+          bind: *manifests
+          run: bun install --frozen-lockfile --production --linker hoisted --filter @app/dashboard-svelte
+          cache:
+            - /root/.bun/install/cache
+
+      fromImage: node:26.10.0-slim
+
+      labels:
+        org.opencontainers.image.title: Eco System Dashboard
+        org.opencontainers.image.description: SvelteKit dashboard (adapter-node), the only public entry point
+        org.opencontainers.image.vendor: Eco System
+
+      env:
+        NODE_ENV: production
+        PORT: "3000"
+
+      user: "1000"
+      workdir: /app/apps/dashboard
+
+      copy:
+        - fromBuilder: runtime-deps
+          source: /app/node_modules
+          target: /app/node_modules
+        - fromBuilder: build
+          source: /app/apps/dashboard/build
+          target: /app/apps/dashboard/build
+        - apps/dashboard/package.json /app/apps/dashboard/package.json
+
+      expose: "3000"
+
+      # The sign-in page renders without calling the API, so this checks the
+      # server alone.
+      healthcheck:
+        interval: 30s
+        timeout: 10s
+        start: 15s
+        retries: 3
+        cmd: "node -e 'fetch(\"http://localhost:3000/en/sign-in\").then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))'"
+
+      entrypoint: ["node", "build"]
