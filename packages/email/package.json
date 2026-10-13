@@ -11,12 +11,11 @@
     "clean": "git clean -xdf .cache .turbo dist node_modules"
   },
   "dependencies": {
-    "nodemailer": "9.1.1",
+    "nodemailer": "10.0.12",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@pack/tsconfig": "workspace:*",
-    "@types/bun": "catalog:dev",
-    "@types/nodemailer": "8.0.2"
+    "@types/bun": "catalog:dev"
   }
 }
