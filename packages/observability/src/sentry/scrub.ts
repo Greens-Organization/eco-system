@@ -26,7 +26,7 @@ export function sentryContextAllowlist(
 }
 
 /** Request headers allowed into Sentry: they describe the request, not the user. */
-const REQUEST_HEADER_ALLOWLIST = [
+export const REQUEST_HEADER_ALLOWLIST = [
   'accept',
   'content-length',
   'content-type',
@@ -37,8 +37,10 @@ const REQUEST_HEADER_ALLOWLIST = [
  * Sentry `beforeSend`: keep only what is known to be safe (LGPD), rather than
  * removing what is known to be unsafe — a new field is then dropped by
  * default. Out go the user, the request body, cookies, the query string,
- * every header not in the allowlist (auth, cookies, forwarded IPs) and
- * breadcrumb payloads. If the scrub itself throws, drop the event rather
+ * every header not in the allowlist (auth, cookies, forwarded IPs),
+ * breadcrumb payloads and stack-frame local variables (a password in scope).
+ * The SDK is also told not to collect these (`dataCollection` in
+ * telemetry.ts); this is the second wall. If the scrub itself throws, drop the event rather
  * than risk a leak.
  */
 export function scrubPii(
@@ -61,6 +63,12 @@ export function scrubPii(
         url: url?.split('?')[0],
         headers: kept,
       };
+    }
+
+    for (const exception of event.exception?.values ?? []) {
+      for (const frame of exception.stacktrace?.frames ?? []) {
+        frame.vars = undefined;
+      }
     }
 
     if (event.breadcrumbs) {

@@ -24,8 +24,9 @@ import {
   BasicTracerProvider,
   BatchSpanProcessor,
 } from '@opentelemetry/sdk-trace-base';
+import type { NodeOptions } from '@sentry/node';
 import { env } from '../pack-env';
-import { scrubPii } from './sentry';
+import { REQUEST_HEADER_ALLOWLIST, scrubPii } from './sentry';
 import { settleWithin } from './settle';
 
 /**
@@ -41,17 +42,12 @@ import { settleWithin } from './settle';
  * order is not fragile on Bun.
  */
 
-/** What the core needs from a runtime's Sentry SDK. */
+/**
+ * What the core needs from a runtime's Sentry SDK. `@sentry/bun` builds on
+ * `@sentry/node`, so Node's options type checks both.
+ */
 export interface SentrySdk {
-  init(options: {
-    dsn: string;
-    skipOpenTelemetrySetup: boolean;
-    tracesSampleRate: number;
-    sendDefaultPii: boolean;
-    beforeSend: typeof scrubPii;
-    environment?: string;
-    release: string;
-  }): unknown;
+  init(options: NodeOptions): unknown;
   close(timeout?: number): Promise<boolean>;
 }
 
@@ -66,17 +62,38 @@ export function startObservability(sdk: SentrySdk): void {
 
   if (sentryDsn) {
     sentry = sdk;
-    sdk.init({
+    // `satisfies` so a renamed option fails `bun check` instead of being
+    // ignored (Sentry 11 replaced skipOpenTelemetrySetup this way).
+    const options = {
       dsn: sentryDsn,
-      // Decoupled: skip Sentry's own OTel tracing and disable performance — traces
-      // are owned by our OTel SDK (-> Grafana), not Sentry.
-      skipOpenTelemetrySetup: true,
+      // Decoupled: Sentry does errors only. No Sentry tracer provider (the
+      // default, spelled out) and no performance — traces are our OTel SDK's.
+      enableOpenTelemetrySetup: false,
       tracesSampleRate: 0,
-      sendDefaultPii: false,
+      // No load-time module hooks: they feed Sentry's own instrumentation,
+      // which is off, and hooks are what we keep out of Bun.
+      enableRuntimeChannelInjection: false,
+      // Sentry 11 collects all of this by default; LGPD says none of it.
+      dataCollection: {
+        userInfo: false,
+        cookies: false,
+        httpHeaders: {
+          request: { allow: [...REQUEST_HEADER_ALLOWLIST] },
+          response: false,
+        },
+        httpBodies: [],
+        urlQueryParams: false,
+        databaseQueryData: false,
+        queues: false,
+        graphQL: { document: false, variables: false },
+        genAI: { inputs: false, outputs: false },
+        stackFrameVariables: false,
+      },
       beforeSend: scrubPii,
       environment: env.DEPLOYMENT_ENV ?? process.env.NODE_ENV,
       release: env.SERVICE_VERSION,
-    });
+    } satisfies NodeOptions;
+    sdk.init(options);
   }
 
   if (otlpEndpoint) {

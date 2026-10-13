@@ -443,8 +443,12 @@ carry `support_id`, `error_code`, `classification`; `extra` is PII-allowlisted
 (`sentry/scrub`). `beforeSend` (`scrubPii`) is an **allowlist** too: an event
 keeps only the request method, the URL without its query string and a few
 headers (`accept`, `content-type`, `content-length`, `x-request-id`);
-breadcrumbs keep category/level/timestamp/type. A new field is dropped by
-default. The pino logger `redact`s `password`, `token`, `secret` and
+breadcrumbs keep category/level/timestamp/type; stack frames lose their
+local `vars`. A new field is dropped by default. That is the second wall:
+Sentry 11 collects users, cookies, headers, bodies, query strings and frame
+variables **by default** (`sendDefaultPii` is gone), so `telemetry.ts` turns
+each off in `dataCollection`. Its options are typed `satisfies NodeOptions`
+so a renamed option fails `bun check` instead of being ignored. The pino logger `redact`s `password`, `token`, `secret` and
 authorization/cookie headers (one level deep) as `[redacted]`.
 
 `generateSupportId()` → `SUP-` + 12 uppercase hex. Set once per request,

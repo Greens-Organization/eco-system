@@ -74,6 +74,34 @@ describe('scrubPii', () => {
     });
   });
 
+  test('stack frames lose their local variables', () => {
+    const event = {
+      exception: {
+        values: [
+          {
+            type: 'Error',
+            stacktrace: {
+              frames: [
+                {
+                  function: 'changePassword',
+                  lineno: 12,
+                  vars: { password: 'hunter2', email: 'a@b.com' },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    } as unknown as ErrorEvent;
+
+    const frame = scrubPii(event, hint)?.exception?.values?.[0]?.stacktrace
+      ?.frames?.[0];
+
+    expect(frame?.vars).toBeUndefined();
+    expect(frame?.function).toBe('changePassword');
+    expect(frame?.lineno).toBe(12);
+  });
+
   test('breadcrumbs keep their shape but lose message and data', () => {
     const event = {
       breadcrumbs: [
