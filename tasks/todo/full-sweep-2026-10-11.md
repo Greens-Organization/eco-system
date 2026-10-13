@@ -358,10 +358,9 @@ Falta:
   - Trade-off aceito: um atacante pode manter uma conta em espera de 20 min
     tentando a cada 20 min. Escalar para captcha (plugin `captcha` do
     better-auth) se isso aparecer.
-- [ ] **Deploy (fase 6):** `ORIGIN` e `ADDRESS_HEADER`/`XFF_DEPTH` no
-  adapter-node — sem eles toda form action dá 403 atrás de proxy TLS e o
-  `getClientAddress()` vira o IP do proxy; API sem porta publicada; Scalar e
-  `/v1/openapi` só na rede interna.
+- [x] **Deploy (fase 6):** `ORIGIN` e `ADDRESS_HEADER`/`XFF_DEPTH`
+  documentados e no compose; API sem porta publicada (Scalar e `/v1/openapi`
+  ficam na rede interna junto).
 - [ ] **Reset de senha (G3):** não aguardar o envio do e-mail (latência do
   SMTP revela a conta), `transaction: true` no adapter drizzle,
   `Referrer-Policy: no-referrer` na página, link apontando para o dashboard.
@@ -483,11 +482,20 @@ camada do BFF:
    `x-forwarded-for` (forjável); sem header → IP `null` → limite pulado. O
    dashboard (`auth-proxy.ts:34`) não repassa o IP do cliente. Corrigir com
    `rateLimit` + storage Redis (`@pack/cache`) + `advanced.ipAddress`.
-4. **Dockerfile da API provavelmente não builda** (leitura, não buildado):
+4. ✅ **(fase 6, 2026-10-12)** **Dockerfile da API provavelmente não builda** (leitura, não buildado):
    `--frozen-lockfile` sem montar `bun.lock`; não monta
    `apps/dashboard/package.json`; `linker = "isolated"` mas só copia
    `/app/node_modules`. Imagem em **bun 1.3.14** (`dofigen.lock`) vs 1.4.2 no
    `mise.toml`.
+   **Achado ao buildar:** buildava, mas pior — sem `bun.lock` no contexto, o
+   `--frozen-lockfile` do bun 1.3.14 resolvia tudo do zero (imagem não
+   reprodutível), e o `.dockerignore` ficava em `apps/…`, onde o Docker não o
+   lê: os `.env` locais entravam nas camadas de build. **Feito:**
+   `.dockerignore` na raiz (sem `node_modules`, sem `.env`), `bun.lock` e
+   todos os manifests no estágio de deps, `--filter` do workspace, bun 1.4.3
+   por digest, runtime `-slim` como UID 1000. Conferido: 0 `.env` no estágio
+   de build; o container sobe, faz sign-up/sign-in contra Postgres+Redis
+   (cookies `__Secure-` com URL https) e o `docker stop` drena com exit 0.
 5. ✅ **(fase 3, 2026-10-12)** **`db:reset` sem guarda real.** `reset-db.ts:5` só checa
    `NODE_ENV === 'local'`, que o próprio `packages/db/.env` define e o Bun
    auto-carrega. `DATABASE_URL` de prod no shell passa. Checar host/nome do
@@ -581,9 +589,9 @@ camada do BFF:
 - **turbo.json:** nenhuma env no hash (`envMode: loose`, sem `env`/`globalEnv`);
   `globalDependencies` aponta para `.env.*local`, que não existe — editar
   `.env` não invalida cache. `test` depende de `^test` sem motivo.
-- **Imagens:** `grafana/otel-lgtm:latest` sem pin; `redis:7-alpine` e o
-  postgres do test em tag flutuante. `REDIS_PASSWORD=redis` no compose é
-  ignorado (a senha real vem do `requirepass`).
+- ✅ (fase 6) **Imagens:** fixadas nas versões que já rodavam
+  (`otel-lgtm:0.28.0`, `redis:7.4.9-alpine`, `postgres:18.1-alpine` no test);
+  `REDIS_PASSWORD=redis` ignorado removido do compose.
 - ✅ (fase 5) `.claude/settings.local.json` só era ignorado pelo gitignore
   global — agora está no `.gitignore` do repo.
 - **Deps:** 32 desatualizadas. Majors: SvelteKit **3.0**, adapter-node **6.0**
@@ -645,11 +653,23 @@ origem, agora em `tasks/done/`.
   `docker:infra:up --wait` com healthchecks novos no compose. `setup`
   verificado de ponta a ponta. `docker:test:*` não foi criado — o runner do
   e2e já sobe e derruba o compose de teste.
-- **G6 — Gestão de env** (era §9). Documentar que `BETTER_AUTH_SECRET` tem de
-  bater entre API e dashboard; corrigir o `.env.example` "genergia".
-- **G7 — Receita de deploy** (era §10). Dockerfile do dashboard
-  (`adapter-node`, decisão N3) + compose prod-like (postgres + api +
-  dashboard). Documentar a troca de adapter para quem forka (era §16).
+- ✅ **G6 — Gestão de env** (fase 6). README "Configuration": arquivos de env,
+  os dois segredos que têm de bater (`BETTER_AUTH_SECRET`,
+  `CLIENT_IP_SECRET`), `BETTER_AUTH_URL` = URL do dashboard; o
+  `DATABASE_URL` "genergia" do `.env.example` corrigido.
+- ✅ **G7 — Receita de deploy** (fase 6). Dockerfile do dashboard (dofigen;
+  build no bun, runtime `node:26.10.0-slim`), `docker-compose.prod.yml`
+  (postgres, redis, `migrate` one-shot com o migrator do drizzle-orm, api sem
+  porta, dashboard como única porta) + `.env.prod.example`; README "Deploy"
+  com `ORIGIN`/`ADDRESS_HEADER`/`XFF_DEPTH`. Subido de ponta a ponta: tudo
+  healthy, login e Profile pelo dashboard, IP do visitante assinado chegando
+  à API, API sem porta no host. Achados: (1) o build falhava sem `.env` — o
+  `env.ts` validava na análise do build; agora só fora de `building`. (2) a
+  imagem tinha 502 MB com drizzle-kit/typescript/rolldown no runtime —
+  deps do dashboard viraram devDependencies (empacotadas pelo adapter-node),
+  menos `pino`: 257 MB, `node_modules` de 3,4 MB; dev conferido (CSP ok).
+  A troca de adapter para quem forka fica documentada pelo próprio
+  `dofigen.yml` e pela seção Deploy.
 - ✅ **G8 — Hardening** (fase 3, 2026-10-12). `secureHeaders` e `bodyLimit`
   de 1 MiB (413 `PAYLOAD_TOO_LARGE`, código novo) na API, com e2e; CSP no
   dashboard (ver 🟡). `hono/csrf` **não**: a API não fala com navegador e o
@@ -705,7 +725,7 @@ no mesmo commit da mudança de comportamento.
 | 3 ✅ | Segurança | **N7** ✅ dispositivos conectados; **N6** ✅ (API escondida, rate limit por IP e por conta, sessões no Redis, cookies, MFA opcional) — sobram itens de deploy (fase 6) e reset de senha (G3); 🔴 3 ✅, 🔴 5/6 ✅ reset e seed, 🔴 7 ✅ json-ld, ✅ validação de env, ✅ scrub do Sentry, ✅ `redact`, ✅ **G8** hardening — fase fechada 2026-10-12 |
 | 4 ✅ | Correção da API | `route` no log, shutdown, `HOST`, 404 vs 401, `HTTPException` 5xx, Scalar em prod; + `safeFetch` com log, query no redirect de locale, `<html lang>` — fechada 2026-10-12 |
 | 5 ✅ | Bun-first | **N3** (tipos/config/docs, `NodeTracerProvider`, `Bun.spawnSync`) — fechada 2026-10-12 |
-| 6 | Deploy | 🔴 4 Dockerfile da API em bun 1.4.2 buildado, **G7**, **G6**, pins das imagens |
+| 6 ✅ | Deploy | 🔴 4 Dockerfile da API em bun 1.4.2 buildado, **G7**, **G6**, pins das imagens — fechada 2026-10-12 |
 | 7 | Banco | **N2** `/v1/me` + **O1** spans de DB + doc de como forkar o schema |
 | 8 | Design system | **G4** |
 | 9 | Telas | **N4** + **G3** (só reset de senha), uma tela por fatia: Profile (com o antigo Settings) → Customers → Employees → Dashboard; **e2e de navegador (Playwright)** |

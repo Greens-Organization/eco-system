@@ -54,6 +54,9 @@ bun run db:reset             # wipes every table; refused unless DATABASE_URL is
 bun run db:studio
 
 bun run test:e2e             # API e2e on an ephemeral compose, gated by E2E=1
+
+# Production-like stack (only the dashboard publishes a port), README "Deploy":
+docker compose -f infra/docker/docker-compose.prod.yml --env-file infra/docker/.env.prod up -d --build
 ```
 
 Type checking is split by file type, because `bun check` does not read
@@ -114,7 +117,7 @@ there is no local hook. Before claiming work is done, run the checks yourself
 
 ```bash
 bunx biome check .                    # 0 errors
-bun check                             # 0 errors, 228 files across 11 projects
+bun check                             # 0 errors, 229 files across 11 projects
 bunx turbo run check:svelte --force   # 0 errors in dashboard + design-system
 bunx turbo run build --force          # api binary + dashboard vite build
 bunx turbo run test --force           # 174 pass / 0 fail
@@ -292,6 +295,17 @@ better-auth's base64 payload and breaks HMAC verification on the next request.
 Things that look like leftovers or cleanup targets but are deliberate. Each was
 measured or debugged; changing one regresses something.
 
+- **The dashboard's runtime deps are `devDependencies`** — only `pino` and
+  `pino-pretty` sit in `dependencies`. adapter-node bundles devDependencies
+  and leaves dependencies external, so this keeps the image's
+  `node_modules` at ~3 MB instead of ~330 MB of workspace dev tooling
+  (drizzle-kit, typescript, rolldown…). pino stays external because its
+  transport resolves the worker via `__dirname`. A new runtime dep of the
+  dashboard goes in `devDependencies` unless it must not be bundled.
+- **`$lib/env.ts` skips validation while `building`** — `vite build` imports
+  server modules to analyse the app, and the Docker build has no runtime env
+  (no secrets in images). The schema still runs, and fails loudly, at server
+  start.
 - **`CSP_NONCE_PLACEHOLDER` in the root layout** — Kit only fills
   `%sveltekit.nonce%` in app.html and never hands the nonce to components,
   but ModeWatcher's inline theme script needs it. The layout renders the

@@ -63,8 +63,11 @@ subpath `exports`; runtime config lives in a per-package `pack-env.ts`.
 **Prerequisites:** Bun (version pinned in `mise.toml`) and Docker.
 
 ```bash
-# 1. Configure env — each app/package reads its own .env via pack-env.
-#    Copy the .env.example files; at minimum DATABASE_URL for @pack/db.
+# 1. Configure env (see "Configuration" below)
+cp apps/dashboard-api/.env.example apps/dashboard-api/.env
+cp apps/dashboard/.env.example apps/dashboard/.env.local
+cp packages/db/.env.example packages/db/.env
+#    then fill the secrets and ADMIN_PASSWORD
 
 # 2. Install, start Postgres + Redis (waits until healthy), migrate, seed
 bun run setup
@@ -76,10 +79,35 @@ bun run dev
 The dashboard is served at `http://localhost:3000`. Route groups are not part
 of the URL, so the panel lives at the locale root — `/en`, `/pt` or `/es`, not
 `/dashboard`. The API is at `http://localhost:3002`, with its Scalar reference
-at `/v1` and the OpenAPI document at `/v1/openapi`.
+at `/v1` and the OpenAPI document at `/v1/openapi`. Browsers never call the
+API: the dashboard's server does (it is a BFF).
 
-`db:seed` prints the credentials it created (`ADMIN_EMAIL` / `ADMIN_PASSWORD`
-from `packages/db/.env`, defaulting to `admin@example.com` / `admin`).
+`db:seed` creates the admin from `ADMIN_EMAIL` / `ADMIN_PASSWORD` in
+`packages/db/.env`. There is no default password: set 8 to 128 characters or
+the seed refuses to create the user (an existing admin is left alone).
+
+### Configuration
+
+Each app and package validates its own env at startup (`pack-env.ts`, zod) and
+refuses to start with a missing or weak value — there are no silent defaults
+for secrets or URLs.
+
+| File | Holds |
+| ---- | ----- |
+| `apps/dashboard-api/.env` | API: database, Redis, auth, SMTP, observability |
+| `apps/dashboard/.env.local` | Dashboard: `API_URL` and the two shared secrets |
+| `packages/db/.env` | `db:*` scripts: `DATABASE_URL`, the seeded admin |
+
+**Two secrets must be identical in the API and the dashboard** (32+
+characters each; `openssl rand -base64 48`):
+
+- `BETTER_AUTH_SECRET` — signs the session cookies; the dashboard verifies
+  the cookie cache locally with it.
+- `CLIENT_IP_SECRET` — the dashboard signs the visitor's IP with it; the API
+  rate-limits by that IP and drops any IP without a valid signature.
+
+`BETTER_AUTH_URL` (API) is the **dashboard's** public URL, not the API's: it
+is what the browser sees, and an `https` URL turns on secure cookies.
 
 ### Ports
 
@@ -94,6 +122,40 @@ from `packages/db/.env`, defaulting to `admin@example.com` / `admin`).
 
 Grafana is published on 3001 rather than its native 3000 so the observability
 stack and `bun run dev` can run side by side.
+
+## Deploy
+
+`infra/docker/docker-compose.prod.yml` is a production-like stack: Postgres,
+Redis, a one-shot `migrate` job, the API and the dashboard. **Only the
+dashboard publishes a port**; the API, Postgres and Redis stay on the compose
+network.
+
+```bash
+cp infra/docker/.env.prod.example infra/docker/.env.prod   # fill the secrets
+docker compose -f infra/docker/docker-compose.prod.yml \
+  --env-file infra/docker/.env.prod up -d --build
+```
+
+The images build from the repo root (`docker build -f apps/<app>/Dockerfile .`)
+with dependencies from `bun.lock`; the root `.dockerignore` keeps
+`node_modules` and every `.env` out of the build context. The Dockerfiles are
+generated: edit `apps/*/dofigen.yml`, then run `dofigen update` (pins image
+digests) and `dofigen generate`.
+
+- **API** — a single compiled binary (`bun build --compile`) on
+  `oven/bun:1.4.3-slim`, as a non-root user.
+- **Dashboard** — the `adapter-node` build on `node:26.10.0-slim`. Everything
+  is bundled except `pino`/`pino-pretty`, so the runtime `node_modules` is a
+  few MB.
+
+Behind a TLS-terminating proxy, the dashboard needs two things from
+`adapter-node`:
+
+- `ORIGIN` set to the public `https` URL (the compose sets it from
+  `PUBLIC_URL`). Without it every form action answers 403.
+- The proxy's client-address header, so rate limits and the device list see
+  the visitor rather than the proxy: `ADDRESS_HEADER=X-Forwarded-For` and
+  `XFF_DEPTH` = the number of proxies in front (commented in the compose).
 
 ## Scripts
 
