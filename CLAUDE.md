@@ -414,6 +414,10 @@ measured or debugged; changing one regresses something.
   nested `@pack/design-system > dep` form because Bun's isolated linker does not
   resolve them as bare entries from the dashboard root. The `*/icons/*` globs
   stay: dropping them regressed cold render from ~19s to ~33s in testing.
+- **Lucide icons are imported one by one** (`@lucide/svelte/icons/<name>`).
+  The `@lucide/svelte` and `@lucide/svelte/icons` barrels make vite dev
+  serve all ~1900 icons on every page load (1995 requests per reload on
+  sign-in, 121 without); Biome's `noRestrictedImports` rejects them.
 - **`ssr.noExternal: ['lucide-svelte']` is gated to `command === 'build'`** — in
   dev, externalizing is what keeps SSR cold-start fast.
 - **`ssr.external: ['pino', 'pino-pretty', 'thread-stream']`** — pino resolves

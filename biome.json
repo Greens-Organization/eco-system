@@ -79,6 +79,15 @@
       "style": {
         "noDefaultExport": "off",
         "noImplicitBoolean": "off",
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "paths": {
+              "@lucide/svelte": "Import each icon from @lucide/svelte/icons/<name>: the barrel makes vite dev serve all ~1900 icons on every page load.",
+              "@lucide/svelte/icons": "Import each icon from @lucide/svelte/icons/<name>: the barrel makes vite dev serve all ~1900 icons on every page load."
+            }
+          }
+        },
         "useExplicitLengthCheck": "off",
         "useFilenamingConvention": {
           "level": "error",

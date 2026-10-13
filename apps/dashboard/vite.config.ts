@@ -128,7 +128,6 @@ export default defineConfig(({ command }) => ({
     // pre-bundle the per-icon deep imports up front; measured cold first-render
     // dropped from ~37s to ~19s on this (slow) box with the globs + warmup.
     include: [
-      '@lucide/svelte',
       '@lucide/svelte/icons/*',
       'mode-watcher',
       'zod',
