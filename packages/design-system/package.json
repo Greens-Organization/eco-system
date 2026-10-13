@@ -13,11 +13,12 @@
     "check:svelte": "svelte-check --tsconfig ./tsconfig.json"
   },
   "dependencies": {
-    "svelte": "catalog:",
-    "clsx": "catalog:",
-    "tailwind-merge": "catalog:",
     "bits-ui": "catalog:",
-    "mode-watcher": "catalog:"
+    "clsx": "catalog:",
+    "mode-watcher": "catalog:",
+    "svelte": "catalog:",
+    "svelte-sonner": "catalog:",
+    "tailwind-merge": "catalog:"
   },
   "devDependencies": {
     "@internationalized/date": "3.12.4",
