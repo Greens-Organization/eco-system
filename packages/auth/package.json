@@ -18,7 +18,7 @@
     "@pack/email": "workspace:*",
     "@pack/observability": "workspace:*",
     "@pack/tools": "workspace:*",
-    "better-auth": "1.7.6",
+    "better-auth": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

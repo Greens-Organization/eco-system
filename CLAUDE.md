@@ -167,11 +167,11 @@ look at it. For behavior changes, exercise the endpoint or route.
   `node:*` modules used (`async_hooks`, `crypto`, `net`, `os`…) are ones Bun
   implements.
 - **Versions** live in the root `package.json` `workspaces.catalog` /
-  `workspaces.catalogs.dev`. Reference them as `"catalog:"` — never pin a
-  version inside a package. The tree does not follow this yet (~42 literal
-  pins, cleanup is phase 12 of the backlog card); new deps go through the
-  catalog. All versions are exact (no `^`), so `bun update` is a no-op by
-  design.
+  `workspaces.catalogs.dev` (type, check and test tooling). Reference them
+  as `"catalog:"` / `"catalog:dev"` — never pin a version inside a package;
+  every workspace follows this. All versions are exact (no `^`), so
+  `bun update` is a no-op by design. Upgrades take the newest release at
+  least two weeks old.
 - **Runtime config** is a per-package `pack-env.ts` with a zod schema. Invalid
   env fails loudly at startup; no silent fallbacks. Secrets have a minimum
   length (`BETTER_AUTH_SECRET`, `CLIENT_IP_SECRET`: 32), URLs have no

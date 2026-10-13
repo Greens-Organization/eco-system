@@ -17,8 +17,8 @@
     "clean:hard": "git clean -xdf .cache .svelte-kit build node_modules"
   },
   "dependencies": {
-    "pino": "10.3.1",
-    "pino-pretty": "13.1.3"
+    "pino": "catalog:",
+    "pino-pretty": "catalog:"
   },
   "devDependencies": {
     "@lucide/svelte": "catalog:",
@@ -34,12 +34,12 @@
     "@sveltejs/kit": "catalog:",
     "@sveltejs/vite-plugin-svelte": "catalog:",
     "@tailwindcss/typography": "catalog:",
-    "@tailwindcss/vite": "4.3.3",
+    "@tailwindcss/vite": "catalog:",
     "@types/bun": "catalog:dev",
     "hono": "catalog:",
     "mode-watcher": "catalog:",
     "svelte": "catalog:",
-    "svelte-check": "4.7.6",
+    "svelte-check": "catalog:dev",
     "svelte-sonner": "catalog:",
     "tailwindcss": "catalog:",
     "uqr": "catalog:",

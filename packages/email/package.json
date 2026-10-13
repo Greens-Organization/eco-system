@@ -11,7 +11,7 @@
     "clean": "git clean -xdf .cache .turbo dist node_modules"
   },
   "dependencies": {
-    "nodemailer": "10.0.12",
+    "nodemailer": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

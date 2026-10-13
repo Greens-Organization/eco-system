@@ -3,19 +3,19 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "translate": "bun x -y languine@latest translate",
+    "translate": "bun x -y languine@4.0.1 translate",
     "clean": "git clean -xdf .cache .turbo dist node_modules"
   },
   "exports": {
     ".": "./index.ts"
   },
   "dependencies": {
-    "@formatjs/intl-localematcher": "0.9.0",
-    "negotiator": "1.1.0"
+    "@formatjs/intl-localematcher": "catalog:",
+    "negotiator": "catalog:"
   },
   "devDependencies": {
     "@pack/tsconfig": "workspace:*",
     "@types/bun": "catalog:dev",
-    "@types/negotiator": "0.6.5"
+    "@types/negotiator": "catalog:dev"
   }
 }

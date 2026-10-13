@@ -10,7 +10,7 @@
     "./json-ld": "./src/json-ld.ts"
   },
   "dependencies": {
-    "schema-dts": "2.0.0"
+    "schema-dts": "catalog:"
   },
   "devDependencies": {
     "@pack/tsconfig": "workspace:*",

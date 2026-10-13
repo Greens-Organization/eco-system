@@ -18,15 +18,15 @@
     "clean": "git clean -xdf .cache .turbo dist node_modules"
   },
   "dependencies": {
-    "@opentelemetry/api": "1.9.1",
-    "drizzle-orm": "0.45.3",
-    "drizzle-seed": "0.3.1",
-    "postgres": "3.4.9",
+    "@opentelemetry/api": "catalog:",
+    "drizzle-orm": "catalog:",
+    "drizzle-seed": "catalog:",
+    "postgres": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@pack/tools": "workspace:*",
     "@pack/tsconfig": "workspace:*",
-    "drizzle-kit": "0.31.11"
+    "drizzle-kit": "catalog:dev"
   }
 }
