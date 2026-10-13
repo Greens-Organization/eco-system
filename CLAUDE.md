@@ -148,7 +148,9 @@ bun run test:browser                  # 15 pass (needs Docker)
 `bun check` is not cached by turbo and takes about half a second.
 
 Turbo caches aggressively — pass `--force` when you need a real signal, or a
-green run may just be a replay.
+green run may just be a replay. The hash includes every `.env` / `.env.local`
+(`bun test` loads the one in its folder) and `NODE_ENV`; `test` tasks do not
+wait on each other.
 
 `apps/dashboard/static/**` has a `biome.json` override that turns off
 `noSvgWithoutTitle` — the rule targets inline SVG, not static assets.
