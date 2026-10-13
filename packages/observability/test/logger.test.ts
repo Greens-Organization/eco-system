@@ -31,7 +31,7 @@ describe('logger output', () => {
       },
     };
 
-    const testLog = pino(loggerOptions, stream);
+    const testLog = pino({ ...loggerOptions, level: 'info' }, stream);
     runWithContext({ request_id: 'rX', support_id: 'sX' }, () =>
       testLog.info({ route: '/x' }, 'hello')
     );
@@ -71,11 +71,14 @@ describe('spanToFields (trace_id/span_id correlation)', () => {
 describe('logger redaction', () => {
   test('credentials are censored wherever a caller puts them', () => {
     const lines: Record<string, unknown>[] = [];
-    const testLog = pino(loggerOptions, {
-      write: (s: string) => {
-        lines.push(JSON.parse(s));
-      },
-    });
+    const testLog = pino(
+      { ...loggerOptions, level: 'info' },
+      {
+        write: (s: string) => {
+          lines.push(JSON.parse(s));
+        },
+      }
+    );
 
     testLog.info(
       {

@@ -8,6 +8,7 @@
     "build": "turbo build",
     "dev": "turbo dev",
     "test": "turbo test",
+    "test:coverage": "turbo run test --force -- --coverage",
     "test:e2e": "bun run --filter @app/dashboard-api test:e2e",
     "test:browser": "bun run --filter @app/dashboard-svelte test:browser",
     "check:svelte": "turbo check:svelte",

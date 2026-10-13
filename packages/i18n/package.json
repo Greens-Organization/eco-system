@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "translate": "bun x -y languine@4.0.1 translate",
+    "test": "bun test --preload @pack/testing/preload",
     "clean": "git clean -xdf .cache .turbo dist node_modules"
   },
   "exports": {
@@ -14,6 +15,7 @@
     "negotiator": "catalog:"
   },
   "devDependencies": {
+    "@pack/testing": "workspace:*",
     "@pack/tsconfig": "workspace:*",
     "@types/bun": "catalog:dev",
     "@types/negotiator": "catalog:dev"

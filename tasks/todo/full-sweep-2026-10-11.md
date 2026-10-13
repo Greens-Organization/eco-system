@@ -269,7 +269,13 @@ itens abaixo, a fase em que cada um entra:
 - [x] Fase 7: `/v1/me` no e2e. Testes de cache contra o redis do compose de
   teste: cobertos pelos e2e de sessão/rate limit/limite por conta, que leem
   e escrevem o Redis de teste (namespace `auth:`, TTLs).
-- [ ] Fase 12:
+- [x] Fase 12 (2026-10-12): feito tudo abaixo. O Bun confere o
+  `coverageThreshold` **por arquivo**, então o piso é o arquivo mais fraco de
+  cada workspace, medindo só o código dele (`../**` ignorado); `bun run
+  test:coverage` no CI. `LOG_LEVEL=silent` no preload, que agora vale em
+  todo pacote com teste; `tests/` → `test/` nos pacotes; comentário do
+  `@pack/testing` corrigido; testes do `@pack/i18n` (formatação, locale e
+  paridade de chaves entre `en`/`pt`/`es`). Texto original:
   - `coverageThreshold` por workspace no `bunfig.toml`, começando pelo valor
     medido para só subir;
   - cobertura no CI;
@@ -607,14 +613,14 @@ camada do BFF:
 
 ## Infra / config
 
-- **Pins fora do catálogo:** 42 versões literais vs 44 `catalog:` — contraria
+- ✅ (fase 12) **Pins fora do catálogo:** 42 versões literais vs 44 `catalog:` — contraria
   `CLAUDE.md` §5. Três duplicam chave do catálogo (`@lucide/svelte`, `pino`,
   `pino-pretty`). `translate` do i18n usa `languine@latest`.
 - ✅ (fase 8) **Biome ignorava** todo o código do design-system e tinha
   ignores mortos (`apps/docs`, `apps/email`): removidos. Segue ignorado
   `scripts/**` (não existe pasta hoje) e `study`. O override de
   `apps/dashboard/static/**` já existia.
-- **turbo.json:** nenhuma env no hash (`envMode: loose`, sem `env`/`globalEnv`);
+- ✅ (fase 12) **turbo.json:** nenhuma env no hash (`envMode: loose`, sem `env`/`globalEnv`);
   `globalDependencies` aponta para `.env.*local`, que não existe — editar
   `.env` não invalida cache. `test` depende de `^test` sem motivo.
 - ✅ (fase 6) **Imagens:** fixadas nas versões que já rodavam
@@ -622,9 +628,12 @@ camada do BFF:
   `REDIS_PASSWORD=redis` ignorado removido do compose.
 - ✅ (fase 5) `.claude/settings.local.json` só era ignorado pelo gitignore
   global — agora está no `.gitignore` do repo.
-- **Deps:** 32 desatualizadas. Majors: SvelteKit **3.0**, adapter-node **6.0**
+- ✅ (fase 11) **Deps:** 32 desatualizadas. Majors: SvelteKit **3.0**, adapter-node **6.0**
   (novos desde 09-30), TypeScript 7, `@sentry/bun` 11, nodemailer 10.
-- **Código morto:** `@pack/storage` sem importador; `concurrently` e `ws` sem
+- ✅ (fase 12) **Código morto:** `concurrently`, `ws` e o `/health` do
+  `QUIET_PATHS` saíram. O `@pack/storage` fica: é um helper de S3 sem
+  importador por design, como o `@pack/seo` (anotado no CLAUDE.md).
+  Original: `@pack/storage` sem importador; `concurrently` e `ws` sem
   uso; `/health` em `QUIET_PATHS` sem rota. (✅ resolvidos pelo N6:
   `@pack/cache` agora guarda sessões e rate limit; `@pack/auth/client.svelte`
   foi apagado.)
@@ -794,7 +803,7 @@ no mesmo commit da mudança de comportamento.
 | 9 ✅ | Telas | **N4** + **G3** (reset de senha) + **e2e de navegador (Playwright)** — fechada 2026-10-12 |
 | 10 ✅ | Observabilidade do dashboard | **O2** — fechada 2026-10-12 |
 | 11 ✅ | Dependências | patches + **H1** (OTel, Sentry 11, nodemailer 10, localematcher 0.9, Scalar 0.12) — fechada 2026-10-12; TS 7 bloqueado pelo svelte-check, Kit 3 a partir de 2026-10-15 |
-| 12 | Higiene | pins fora do catálogo, ignores do biome, hash de env no turbo, código morto |
+| 12 ✅ | Higiene | pins fora do catálogo, hash de env no turbo, código morto, infra de teste (N5) — fechada 2026-10-12 |
 | 13 | Release | **G10** — último commit |
 | — | **Opcionais (o dono decide depois)** | **O3** manifests k8s/HPA; captcha no login (escalada do limite por conta); "confiar neste dispositivo" no 2FA; budget de bundle (`ANALYZE=1`); redirect de `/settings` → `/profile`; ordenação por coluna nas listas; skeleton de loading; Sentry no navegador (via túnel no BFF) |
 

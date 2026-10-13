@@ -35,6 +35,8 @@ jobs:
       # TypeScript via the root tsconfig references; .svelte files need svelte-check.
       - run: bun check
       - run: bunx turbo run check:svelte build
+      # Each workspace's bunfig.toml holds a per-file coverage floor.
+      - run: bun run test:coverage
 
   e2e:
     name: API e2e

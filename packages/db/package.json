@@ -8,7 +8,7 @@
     "./seed/admin": "./src/seed/admin.seed.ts"
   },
   "scripts": {
-    "test": "bun test",
+    "test": "bun test --preload @pack/testing/preload",
     "db:generate": "bun x --bun drizzle-kit generate",
     "db:migrate": "bun x --bun drizzle-kit migrate",
     "db:migrate:deploy": "bun src/migrate.ts",
@@ -25,6 +25,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@pack/testing": "workspace:*",
     "@pack/tools": "workspace:*",
     "@pack/tsconfig": "workspace:*",
     "drizzle-kit": "catalog:dev"

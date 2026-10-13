@@ -7,7 +7,7 @@
     "./pack-env": "./pack-env.ts"
   },
   "scripts": {
-    "test": "bun test",
+    "test": "bun test --preload @pack/testing/preload",
     "clean": "git clean -xdf .cache .turbo dist node_modules"
   },
   "dependencies": {
@@ -15,6 +15,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@pack/testing": "workspace:*",
     "@pack/tsconfig": "workspace:*",
     "@types/bun": "catalog:dev"
   }

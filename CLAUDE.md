@@ -84,8 +84,8 @@ the JS compiler API, and `svelte-check` 4.7.6 (latest) requires
 `typescript ^5 || ^6`. Move when `svelte-check` supports 7.
 
 `@app/dashboard-api`, `@app/dashboard-svelte`, `@pack/auth`, `@pack/db`,
-`@pack/observability`, `@pack/tools`, `@pack/testing`, `@pack/email` and
-`@pack/seo` define `test`. The
+`@pack/observability`, `@pack/tools`, `@pack/testing`, `@pack/email`,
+`@pack/i18n` and `@pack/seo` define `test`. The
 dashboard's run under plain `bun test` (no Vite), so they cover `src/lib`
 modules that do not import `$env`/`$app`; keep server logic there
 (`src/lib/server/*`) and inject what touches the network.
@@ -101,9 +101,18 @@ page (and its same-named inputs) on screen until the data arrives. The test
 compose has fixed container names, so this suite and `test:e2e` cannot run
 at the same time.
 
-`bun run --filter` puts a Bun-backed `node` shim first on `PATH` for the
-scripts it runs; `test/browser/run.ts` drops it so Playwright and
-`node build` get the real Node.
+The root `bunfig.toml` sets `[run] bun = true`, so a script started from the
+root (including through `--filter`) gets a Bun-backed `node` shim first on
+`PATH`; `test/browser/run.ts` drops it so Playwright and `node build` get
+the real Node.
+
+Tests live in `test/` in every workspace and preload `@pack/testing/preload`
+(`NODE_ENV=test`, exporters off, `LOG_LEVEL=silent` — a test that asserts on
+logs builds its own logger with an explicit level). Each workspace's
+`bunfig.toml` sets `coverageThreshold`, which Bun checks **per file**, and
+ignores `../**`, so it measures only its own code: the floor is today's
+weakest file, to be raised, never lowered. Coverage still lists only files
+some test imported.
 
 `drizzle-kit` must run under Bun (`bun x --bun`, as the `@pack/db` scripts do):
 the schema imports `bun`, so a bare `bunx drizzle-kit` fails to resolve it.
@@ -140,7 +149,8 @@ bunx biome check .                    # 0 errors
 bun check                             # 0 errors, 258 files across 11 projects
 bunx turbo run check:svelte --force   # 0 errors in dashboard + design-system
 bunx turbo run build --force          # api binary + dashboard vite build
-bunx turbo run test --force           # 191 pass / 0 fail
+bunx turbo run test --force           # 205 pass / 0 fail
+bun run test:coverage                 # same, under each workspace's coverage floor
 bun run test:e2e                      # 76 pass (needs Docker)
 bun run test:browser                  # 15 pass (needs Docker)
 ```
@@ -540,9 +550,10 @@ executed in phases (one verified commit per slice). The only other card,
 1. **CI is written but unproven** — the workflow has never run on GitHub.
    Unit tests used to depend on the local `.env`; they now pass in a clean
    checkout (verified in a worktree with no `.env` files).
-2. **Test coverage is concentrated** in 9 of 13 workspaces (191 unit + 76
-   API e2e + 15 browser). `bun test --coverage` only lists files a test imported, so
-   per-workspace percentages overstate it. Gaps and plan: card item N5.
+2. **Test coverage is concentrated** in 10 of 13 workspaces (205 unit + 76
+   API e2e + 15 browser); `cache`, `storage` and `design-system` have none.
+   Per-file coverage floors guard against regressions, not gaps: a file no
+   test imports is not measured at all.
 3. **Known bugs**: none open on the card. Fixed: the Dockerfile (phase 6),
    the 5-minute logout and the `/auth/*` 500 (phase 1), the
    rate limit (N6), the `db:reset` guard, the seed and the json-ld XSS

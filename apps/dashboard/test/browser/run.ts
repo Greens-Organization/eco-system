@@ -17,8 +17,9 @@ const COMPOSE = [
   'eco-browser-test',
 ];
 const DASHBOARD = resolve(import.meta.dir, '../..');
-// `bun run --filter` (the root script) puts a `node` that is really Bun first
-// on PATH. Playwright and the dashboard build must run on Node.
+// The root bunfig's `[run] bun = true` puts a `node` that is really Bun first
+// on PATH for scripts run from the root (the root test:browser, via
+// --filter). Playwright and the dashboard build must run on Node.
 const PATH = (process.env.PATH ?? '')
   .split(':')
   .filter((dir) => !/\/bun-node-[^/]+$/.test(dir))
