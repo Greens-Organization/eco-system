@@ -1,3 +1,4 @@
+import { createRequire } from 'node:module';
 import os from 'node:os';
 import { Writable } from 'node:stream';
 import { type Span, trace } from '@opentelemetry/api';
@@ -72,10 +73,16 @@ export const loggerOptions = {
  */
 const usePretty = env.LOG_PRETTY ?? Boolean(process.stdout?.isTTY);
 
-const transports: TransportTargetOptions[] = [
+/**
+ * Built only in pretty mode. The target is an absolute path: given a bare
+ * name, pino resolves it from the caller file in the stack trace, which
+ * vite dev's SSR reports as a relative path ("unable to determine transport
+ * target"). Resolved lazily: a compiled binary has no node_modules to look in.
+ */
+const prettyTransports = (): TransportTargetOptions[] => [
   {
     level: 'info',
-    target: 'pino-pretty',
+    target: createRequire(import.meta.url).resolve('pino-pretty'),
     options: {
       colorize: true,
       translateTime: 'HH:MM:ss',
@@ -88,12 +95,14 @@ const transports: TransportTargetOptions[] = [
   },
 ];
 
-if (env.FILE_LOG) {
-  transports.push({
-    target: 'pino/file',
-    options: { destination: './logs/app.log', mkdir: true },
-  });
-}
+const fileTransports: TransportTargetOptions[] = env.FILE_LOG
+  ? [
+      {
+        target: 'pino/file',
+        options: { destination: './logs/app.log', mkdir: true },
+      },
+    ]
+  : [];
 
 /**
  * When OTLP is enabled, stdout stays the primary sink and an in-process bridge
@@ -105,7 +114,10 @@ const otelLogsEnabled = Boolean(env.OTEL_EXPORTER_OTLP_ENDPOINT);
 
 function buildLogger(): Logger {
   if (usePretty) {
-    return pino({ ...loggerOptions, transport: { targets: transports } });
+    return pino({
+      ...loggerOptions,
+      transport: { targets: [...prettyTransports(), ...fileTransports] },
+    });
   }
   if (otelLogsEnabled) {
     // stdout stays the primary sink; the OTel bridge mirrors each record. A

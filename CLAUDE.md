@@ -436,6 +436,12 @@ measured or debugged; changing one regresses something.
   dev, externalizing is what keeps SSR cold-start fast.
 - **`ssr.external: ['pino', 'pino-pretty', 'thread-stream']`** — pino resolves
   its worker-thread transport via `__dirname`; bundling it breaks at runtime.
+- **The `pino-pretty` transport target is an absolute path** (`createRequire(
+  import.meta.url).resolve`, in `@pack/observability/logger`), resolved only
+  in pretty mode. A bare name is resolved from the caller file in the stack,
+  which vite dev's SSR reports as relative: every page was a 500 ("unable
+  to determine transport target") in a TTY. Tests run without a TTY, so only
+  `LOG_PRETTY=true` reproduces it.
 - **`prepare: true` in `packages/db/index.ts`** — correct for the long-running
   API. Revert to `false` behind PgBouncer transaction mode, the Supabase pooler,
   or serverless.
