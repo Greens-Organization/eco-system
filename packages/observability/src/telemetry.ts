@@ -126,7 +126,9 @@ export function startObservability(sdk: SentrySdk): void {
     // see logger/otel-stream), exporting via OTLP (-> Loki in the lgtm stack).
     loggerProvider = new LoggerProvider({
       resource,
-      processors: [new BatchLogRecordProcessor(new OTLPLogExporter())],
+      processors: [
+        new BatchLogRecordProcessor({ exporter: new OTLPLogExporter() }),
+      ],
     });
     logs.setGlobalLoggerProvider(loggerProvider);
   }

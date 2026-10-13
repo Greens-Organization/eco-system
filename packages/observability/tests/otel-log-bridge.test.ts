@@ -51,7 +51,7 @@ describe('createOtelLogStream (pino -> OTel logs bridge)', () => {
   test('emits one LogRecord per pino line with body, severity, attributes', async () => {
     const exporter = new InMemoryLogRecordExporter();
     const provider = new LoggerProvider({
-      processors: [new SimpleLogRecordProcessor(exporter)],
+      processors: [new SimpleLogRecordProcessor({ exporter })],
     });
     logs.setGlobalLoggerProvider(provider);
 
