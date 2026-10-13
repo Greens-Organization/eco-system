@@ -101,7 +101,8 @@
       "description": "Your personal information.",
       "name": "Name",
       "email": "Email",
-      "accountId": "Account ID"
+      "accountId": "Account ID",
+      "memberSince": "Member since"
     },
     "errors": {
       "notFound": "Page not found",

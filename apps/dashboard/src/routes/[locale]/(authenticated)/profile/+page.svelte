@@ -69,7 +69,8 @@ const deviceName = (device: {
 const inputClass =
   'flex h-9 w-full max-w-xs rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
-const user = $derived(page.data.user);
+// The API's row when it answered; the session's copy otherwise.
+const user = $derived(data.me ?? page.data.user);
 
 const avatarSrc = $derived(
   user?.image ?? genericAvatar(user?.name ?? user?.email ?? 'U')
@@ -118,6 +119,12 @@ const rowClass = 'flex items-center justify-between gap-4';
                 <span class="font-medium">{t.app.profile.email}</span>
                 <span class="text-muted-foreground">{user?.email ?? "—"}</span>
             </div>
+            {#if data.me}
+                <div class={detailRowClass}>
+                    <span class="font-medium">{t.app.profile.memberSince}</span>
+                    <span class="text-muted-foreground">{data.me.memberSince}</span>
+                </div>
+            {/if}
             <div class={detailRowClass}>
                 <span class="font-medium">{t.app.profile.accountId}</span>
                 <span class="text-muted-foreground font-mono text-xs">

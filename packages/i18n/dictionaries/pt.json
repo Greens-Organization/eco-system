@@ -101,7 +101,8 @@
       "description": "Suas informações pessoais.",
       "name": "Nome",
       "email": "E-mail",
-      "accountId": "ID da conta"
+      "accountId": "ID da conta",
+      "memberSince": "Membro desde"
     },
     "errors": {
       "notFound": "Página não encontrada",

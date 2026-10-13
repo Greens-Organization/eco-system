@@ -1,8 +1,11 @@
-import { fail, type RequestEvent } from '@sveltejs/kit';
+import { fail, type RequestEvent, redirect } from '@sveltejs/kit';
 import { renderSVG } from 'uqr';
+import z from 'zod';
+import { createApiClient } from '$lib/api/hono-client';
+import { safeFetch } from '$lib/api/safe-fetch';
 import { localizeAuthError, reasonFor, userMessageFor } from '$lib/auth-proxy';
 import { callAuth, errorBody } from '$lib/server/auth-api';
-import { forwardSetCookies } from '$lib/server/auth-cookies';
+import { clearAuthCookies, forwardSetCookies } from '$lib/server/auth-cookies';
 import {
   type ListedSession,
   ListedSessionsSchema,
@@ -12,10 +15,51 @@ import {
 } from '$lib/server/devices';
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async (event) => ({
-  twoFactorEnabled: event.locals.user?.twoFactorEnabled === true,
-  devices: await loadDevices(event),
+const MeSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  email: z.string(),
+  emailVerified: z.boolean(),
+  image: z.string().nullable(),
+  twoFactorEnabled: z.boolean(),
+  createdAt: z.string(),
 });
+
+type Me = z.infer<typeof MeSchema>;
+
+/** The user's row from the API (`GET /v1/me`), the source of truth. */
+async function loadMe(event: RequestEvent) {
+  const { locals, cookies, request } = event;
+  const api = createApiClient(
+    request.headers.get('cookie') ?? '',
+    locals.requestId
+  );
+  const result = await safeFetch<Me>(api.me.$get(), MeSchema, locals.log);
+  if (!result.success && result.status === 401) {
+    clearAuthCookies(cookies);
+    redirect(307, `/${locals.locale}/sign-in`);
+  }
+  if (!result.success) return null;
+
+  const me = result.data;
+  return {
+    ...me,
+    memberSince: new Intl.DateTimeFormat(locals.locale, {
+      dateStyle: 'long',
+    }).format(new Date(me.createdAt)),
+  };
+}
+
+export const load: PageServerLoad = async (event) => {
+  const [me, devices] = await Promise.all([loadMe(event), loadDevices(event)]);
+  return {
+    me,
+    // The database is fresher than the cookie cache (up to 60 s old).
+    twoFactorEnabled:
+      me?.twoFactorEnabled ?? event.locals.user?.twoFactorEnabled === true,
+    devices,
+  };
+};
 
 /** The user's sessions, tokens included: server-side only. */
 async function listSessions(
