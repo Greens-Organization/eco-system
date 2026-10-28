@@ -25,7 +25,7 @@ structured logging, OpenTelemetry, Sentry, Drizzle migrations, and a Biome +
 apps/        deployable applications
 packages/    shared @pack/* libraries
 infra/       docker compose stacks (infra, observability, test)
-scripts/     repo maintenance scripts
+scripts/     repo maintenance (@repo/scripts): GitHub setup, branch pruning
 tasks/       task tracker (todo / done)
 study/       reference material, not part of the build
 ```
@@ -203,6 +203,8 @@ Root scripts fan out across the workspace via Turborepo:
 | `bun run db:<task>`          | `generate`, `migrate`, `seed`, `reset`, `studio` in `@pack/db`. |
 | `bun run docker:infra:up`    | Start Postgres + Redis and wait until healthy.       |
 | `bun run docker:obs:up`      | Start the observability stack (Grafana, OTLP).       |
+| `bun run github:setup`       | Apply the branch rules and merge settings on GitHub (`--dry-run` first). |
+| `bun run git:prune`          | List local branches already merged; `--yes` deletes them. |
 
 The e2e suite uses `infra/docker/docker-compose.test.yml`.
 
@@ -235,6 +237,36 @@ Locales are `en` (default), `pt` and `es`, declared in
 `packages/i18n/.env.example`). Nothing at runtime reads that variable — it is
 only for the translation step, and you can edit the dictionaries by hand
 instead.
+
+## Branches and pull requests
+
+`main`, `develop` and `release/**` are protected: they cannot be deleted or
+force-pushed, and change only through a pull request whose CI (lint, type
+check, unit tests, API e2e, browser e2e) is green — for everyone, admins
+included. Pull requests are squash-merged by hand (no auto-merge), and
+GitHub deletes the merged branch.
+
+Every other branch is short-lived:
+
+```bash
+git switch -c feat/my-change   # from an up-to-date main (or develop)
+# commit, push, open a pull request, wait for CI, squash-merge
+bun run git:prune              # then drop the merged branches locally
+bun run git:prune --yes
+```
+
+**After creating a repository from this template**, an admin runs once
+(`gh` signed in): "Use this template" copies files, not repository settings.
+
+```bash
+bun run github:setup --dry-run   # what would change
+bun run github:setup
+```
+
+It creates the ruleset in `.github/rulesets/protected-branches.json` and
+sets squash-only merges with branch deletion on merge
+(`scripts/src/github-policy.ts`). Run it again after changing either. On GitHub Free, rulesets
+apply to public repositories only.
 
 ## Conventions
 

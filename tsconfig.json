@@ -12,6 +12,7 @@
     { "path": "./packages/seo" },
     { "path": "./packages/storage" },
     { "path": "./packages/testing" },
-    { "path": "./packages/tools" }
+    { "path": "./packages/tools" },
+    { "path": "./scripts" }
   ]
 }

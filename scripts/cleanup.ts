@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
-import { $, Glob } from 'bun';
 import { basename, dirname, resolve } from 'node:path';
+import { $, Glob } from 'bun';
 
 /**
  * Limpeza do monorepo: roda `bun run clean` em cada workspace que define
@@ -14,7 +14,7 @@ type Result = { name: string; status: Status; error?: string };
 const rootDir = resolve(import.meta.dir, '..');
 
 async function readPackageScripts(
-  packageJsonPath: string,
+  packageJsonPath: string
 ): Promise<Record<string, string> | null> {
   try {
     const pkg = (await Bun.file(packageJsonPath).json()) as {
@@ -53,11 +53,11 @@ async function main(): Promise<void> {
 
   const glob = new Glob('{packages,apps}/*/package.json');
   const workspaces = await Array.fromAsync(
-    glob.scan({ cwd: rootDir, absolute: true }),
+    glob.scan({ cwd: rootDir, absolute: true })
   );
 
   console.log(
-    `📦 ${workspaces.length} workspaces encontrados — limpando em paralelo...\n`,
+    `📦 ${workspaces.length} workspaces encontrados — limpando em paralelo...\n`
   );
 
   const results = await Promise.all([
@@ -75,7 +75,7 @@ async function main(): Promise<void> {
 
   const elapsed = ((performance.now() - start) / 1000).toFixed(1);
   console.log(
-    `\n✨ ${cleaned.length} limpos, ${skipped.length} pulados, ${failed.length} falharam em ${elapsed}s`,
+    `\n✨ ${cleaned.length} limpos, ${skipped.length} pulados, ${failed.length} falharam em ${elapsed}s`
   );
 
   if (failed.length > 0) process.exit(1);

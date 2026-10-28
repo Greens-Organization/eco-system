@@ -1,8 +1,9 @@
 name: CI
 
 on:
+  # The protected branches (.github/rulesets/protected-branches.json).
   push:
-    branches: [main]
+    branches: [main, develop, 'release/**']
   pull_request:
 
 concurrency:
