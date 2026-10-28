@@ -441,6 +441,12 @@ measured or debugged; changing one regresses something.
   sign-in, 121 without); Biome's `noRestrictedImports` rejects them.
 - **`ssr.noExternal: ['lucide-svelte']` is gated to `command === 'build'`** — in
   dev, externalizing is what keeps SSR cold-start fast.
+- **`envFilesIntoProcess` in `vite.config.ts`** (dev only) copies the
+  dashboard's `.env` / `.env.local` into `process.env`. Kit reads those files
+  for `$app/env/private` only, and the `@pack/*` `pack-env.ts` read
+  `process.env`: without it the dashboard logged as `service: eco-system`,
+  in JSON, ignoring `LOG_PRETTY`, `LOG_LEVEL`, `SENTRY_DSN` and `OTEL_*`. A
+  variable set in the shell wins; builds and `node build` are untouched.
 - **`@pack/observability/logger` configures LogTape when imported**
   (`configureSync` with `reset: true`). LogTape says only applications
   configure; this package is the apps' own logging setup, and configuring
