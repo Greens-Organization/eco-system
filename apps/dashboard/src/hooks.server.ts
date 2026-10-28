@@ -46,24 +46,27 @@ function isProtectedPath(pathname: string): boolean {
  * Per-request observability:
  *  - generates a short requestId, exposes via `locals.requestId` and the
  *    `x-request-id` response header
- *  - puts a child pino logger in `locals.log` so every load/action shares
- *    the same correlation id (requestId + path inlined by pino-pretty)
+ *  - puts a logger `with({ requestId, path })` in `locals.log` so every
+ *    load/action shares the same correlation id (shown at the head of each
+ *    dev line)
  *  - logs ONE line per request with method, status, and duration
  */
 const logHandle: Handle = async ({ event, resolve }) => {
   // Short, copy-pasteable id. Collisions are fine — only used for
   // correlation within a single dev session.
   const requestId = crypto.randomUUID().slice(0, 8);
-  const reqLog = log.child({ requestId, path: event.url.pathname });
+  const reqLog = log.with({ requestId, path: event.url.pathname });
 
   event.locals.requestId = requestId;
   event.locals.log = reqLog;
 
   const t0 = performance.now();
   const response = await resolve(event);
-  const dur = Math.round(performance.now() - t0);
-
-  reqLog.info(`${event.request.method} ${response.status} ${dur}ms`);
+  reqLog.info('{method} {status_code} {duration_ms}ms', {
+    method: event.request.method,
+    status_code: response.status,
+    duration_ms: Math.round(performance.now() - t0),
+  });
   response.headers.set('x-request-id', requestId);
   return response;
 };
@@ -145,10 +148,9 @@ const sessionHandle: Handle = async ({ event, resolve }) => {
       if (resolved.staleCookies) clearAuthCookies(event.cookies);
       break;
     case 'unavailable':
-      event.locals.log.error(
-        { reason: resolved.reason },
-        'auth.session.unavailable'
-      );
+      event.locals.log.error('auth.session.unavailable', {
+        reason: resolved.reason,
+      });
       if (isProtectedPath(event.url.pathname)) {
         error(503, 'Authentication service unavailable');
       }
@@ -193,7 +195,7 @@ export const handleError: HandleServerError = ({ kind, error, event }) => {
   const requestLog = event.locals.log ?? log;
 
   if (kind === 'unknown') {
-    requestLog.error({ err: error, status: 500, errorId }, 'unhandled');
+    requestLog.error('unhandled', { err: error, status: 500, errorId });
     // No-op without SENTRY_DSN. The errorId is what the user quotes back.
     captureError(error, {
       support_id: errorId,
@@ -203,7 +205,11 @@ export const handleError: HandleServerError = ({ kind, error, event }) => {
       status_code: 500,
     });
   } else if (kind === 'framework') {
-    requestLog.warn({ status: error.status, errorId }, error.message);
+    requestLog.warn('{error_message}', {
+      error_message: error.message,
+      status: error.status,
+      errorId,
+    });
   }
 
   return { errorId };

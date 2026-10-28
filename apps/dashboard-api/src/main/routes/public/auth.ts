@@ -31,7 +31,7 @@ auth.on(['POST', 'GET'], '/*', (c) => {
     // Log lines from here on carry the browser's IP, not the dashboard's.
     setContext({ ip: c.req.raw.headers.get(CLIENT_IP_HEADER) ?? undefined });
   } else if (claimed) {
-    log.warn({ path: c.req.path }, 'auth.client_ip.rejected');
+    log.warn('auth.client_ip.rejected', { path: c.req.path });
   }
   return bAuth.handler(c.req.raw);
 });

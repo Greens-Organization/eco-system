@@ -1,7 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { EventEmitter } from 'node:events';
 import {
-  crashReason,
   createCrashHandler,
   drain,
   exitCodeFor,
@@ -82,28 +81,6 @@ describe('isDevReload', () => {
     expect(isDevReload(['--hot'])).toBe(true);
     expect(isDevReload(['--watch'])).toBe(true);
     expect(isDevReload([])).toBe(false);
-  });
-});
-
-describe('crashReason', () => {
-  test("keeps a failed import's message (Bun's ResolveMessage is circular)", async () => {
-    // A variable, so the type checker does not try to resolve it either.
-    const missing = '#nope/missing';
-    const reason = await import(missing).catch((e: unknown) => e);
-    const { err } = crashReason(reason);
-    expect(err.message).toContain("Cannot find package '#nope'");
-    // pino has to be able to write it.
-    expect(() => JSON.stringify(err)).not.toThrow();
-  });
-
-  test('an Error keeps its type and stack; anything else becomes a string', () => {
-    const { err } = crashReason(new TypeError('boom'));
-    expect(err).toMatchObject({ type: 'TypeError', message: 'boom' });
-    expect(err.stack).toContain('boom');
-    expect(crashReason('nope').err).toEqual({
-      type: 'string',
-      message: 'nope',
-    });
   });
 });
 

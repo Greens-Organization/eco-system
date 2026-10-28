@@ -48,7 +48,7 @@ builders:
       ORIGIN: ""
     run: bun run build
 
-  # What the build leaves external (pino, zod, uqr…), hoisted into one plain
+  # What the build leaves external (`dependencies`: @opentelemetry/api), hoisted into one plain
   # node_modules that Node resolves without Bun's isolated-linker symlinks.
   # The @pack/* workspace packages are bundled into the build.
   runtime-deps:

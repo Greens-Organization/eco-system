@@ -60,10 +60,10 @@ describe('safeFetch', () => {
   // These used to vanish: the page showed a generic error and nothing was
   // logged.
   test('every failure is logged with its cause', async () => {
-    const lines: [string, string, object][] = [];
+    const lines: [string, string, object | undefined][] = [];
     const log = {
-      warn: (obj: object, msg: string) => lines.push(['warn', msg, obj]),
-      error: (obj: object, msg: string) => lines.push(['error', msg, obj]),
+      warn: (msg: string, obj?: object) => lines.push(['warn', msg, obj]),
+      error: (msg: string, obj?: object) => lines.push(['error', msg, obj]),
     };
 
     await safeFetch(respond('{"total":"3"}'), Schema, log);

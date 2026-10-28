@@ -1,10 +1,10 @@
 import type { ClientResponse } from 'hono/client';
 import { ZodError, type ZodType } from 'zod';
 
-/** The slice of a pino logger used here (`locals.log` in a load). */
+/** The slice of a logger used here (`locals.log` in a load). */
 type Log = {
-  warn(obj: object, msg: string): void;
-  error(obj: object, msg: string): void;
+  warn(message: string, properties?: Record<string, unknown>): void;
+  error(message: string, properties?: Record<string, unknown>): void;
 };
 
 type Success<T> = { success: true; data: T };
@@ -50,10 +50,10 @@ export async function safeFetch<T>(
     const res = await request;
     if (!res.ok) {
       const result = await failure(res);
-      log?.warn(
-        { status: result.status, error: result.error },
-        'api.request.rejected'
-      );
+      log?.warn('api.request.rejected', {
+        status: result.status,
+        error: result.error,
+      });
       return result;
     }
     const body: unknown = await res.json();
@@ -61,12 +61,11 @@ export async function safeFetch<T>(
     return { success: true, data };
   } catch (error) {
     if (error instanceof ZodError) {
-      log?.error({ issues: error.issues }, 'api.response.schema_mismatch');
+      log?.error('api.response.schema_mismatch', { issues: error.issues });
     } else {
-      log?.error(
-        { reason: error instanceof Error ? error.message : String(error) },
-        'api.request.failed'
-      );
+      log?.error('api.request.failed', {
+        reason: error instanceof Error ? error.message : String(error),
+      });
     }
     return { success: false, error: 'Internal server error', status: 500 };
   }

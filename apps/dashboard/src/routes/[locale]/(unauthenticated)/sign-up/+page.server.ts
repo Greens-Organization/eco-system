@@ -41,7 +41,7 @@ export const actions: Actions = {
 
     const { domain, localHint } = redactEmail(email);
     const t0 = performance.now();
-    locals.log.info({ domain, localHint }, 'auth.signup.attempt');
+    locals.log.info('auth.signup.attempt', { domain, localHint });
 
     const result = await authFetch(`${env.API_URL}/auth/sign-up/email`, {
       method: 'POST',
@@ -59,10 +59,11 @@ export const actions: Actions = {
     const dur_ms = Math.round(performance.now() - t0);
 
     if (!result.ok) {
-      locals.log.error(
-        { kind: result.kind, reason: reasonFor(result), dur_ms },
-        'auth.signup.unreachable'
-      );
+      locals.log.error('auth.signup.unreachable', {
+        kind: result.kind,
+        reason: reasonFor(result),
+        dur_ms,
+      });
       return fail(503, {
         error: userMessageFor(result.kind, errors),
         requestId: locals.requestId,
@@ -76,17 +77,18 @@ export const actions: Actions = {
         code?: string;
         message?: string;
       };
-      locals.log.warn(
-        { status: res.status, dur_ms, code: body.code },
-        'auth.signup.rejected'
-      );
+      locals.log.warn('auth.signup.rejected', {
+        status: res.status,
+        dur_ms,
+        code: body.code,
+      });
       return fail(res.status, {
         error: localizeAuthError(res.status, body, errors),
         requestId: locals.requestId,
       });
     }
 
-    locals.log.info({ status: res.status, dur_ms }, 'auth.signup.success');
+    locals.log.info('auth.signup.success', { status: res.status, dur_ms });
 
     const locale = locals.locale ?? defaultLocale;
     redirect(303, `/${locale}/sign-in`);

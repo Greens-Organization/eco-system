@@ -26,8 +26,8 @@ export function buildApp() {
   /**
    * Observability — order matters. `requestId()` seeds the id; `@hono/otel`
    * opens the HTTP span (no-op until the OTel SDK is configured) and wraps the
-   * rest, so logs inside `observability()` carry trace_id/span_id via the Pino
-   * mixin; `observability()` runs the request in the ALS scope (correlated logs
+   * rest, so logs inside `observability()` carry trace_id/span_id via the
+   * logger's implicit context; `observability()` runs the request in the ALS scope (correlated logs
    * + support_id). See @pack/observability.
    */
   app.use('*', requestId());

@@ -10,15 +10,12 @@ import { log } from '#lib/logger.js';
 export const handleError: HandleClientError = ({ kind, error, event }) => {
   const errorId = crypto.randomUUID();
   if (kind === 'unknown') {
-    log.error(
-      {
-        err: error instanceof Error ? error.message : error,
-        stack: error instanceof Error ? error.stack : undefined,
-        path: event.url.pathname,
-        errorId,
-      },
-      'unhandled'
-    );
+    log.error('unhandled', {
+      err: error instanceof Error ? error.message : error,
+      stack: error instanceof Error ? error.stack : undefined,
+      path: event.url.pathname,
+      errorId,
+    });
   }
   return { errorId };
 };

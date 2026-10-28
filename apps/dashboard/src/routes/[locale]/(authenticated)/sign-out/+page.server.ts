@@ -26,15 +26,16 @@ export const actions: Actions = {
     const dur_ms = Math.round(performance.now() - t0);
 
     if (result.ok) {
-      locals.log.info(
-        { status: result.response.status, dur_ms },
-        'auth.signout.success'
-      );
+      locals.log.info('auth.signout.success', {
+        status: result.response.status,
+        dur_ms,
+      });
     } else {
-      locals.log.error(
-        { kind: result.kind, reason: reasonFor(result), dur_ms },
-        'auth.signout.unreachable'
-      );
+      locals.log.error('auth.signout.unreachable', {
+        kind: result.kind,
+        reason: reasonFor(result),
+        dur_ms,
+      });
     }
 
     clearAuthCookies(cookies);

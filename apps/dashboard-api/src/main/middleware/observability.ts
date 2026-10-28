@@ -62,7 +62,7 @@ function peerAddress(c: Context): string | undefined {
  *
  *  - builds the per-request context (request_id, support_id, cf_ray_id, route,
  *    method, ip, user_agent) and runs the request inside the ALS scope, so
- *    every `log.*` from any layer is correlated via the Pino mixin;
+ *    every `log.*` from any layer is correlated via the logger's implicit context;
  *  - stashes the context on `c` (`obsContext`) so the central error handler,
  *    which runs OUTSIDE the ALS scope, can still read support_id;
  *  - on response, records status_code/duration_ms and emits one access line.
@@ -89,9 +89,14 @@ export const observability = () =>
       const dur_ms = Math.round(performance.now() - start);
       setContext({ status_code: c.res.status, duration_ms: dur_ms });
 
-      const fields = c.get('user') ? { user_id: c.get('user')?.id } : {};
-      const msg = `${c.req.method} ${c.res.status} ${dur_ms}ms`;
-      if (QUIET_PATHS.has(c.req.path)) log.debug(fields, msg);
-      else log.info(fields, msg);
+      const fields = {
+        method: c.req.method,
+        status_code: c.res.status,
+        duration_ms: dur_ms,
+        ...(c.get('user') ? { user_id: c.get('user')?.id } : {}),
+      };
+      const msg = '{method} {status_code} {duration_ms}ms';
+      if (QUIET_PATHS.has(c.req.path)) log.debug(msg, fields);
+      else log.info(msg, fields);
     });
   });

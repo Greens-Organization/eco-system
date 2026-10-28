@@ -111,7 +111,8 @@ the real Node.
 
 Tests live in `test/` in every workspace and preload `@pack/testing/preload`
 (`NODE_ENV=test`, exporters off, `LOG_LEVEL=silent` — a test that asserts on
-logs builds its own logger with an explicit level). Each workspace's
+logs calls `configureLogging({ level, sinks })` with a capturing sink and
+`configureLogging()` after, since LogTape's configuration is process-wide). Each workspace's
 `bunfig.toml` sets `coverageThreshold`, which Bun checks **per file**, and
 ignores `../**`, so it measures only its own code: the floor is today's
 weakest file, to be raised, never lowered. Coverage still lists only files
@@ -152,7 +153,7 @@ bunx biome check .                    # 0 errors
 bun check                             # 0 errors, 258 files across 11 projects
 bunx turbo run check:svelte --force   # 0 errors in dashboard + design-system
 bunx turbo run build --force          # api binary + dashboard vite build
-bunx turbo run test --force           # 215 pass / 0 fail
+bunx turbo run test --force           # 219 pass / 0 fail
 bun run test:coverage                 # same, under each workspace's coverage floor
 bun run test:e2e                      # 76 pass (needs Docker)
 bun run test:browser                  # 20 pass (needs Docker)
@@ -233,9 +234,7 @@ look at it. For behavior changes, exercise the endpoint or route.
   process Bun keeps alive (a dev API stuck at `/ready` 503, sign-ins
   hanging). `--hot` re-runs the module with no teardown hook
   (oven-sh/bun#7337), so `replaceProcessHandlers` drops the previous run's
-  handlers. Crash reasons go through `crashReason`: Bun's ResolveMessage is
-  circular and pino logged it as "[unable to serialize…]". `HOST` is passed
-  to `Bun.serve`. Hono applies
+  handlers. `HOST` is passed to `Bun.serve`. Hono applies
   middleware in registration order, so `/v1/openapi` and the Scalar UI —
   registered earlier — stay public by design.
 
@@ -404,12 +403,12 @@ measured or debugged; changing one regresses something.
   `employees` stay mocked; do not "fix" them by inventing tables. `/v1/me` is
   the one database-backed example (`traced` query, e2e), and README "Adding
   your own data" is the recipe.
-- **The dashboard's runtime deps are `devDependencies`** — only `pino`,
-  `pino-pretty` and `@opentelemetry/api` sit in `dependencies`. adapter-node bundles devDependencies
+- **The dashboard's runtime deps are `devDependencies`** — only
+  `@opentelemetry/api` sits in `dependencies`. adapter-node bundles devDependencies
   and leaves dependencies external, so this keeps the image's
   `node_modules` at ~3 MB instead of ~330 MB of workspace dev tooling
-  (drizzle-kit, typescript, rolldown…). pino stays external because its
-  transport resolves the worker via `__dirname`; Kit's tracing imports
+  (drizzle-kit, typescript, rolldown…). LogTape (ESM, no dependencies) is
+  bundled with `@pack/observability`; Kit's tracing imports
   `@opentelemetry/api` and the adapter leaves it external, so the image
   failed to start without it. A new runtime dep of the dashboard goes in
   `devDependencies` unless it must not be bundled.
@@ -442,14 +441,17 @@ measured or debugged; changing one regresses something.
   sign-in, 121 without); Biome's `noRestrictedImports` rejects them.
 - **`ssr.noExternal: ['lucide-svelte']` is gated to `command === 'build'`** — in
   dev, externalizing is what keeps SSR cold-start fast.
-- **`ssr.external: ['pino', 'pino-pretty', 'thread-stream']`** — pino resolves
-  its worker-thread transport via `__dirname`; bundling it breaks at runtime.
-- **The `pino-pretty` transport target is an absolute path** (`createRequire(
-  import.meta.url).resolve`, in `@pack/observability/logger`), resolved only
-  in pretty mode. A bare name is resolved from the caller file in the stack,
-  which vite dev's SSR reports as relative: every page was a 500 ("unable
-  to determine transport target") in a TTY. Tests run without a TTY, so only
-  `LOG_PRETTY=true` reproduces it.
+- **`@pack/observability/logger` configures LogTape when imported**
+  (`configureSync` with `reset: true`). LogTape says only applications
+  configure; this package is the apps' own logging setup, and configuring
+  on import means no record is dropped before an entry point gets to it.
+  `reset` lets Vite's SSR reload the module. Messages are templates: pass
+  dynamic text as a property (`log.warn('{error_message}', { error_message
+  })`), never as the message.
+- **No `@logtape/otel`, no `@logtape/pretty`** — the OTel sink is ours
+  (`logger/otel-sink.ts`): `@logtape/otel` pins an older OTel SDK than the
+  catalog (a second copy) and brings the gRPC and proto exporters. The dev
+  line is ours too (`prettyLine`, one line per record).
 - **`prepare: true` in `packages/db/index.ts`** — correct for the long-running
   API. Revert to `false` behind PgBouncer transaction mode, the Supabase pooler,
   or serverless.
@@ -485,11 +487,18 @@ Everything is **default-off**: no `SENTRY_DSN` → Sentry is a no-op; no
 
 ### Log contract (3 layers)
 
-pino JSON, composed in `@pack/observability/logger`:
+LogTape, configured in `@pack/observability/logger`. Calls are
+`log.info('event.name', { fields })`; `log.with({...})` for a child,
+`getLogger('part')` for a category under `eco-system`. Output: one readable
+line per record in dev (`LOG_PRETTY=true`, or unset on a terminal), JSON
+Lines otherwise (`@timestamp`, `level`, `logger`, `message`, then every
+field at the root); `FILE_LOG` adds `logs/app.log`, an OTLP endpoint adds
+the OTel sink. `LOG_LEVEL` keeps pino's names (`warn`, `silent`).
 
 1. **Per process** (`base`): `service`, `environment`, `instance`, `version`,
    `region?`.
-2. **Per request** (AsyncLocalStorage `mixin` → `getContext()`): `request_id`,
+2. **Per request** (AsyncLocalStorage, read as LogTape's implicit context
+   on every record — `runWithContext` / `setContext`): `request_id`,
    `support_id`, `cf_ray_id?`, `route` (the handler pattern,
    `/v1/customers/:id`, or `(unmatched)`), `path` (the concrete URL),
    `method`, `status_code`, `duration_ms`, `ip`, `user_agent`, plus business
@@ -504,8 +513,8 @@ pino JSON, composed in `@pack/observability/logger`:
 `trace_id` / `span_id` are injected from the active OTel span, so logs correlate
 with traces automatically.
 
-> The pino-pretty transport deliberately surfaces `requestId` / `path` (and
-> `request_id` / `route`). The dashboard's `hooks.server.ts` bridges live logs
+> The dev line puts `request_id` / `requestId`, `route` and `path` at its
+> head (`prettyLine`). The dashboard's `hooks.server.ts` correlates its lines
 > through these fields — **do not remove them.**
 
 ### Classification → Sentry
@@ -528,8 +537,10 @@ local `vars`. A new field is dropped by default. That is the second wall:
 Sentry 11 collects users, cookies, headers, bodies, query strings and frame
 variables **by default** (`sendDefaultPii` is gone), so `telemetry.ts` turns
 each off in `dataCollection`. Its options are typed `satisfies NodeOptions`
-so a renamed option fails `bun check` instead of being ignored. The pino logger `redact`s `password`, `token`, `secret` and
-authorization/cookie headers (one level deep) as `[redacted]`.
+so a renamed option fails `bun check` instead of being ignored. The logger
+censors `password`, `token`, `secret`, `authorization`, `cookie`,
+`set-cookie` and the OAuth token names as `[redacted]`, at any depth
+(`@logtape/redaction` on every sink, exact field names).
 
 `generateSupportId()` → `SUP-` + 12 uppercase hex. Set once per request,
 returned to the client, sent to Sentry as a tag.
@@ -610,7 +621,7 @@ No open cards in `tasks/todo`. Largest open items:
 1. **CI is written but unproven** — the workflow has never run on GitHub.
    Unit tests used to depend on the local `.env`; they now pass in a clean
    checkout (verified in a worktree with no `.env` files).
-2. **Test coverage is concentrated** in 10 of 13 workspaces (215 unit + 76
+2. **Test coverage is concentrated** in 10 of 13 workspaces (219 unit + 76
    API e2e + 20 browser); `cache`, `storage` and `design-system` have none.
    Per-file coverage floors guard against regressions, not gaps: a file no
    test imports is not measured at all.

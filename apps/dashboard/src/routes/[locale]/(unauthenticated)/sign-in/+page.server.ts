@@ -39,7 +39,7 @@ export const actions: Actions = {
 
     const { domain, localHint } = redactEmail(email);
     const t0 = performance.now();
-    locals.log.info({ domain, localHint }, 'auth.signin.attempt');
+    locals.log.info('auth.signin.attempt', { domain, localHint });
 
     // The session opens here, so it carries this browser's user agent and IP.
     const result = await callAuth(event, '/sign-in/email', { email, password });
@@ -47,10 +47,11 @@ export const actions: Actions = {
     const dur_ms = Math.round(performance.now() - t0);
 
     if (!result.ok) {
-      locals.log.error(
-        { kind: result.kind, reason: reasonFor(result), dur_ms },
-        'auth.signin.unreachable'
-      );
+      locals.log.error('auth.signin.unreachable', {
+        kind: result.kind,
+        reason: reasonFor(result),
+        dur_ms,
+      });
       return fail(503, {
         error: userMessageFor(result.kind, errors),
         requestId: locals.requestId,
@@ -64,10 +65,11 @@ export const actions: Actions = {
         code?: string;
         message?: string;
       };
-      locals.log.warn(
-        { status: res.status, dur_ms, code: body.code },
-        'auth.signin.rejected'
-      );
+      locals.log.warn('auth.signin.rejected', {
+        status: res.status,
+        dur_ms,
+        code: body.code,
+      });
       return fail(res.status, {
         error: localizeAuthError(res.status, body, errors),
         requestId: locals.requestId,
@@ -83,10 +85,11 @@ export const actions: Actions = {
       'twoFactorRedirect' in body &&
       body.twoFactorRedirect === true;
 
-    locals.log.info(
-      { status: res.status, dur_ms, twoFactor: needsSecondFactor },
-      'auth.signin.success'
-    );
+    locals.log.info('auth.signin.success', {
+      status: res.status,
+      dur_ms,
+      twoFactor: needsSecondFactor,
+    });
 
     forwardSetCookies(cookies, res.headers.getSetCookie());
 

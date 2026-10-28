@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { LOG_LEVELS } from './src/logger/levels';
 
 const booleanSchema = z.stringbool({
   truthy: ['yes', 'true'],
@@ -8,7 +9,7 @@ const booleanSchema = z.stringbool({
 export const schema = z.object({
   FILE_LOG: booleanSchema.default(false),
   LOG_PRETTY: booleanSchema.optional(),
-  LOG_LEVEL: z.string().min(1).default('info'),
+  LOG_LEVEL: z.enum(LOG_LEVELS).default('info'),
   // VERBOSE=true → debug level + (in the API) per-request access logs.
   VERBOSE: booleanSchema.default(false),
 

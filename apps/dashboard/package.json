@@ -17,9 +17,7 @@
     "clean:hard": "git clean -xdf .cache .svelte-kit build node_modules"
   },
   "dependencies": {
-    "@opentelemetry/api": "catalog:",
-    "pino": "catalog:",
-    "pino-pretty": "catalog:"
+    "@opentelemetry/api": "catalog:"
   },
   "devDependencies": {
     "@lucide/svelte": "catalog:",

@@ -2,7 +2,7 @@
   "name": "@app/dashboard-api",
   "private": true,
   "scripts": {
-    "dev": "bun run --hot ./src/server.ts | pino-pretty",
+    "dev": "bun run --hot ./src/server.ts",
     "build": "bun build src/server.ts --compile --outfile=dashboard-api",
     "preview": "./dashboard-api",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
@@ -28,7 +28,6 @@
   "devDependencies": {
     "@pack/tsconfig": "workspace:*",
     "@types/bun": "catalog:dev",
-    "pino-pretty": "catalog:",
     "postgres": "catalog:"
   },
   "imports": {

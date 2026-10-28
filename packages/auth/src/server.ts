@@ -86,16 +86,16 @@ export const auth = betterAuth({
       // better-auth already rejects an untrusted redirectTo; a mailed token
       // to a foreign site is an account takeover, so check again here.
       if (!link || !trustedOrigins.includes(link.origin)) {
-        log.warn({ origin: link?.origin }, 'auth.reset.untrusted_link');
+        log.warn('auth.reset.untrusted_link', { origin: link?.origin });
         return;
       }
       const { subject, html } = resetEmail(link);
       if (!env.SMTP_HOST && process.env.NODE_ENV !== 'production') {
         // Local development without SMTP: the link has to go somewhere.
-        log.info({ link: link.toString() }, 'auth.reset.link (dev only)');
+        log.info('auth.reset.link (dev only)', { link: link.toString() });
       }
       void sendEmailHtml({ to: user.email, subject, html }).catch((error) =>
-        log.error({ err: error }, 'auth.reset.send_failed')
+        log.error('auth.reset.send_failed', { err: error })
       );
     },
     // Without a session to hand out, a duplicate email gets the same answer

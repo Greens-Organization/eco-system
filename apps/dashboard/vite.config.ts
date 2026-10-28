@@ -106,9 +106,6 @@ export default defineConfig(({ command }) => ({
     // SSR cold-start fast — `noExternal` would push lucide's modules through
     // Vite's transform on every restart.
     noExternal: command === 'build' ? ['@lucide/svelte'] : [],
-    // pino + pino-pretty resolve their transport worker via `__dirname`, which
-    // bundling into ESM strips. Keep them external in both dev and build.
-    external: ['pino', 'pino-pretty', 'thread-stream'],
   },
   optimizeDeps: {
     // Pre-bundle the client deps the dashboard pulls *transitively* through the
