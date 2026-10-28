@@ -1,0 +1,7 @@
+# Read by `bun test --coverage` in this folder (bun test does not walk up to
+# the root bunfig). Bun checks each file, so this is today's weakest file:
+# raise it, never lower it.
+[test]
+# Only this workspace's own code; a package it imports is measured there.
+coveragePathIgnorePatterns = ["../**", "**/node_modules/**"]
+coverageThreshold = { functions = 1, lines = 1 }

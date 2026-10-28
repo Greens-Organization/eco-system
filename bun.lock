@@ -241,6 +241,15 @@
       "name": "@pack/tsconfig",
       "version": "0.0.0",
     },
+    "scripts": {
+      "name": "@repo/scripts",
+      "version": "0.0.0",
+      "devDependencies": {
+        "@pack/testing": "workspace:*",
+        "@pack/tsconfig": "workspace:*",
+        "@types/bun": "catalog:dev",
+      },
+    },
   },
   "catalog": {
     "@formatjs/intl-localematcher": "0.9.0",
@@ -550,6 +559,8 @@
     "@playwright/test": ["@playwright/test@1.64.0", "", { "dependencies": { "playwright": "1.64.0" }, "bin": { "playwright": "cli.js" } }, "sha512-oTN9FNYuN6bqQMwiho6jJKLCG2/QOYCixGXuCjRmzOq23eODeukuY2XiAVoVpAECbuezMt1MHQjAiQxK8F+Y+g=="],
 
     "@polka/url": ["@polka/url@1.0.0-next.29", "", {}, "sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww=="],
+
+    "@repo/scripts": ["@repo/scripts@workspace:scripts"],
 
     "@rolldown/binding-android-arm-eabi": ["@rolldown/binding-android-arm-eabi@1.2.13", "", { "os": "android", "cpu": "arm" }, "sha512-Vu/NICrgdRvUOeaJZIyB2FP63s6fO/4ud5l8dXmxDx9yDyn+mN0y+gsvsVviSli+T361Aqo0h46EuMoobrwawA=="],
 

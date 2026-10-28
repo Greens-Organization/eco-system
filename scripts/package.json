@@ -1,0 +1,15 @@
+{
+  "name": "@repo/scripts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "clean": "git clean -xdf .cache .turbo node_modules",
+    "test": "bun test --preload @pack/testing/preload"
+  },
+  "devDependencies": {
+    "@pack/testing": "workspace:*",
+    "@pack/tsconfig": "workspace:*",
+    "@types/bun": "catalog:dev"
+  }
+}

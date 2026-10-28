@@ -16,6 +16,7 @@ apps/dashboard-api Hono + Bun HTTP API, OpenAPI (zod) + Scalar, OTel
 apps/dashboard     SvelteKit 3 / Svelte 5 admin dashboard
 packages/*         @pack/* shared libraries
 infra/docker       compose stacks: infra, observability, test
+scripts            @repo/scripts: github:setup, git:prune, clean:all
 tasks/todo|done    task tracker
 study/             reference material — not part of the build
 ```
@@ -43,6 +44,8 @@ bun run check:svelte         # svelte-check in the dashboard and design-system
 bun run lint                 # biome check ./
 bun run format               # biome check --write ./
 bun run verify               # lint, bun check, then turbo check:svelte + build (build runs test)
+bun run github:setup         # apply the branch ruleset + merge settings on GitHub (--dry-run first)
+bun run git:prune            # list local branches already merged; --yes deletes them
 
 bun run docker:infra:up      # postgres + redis, waits for healthchecks
 bun run docker:obs:up        # grafana/otel-lgtm
@@ -64,7 +67,7 @@ Type checking is split by file type, because `bun check` does not read
 `.svelte` files:
 
 - **`bun check`** (Bun ≥ 1.4.3, a port of typescript-go that behaves like
-  TypeScript 7) checks the 11 TS-only workspaces through the root
+  TypeScript 7) checks the 12 TS-only workspaces through the root
   `tsconfig.json`, which has `"files": []` and one `references` entry per
   workspace. **A new TS workspace must be added there** or it goes unchecked.
   Inside a single workspace, `bun check` checks just that one.
@@ -88,7 +91,7 @@ design-system itself checks 134 files where the normal mode checks 4752.
 
 `@app/dashboard-api`, `@app/dashboard-svelte`, `@pack/auth`, `@pack/db`,
 `@pack/observability`, `@pack/tools`, `@pack/testing`, `@pack/email`,
-`@pack/i18n` and `@pack/seo` define `test`. The
+`@pack/i18n`, `@pack/seo` and `@repo/scripts` define `test`. The
 dashboard's run under plain `bun test` (no Vite), so they cover `src/lib`
 modules that do not import `$app/*`; keep server logic there
 (`src/lib/server/*`) and inject what touches the network.
@@ -143,17 +146,17 @@ the schema imports `bun`, so a bare `bunx drizzle-kit` fails to resolve it.
 
 `.github/workflows/ci.yml` runs `biome ci`, `bun check`, `turbo check:svelte
 build` (`build` depends on `test`), the API
-e2e suite and the browser suite on pull requests and on pushes to `main`, with bun/node from
-`mise.toml`. It has not run on GitHub yet — this branch has no upstream — and
-there is no local hook. Before claiming work is done, run the checks yourself
+e2e suite and the browser suite on pull requests and on pushes to the
+protected branches, with bun/node from `mise.toml`; its three jobs are the
+required checks of the branch ruleset (§7). There is no local hook. Before claiming work is done, run the checks yourself
 (`bun run verify` does all of them):
 
 ```bash
 bunx biome check .                    # 0 errors
-bun check                             # 0 errors, 258 files across 11 projects
+bun check                             # 0 errors, 280 files across 12 projects
 bunx turbo run check:svelte --force   # 0 errors in dashboard + design-system
 bunx turbo run build --force          # api binary + dashboard vite build
-bunx turbo run test --force           # 219 pass / 0 fail
+bunx turbo run test --force           # 231 pass / 0 fail
 bun run test:coverage                 # same, under each workspace's coverage floor
 bun run test:e2e                      # 76 pass (needs Docker)
 bun run test:browser                  # 20 pass (needs Docker)
@@ -614,20 +617,30 @@ do it.
   separately for direct calls, type references, string literals, dynamic
   imports, `require()`, re-exports, barrel files and test mocks.
 - Never push to a shared remote unless explicitly asked.
+- **Branches.** `main`, `develop` and `release/**` are protected by the
+  ruleset in `.github/rulesets/protected-branches.json`: no deletion, no
+  force push, pull request only, squash only, and the three CI jobs green on
+  an up-to-date branch — with no bypass, admins included (a bypass would let
+  merging a protected head branch delete it). No auto-merge. Every other
+  branch is short-lived; GitHub deletes it on merge (`delete_branch_on_merge`)
+  and `bun run git:prune` drops the local copies, squash-merged ones
+  included (`git branch --merged` misses those). The settings are code in
+  `scripts/src/github-policy.ts`, applied by `bun run github:setup` — "Use
+  this template" does not copy them. Renaming a CI job means updating the
+  ruleset's required checks too; a test fails until they match.
 - Work from raw command output, not from memory of what it probably said.
 
 ---
 
 ## 8. Current state
 
-Branch `alpha/eco-system-v2`, ahead of `main`, no upstream.
+Work lands on `main` through pull requests; CI runs green on GitHub.
 
 No open cards in `tasks/todo`. Largest open items:
 
-1. **CI is written but unproven** — the workflow has never run on GitHub.
-   Unit tests used to depend on the local `.env`; they now pass in a clean
-   checkout (verified in a worktree with no `.env` files).
-2. **Test coverage is concentrated** in 10 of 13 workspaces (219 unit + 76
+1. **The branch ruleset is not applied yet** on GitHub — run
+   `bun run github:setup` (an admin, once).
+2. **Test coverage is concentrated** in 11 of 14 workspaces (231 unit + 76
    API e2e + 20 browser); `cache`, `storage` and `design-system` have none.
    Per-file coverage floors guard against regressions, not gaps: a file no
    test imports is not measured at all.

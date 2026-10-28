@@ -26,6 +26,8 @@
     "format": "biome check --write ./",
     "clean": "git clean -xdf .cache .turbo node_modules",
     "clean:all": "bun ./scripts/cleanup.ts",
+    "github:setup": "bun ./scripts/github-setup.ts",
+    "git:prune": "bun ./scripts/git-prune.ts",
     "tree": "tree -I 'node_modules|.cache|.turbo|dist' -L 10",
     "docker:infra:up": "docker compose -f infra/docker/docker-compose.infra.yml up -d --wait",
     "docker:infra:down": "docker compose -f infra/docker/docker-compose.infra.yml down",
@@ -49,7 +51,8 @@
   "workspaces": {
     "packages": [
       "packages/*",
-      "apps/*"
+      "apps/*",
+      "scripts"
     ],
     "catalog": {
       "clsx": "2.1.1",

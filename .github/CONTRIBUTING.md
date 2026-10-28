@@ -4,13 +4,21 @@ Thank you for your interest in contributing! This document outlines the process 
 
 ## Getting Started
 
-1. Fork the repository
-2. Create a new branch for your feature or bug fix: `git checkout -b feature/your-feature-name`
-3. Make your changes
-4. Test your changes thoroughly
-5. Commit your changes with clear, descriptive commit messages
-6. Push to your fork
-7. Submit a Pull Request
+1. Create a short-lived branch from an up-to-date `main` (or `develop`):
+   `git switch -c feat/your-change`. Members branch in this repository;
+   others fork it.
+2. Make your changes, with tests where they apply.
+3. Run `bun run verify` locally.
+4. Commit with semantic messages (`feat:`, `fix:`, `refactor:`…), push, and
+   open a pull request.
+5. CI must be green before the pull request can be merged: lint, type
+   check, unit tests, API e2e and browser e2e.
+6. The pull request is squash-merged (its title becomes the commit, so keep
+   it semantic too) and the branch is deleted on GitHub.
+7. Clean up locally: `bun run git:prune`, then `bun run git:prune --yes`.
+
+`main`, `develop` and `release/**` are protected: no direct pushes, no force
+pushes, no deletion — for everyone. See README "Branches and pull requests".
 
 ## Pull Request Guidelines
 
