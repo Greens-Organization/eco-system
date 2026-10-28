@@ -1,12 +1,23 @@
 effective: |
   builders:
-    runtime-deps:
+    build:
+      fromBuilder: deps
+      workdir: /app/apps/dashboard
+      arg:
+        ORIGIN: ''
+      copy:
+      - paths:
+        - .
+        target: /app/
+      run:
+      - bun run build
+    deps:
       fromImage:
         path: oven/bun
         digest: sha256:ec06c3b6cea04192ae6770c434f668ca41d343ad19fa6472216c7b48be39c598
       workdir: /app/
       run:
-      - bun install --frozen-lockfile --production --linker hoisted --filter @app/dashboard-svelte
+      - bun install --frozen-lockfile --filter @app/dashboard-svelte
       cache:
       - target: /root/.bun/install/cache
       bind:
@@ -44,24 +55,13 @@ effective: |
         source: packages/tools/package.json
       - target: packages/tsconfig/package.json
         source: packages/tsconfig/package.json
-    build:
-      fromBuilder: deps
-      workdir: /app/apps/dashboard
-      arg:
-        ORIGIN: ''
-      copy:
-      - paths:
-        - .
-        target: /app/
-      run:
-      - bun run build
-    deps:
+    runtime-deps:
       fromImage:
         path: oven/bun
         digest: sha256:ec06c3b6cea04192ae6770c434f668ca41d343ad19fa6472216c7b48be39c598
       workdir: /app/
       run:
-      - bun install --frozen-lockfile --filter @app/dashboard-svelte
+      - bun install --frozen-lockfile --production --linker hoisted --filter @app/dashboard-svelte
       cache:
       - target: /root/.bun/install/cache
       bind:
@@ -143,7 +143,7 @@ images:
           digest: sha256:ec06c3b6cea04192ae6770c434f668ca41d343ad19fa6472216c7b48be39c598
 resources:
   dofigen.yml:
-    hash: aebac629d51068136fb01f903210b62ef7fcea3925152936c46aaaaffbf42e9d
+    hash: 1fe93f103d871d3373eb57c054efbf373f14e92dfcd2f51a495f4ff0f64ebfb4
     content: |
       # Build from the repo root: docker build -f apps/dashboard/Dockerfile .
       # The root .dockerignore applies (no node_modules, no .env files).
@@ -195,7 +195,7 @@ resources:
             ORIGIN: ""
           run: bun run build
 
-        # What the build leaves external (pino, zod, uqr…), hoisted into one plain
+        # What the build leaves external (`dependencies`: @opentelemetry/api), hoisted into one plain
         # node_modules that Node resolves without Bun's isolated-linker symlinks.
         # The @pack/* workspace packages are bundled into the build.
         runtime-deps:

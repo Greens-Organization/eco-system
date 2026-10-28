@@ -20,7 +20,7 @@ export const actions: Actions = {
       });
     }
 
-    locals.log.info(redactEmail(email), 'auth.reset.requested');
+    locals.log.info('auth.reset.requested', redactEmail(email));
     const result = await callAuth(event, '/request-password-reset', {
       email: email.trim(),
       // The link in the mail lands on this dashboard, in this language.
@@ -28,10 +28,10 @@ export const actions: Actions = {
     });
 
     if (!result.ok) {
-      locals.log.error(
-        { kind: result.kind, reason: reasonFor(result) },
-        'auth.reset.unreachable'
-      );
+      locals.log.error('auth.reset.unreachable', {
+        kind: result.kind,
+        reason: reasonFor(result),
+      });
       return fail(503, {
         error: userMessageFor(result.kind, errors),
         requestId: locals.requestId,

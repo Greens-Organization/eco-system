@@ -76,22 +76,6 @@ export function isDevReload(
 }
 
 /**
- * A crash reason pino can log. Bun's ResolveMessage (a failed import) is an
- * Error whose own fields are circular; pino's err serializer gives up on it
- * and logged "[unable to serialize…]" instead of the message.
- */
-export function crashReason(reason: unknown): {
-  err: { type: string; message: string; stack?: string };
-} {
-  if (reason instanceof Error) {
-    return {
-      err: { type: reason.name, message: reason.message, stack: reason.stack },
-    };
-  }
-  return { err: { type: typeof reason, message: String(reason) } };
-}
-
-/**
  * What an uncaught exception or unhandled rejection does. In production it
  * drains and exits 1 (the orchestrator restarts the process). Under
  * `--hot`/`--watch` it only logs: draining closes the database and Redis
@@ -107,16 +91,16 @@ export function createCrashHandler(opts: {
 }): (reason: unknown) => void {
   return (reason) => {
     if (opts.devReload) {
-      log.error(
-        crashReason(reason),
-        `${opts.label} (bun --hot/--watch: still running, fix and save)`
-      );
+      log.error('{label} (bun --hot/--watch: still running, fix and save)', {
+        label: opts.label,
+        err: reason,
+      });
       return;
     }
-    log.error(crashReason(reason), opts.label);
+    log.error('{label}', { label: opts.label, err: reason });
     if (opts.isShuttingDown()) return;
     opts.shutdown(opts.signal).catch((err) => {
-      log.error(crashReason(err), `Error during ${opts.label} shutdown`);
+      log.error('Error during {label} shutdown', { label: opts.label, err });
       process.exit(1);
     });
   };
@@ -160,7 +144,7 @@ export function createGracefulShutdown(
     }
 
     isShuttingDown = true;
-    log.info(`${signal} received - starting graceful shutdown`);
+    log.info('{signal} received - starting graceful shutdown', { signal });
 
     const timeout = setTimeout(() => {
       log.error('Forced shutdown due to timeout');
@@ -182,7 +166,7 @@ export function createGracefulShutdown(
       log.info('Graceful shutdown completed');
       process.exit(exitCodeFor(signal));
     } catch (error) {
-      log.error(crashReason(error), 'Error during shutdown');
+      log.error('Error during shutdown', { err: error });
       clearTimeout(timeout);
       process.exit(1);
     }

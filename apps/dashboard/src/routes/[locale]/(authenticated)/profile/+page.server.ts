@@ -77,10 +77,9 @@ async function listSessions(
       : null;
   const parsed = ListedSessionsSchema.safeParse(body);
   if (!parsed.success) {
-    event.locals.log.warn(
-      { status: result.ok ? result.response.status : result.kind },
-      'auth.devices.list_failed'
-    );
+    event.locals.log.warn('auth.devices.list_failed', {
+      status: result.ok ? result.response.status : result.kind,
+    });
     return null;
   }
   return parsed.data;
@@ -121,10 +120,11 @@ async function call(
 
   const result = await callAuth(event, path, body);
   if (!result.ok) {
-    locals.log.error(
-      { step, kind: result.kind, reason: reasonFor(result) },
-      'auth.settings.unreachable'
-    );
+    locals.log.error('auth.settings.unreachable', {
+      step,
+      kind: result.kind,
+      reason: reasonFor(result),
+    });
     return {
       ok: false as const,
       failure: fail(503, {
@@ -138,10 +138,11 @@ async function call(
   const { response: res } = result;
   if (!res.ok) {
     const error = await errorBody(res);
-    locals.log.warn(
-      { step, status: res.status, code: error.code },
-      'auth.settings.rejected'
-    );
+    locals.log.warn('auth.settings.rejected', {
+      step,
+      status: res.status,
+      code: error.code,
+    });
     return {
       ok: false as const,
       failure: fail(res.status, {
@@ -152,7 +153,7 @@ async function call(
     };
   }
 
-  locals.log.info({ step }, 'auth.settings.success');
+  locals.log.info('auth.settings.success', { step });
   return { ok: true as const, response: res };
 }
 

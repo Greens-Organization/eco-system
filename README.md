@@ -16,7 +16,7 @@ structured logging, OpenTelemetry, Sentry, Drizzle migrations, and a Biome +
   compiled binary (`bun build --compile`).
 - **Dashboard** (`apps/dashboard`) — SvelteKit 2, Svelte 5, Vite 8, Tailwind 4,
   `adapter-node`.
-- **Cross-cutting** — `better-auth`, pino logging, OpenTelemetry traces +
+- **Cross-cutting** — `better-auth`, LogTape logging, OpenTelemetry traces +
   metrics → Grafana, Sentry error reporting, Drizzle ORM.
 
 ## Layout
@@ -43,7 +43,7 @@ study/       reference material, not part of the build
 | ---------------------- | --------------------------------------------------------------------- |
 | `@pack/auth`           | `better-auth` server + shared cookie config; sessions in Redis.       |
 | `@pack/db`             | Drizzle ORM + `postgres.js`, schema, migrations, seeds.               |
-| `@pack/observability`  | pino logging, OTel traces/metrics, Sentry, ALS request context.       |
+| `@pack/observability`  | LogTape logging, OTel traces/metrics, Sentry, ALS request context.    |
 | `@pack/design-system`  | Svelte 5 UI components, providers, Tailwind styles.                   |
 | `@pack/i18n`           | Locale negotiation + dictionaries.                                    |
 | `@pack/email`          | SMTP sending over nodemailer; templating is the caller's choice.      |
@@ -166,7 +166,7 @@ digests) and `dofigen generate`.
 - **API** — a single compiled binary (`bun build --compile`) on
   `oven/bun:1.4.3-slim`, as a non-root user.
 - **Dashboard** — the `adapter-node` build on `node:26.10.0-slim`. Everything
-  is bundled except `pino`/`pino-pretty`, so the runtime `node_modules` is a
+  is bundled except `@opentelemetry/api`, so the runtime `node_modules` is a
   few MB.
 
 Behind a TLS-terminating proxy, the dashboard needs two things from
@@ -208,7 +208,7 @@ The e2e suite uses `infra/docker/docker-compose.test.yml`.
 
 ## Observability
 
-The API emits structured pino logs, OpenTelemetry traces + metrics, and routes
+The API emits structured logs (LogTape), OpenTelemetry traces + metrics, and routes
 technical/critical errors to Sentry. The full contract (3-layer log fields,
 classification → Sentry routing, `support_id`, `/status` vs `/ready` health
 split, trace sampling, default-off behavior) is documented in

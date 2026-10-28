@@ -33,9 +33,10 @@
     "@sentry/bun": "catalog:",
     "@sentry/core": "catalog:",
     "@sentry/node": "catalog:",
-    "pino": "catalog:",
-    "pino-pretty": "catalog:",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "@logtape/logtape": "catalog:",
+    "@logtape/redaction": "catalog:",
+    "@logtape/file": "catalog:"
   },
   "devDependencies": {
     "@pack/testing": "workspace:*",

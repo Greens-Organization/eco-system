@@ -5,7 +5,7 @@ import { randomUUID } from 'node:crypto';
  * Request context propagated via AsyncLocalStorage.
  *
  * Holds the per-request fields of the log contract EXCEPT `trace_id`/`span_id`,
- * which come from the active OTel span (logger mixin). Business/feature
+ * which come from the active OTel span (read by the logger). Business/feature
  * fields are open (`[key: string]`) — domains attach their own via setContext().
  */
 export interface RequestContext {
@@ -25,6 +25,9 @@ export interface RequestContext {
 }
 
 const storage = new AsyncLocalStorage<RequestContext>();
+
+/** The store behind the request context; the logger reads it on every record. */
+export const requestContextStorage = storage;
 
 /** Current request context (undefined outside a request). */
 export function getContext(): RequestContext | undefined {

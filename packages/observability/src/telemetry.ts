@@ -38,8 +38,8 @@ import { settleWithin } from './settle';
  * Topology is DECOUPLED: Sentry handles ERRORS only; OpenTelemetry sends
  * traces + metrics + logs to Grafana via OTLP (independent providers). Nothing
  * relies on require-hook auto-instrumentation (HTTP spans come from `@hono/otel`,
- * logs are bridged in-process from pino — see logger/otel-stream), so import
- * order is not fragile on Bun.
+ * logs are mirrored by LogTape's OTel sink — see logger/otel-sink), so
+ * import order is not fragile on Bun.
  */
 
 /**
@@ -139,8 +139,8 @@ export function startObservability(sdk: SentrySdk): void {
     metrics.setGlobalMeterProvider(meterProvider);
     new HostMetrics({ meterProvider, name: 'host-metrics' }).start();
 
-    // Logs: the pino logger bridges into this provider in-process (no worker —
-    // see logger/otel-stream), exporting via OTLP (-> Loki in the lgtm stack).
+    // Logs: the logger's OTel sink emits into this provider (logger/otel-sink),
+    // exporting via OTLP (-> Loki in the lgtm stack).
     loggerProvider = new LoggerProvider({
       resource,
       processors: [

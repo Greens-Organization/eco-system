@@ -39,18 +39,18 @@ export const actions: Actions = {
       token,
     });
     if (!result.ok) {
-      locals.log.error(
-        { kind: result.kind, reason: reasonFor(result) },
-        'auth.reset.unreachable'
-      );
+      locals.log.error('auth.reset.unreachable', {
+        kind: result.kind,
+        reason: reasonFor(result),
+      });
       return fail(503, { error: userMessageFor(result.kind, t.errors) });
     }
     if (!result.response.ok) {
       const body = await errorBody(result.response);
-      locals.log.warn(
-        { status: result.response.status, code: body.code },
-        'auth.reset.rejected'
-      );
+      locals.log.warn('auth.reset.rejected', {
+        status: result.response.status,
+        code: body.code,
+      });
       if (body.code === 'INVALID_TOKEN') {
         return fail(400, {
           error: t.auth.reset.invalidLink,

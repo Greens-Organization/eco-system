@@ -4,12 +4,13 @@ import { CONSTANTS } from '#infra/common/constants';
 
 export const setup = {
   logInfo: () => {
-    log.info(
-      `🔥 REST API endpoint is http://${isLocal ? 'localhost' : env.HOST}:${env.PORT}${CONSTANTS.API_REST_V1}`
-    );
-
-    log.info(
-      `❤️  Liveness http://localhost:${env.PORT}${CONSTANTS.API_STATUS_ENDPOINT} · Readiness ${CONSTANTS.API_READY_ENDPOINT}`
-    );
+    const host = isLocal ? 'localhost' : env.HOST;
+    log.info('🔥 REST API endpoint is {url}', {
+      url: `http://${host}:${env.PORT}${CONSTANTS.API_REST_V1}`,
+    });
+    log.info('❤️  Liveness {liveness} · Readiness {readiness}', {
+      liveness: `http://localhost:${env.PORT}${CONSTANTS.API_STATUS_ENDPOINT}`,
+      readiness: CONSTANTS.API_READY_ENDPOINT,
+    });
   },
 };

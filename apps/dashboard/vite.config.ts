@@ -2,7 +2,7 @@ import adapter from '@sveltejs/adapter-node';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import tailwindcss from '@tailwindcss/vite';
-import { defineConfig, type Plugin } from 'vite';
+import { defineConfig, loadEnv, type Plugin } from 'vite';
 
 const analyze = process.env['ANALYZE'] === '1';
 
@@ -44,8 +44,30 @@ function bundleStats(top = 20): Plugin {
   };
 }
 
+/**
+ * In `vite dev`, Kit reads `.env` / `.env.local` for `$app/env/private`
+ * only, while the `@pack/*` packages (`pack-env.ts`) read `process.env`:
+ * without this, the dashboard's SERVICE_NAME, LOG_*, SENTRY_DSN and OTEL_*
+ * were ignored in dev. A variable set in the shell wins. Not in builds: they
+ * take ORIGIN from the real environment, and `node build` never reads `.env`
+ * files.
+ */
+function envFilesIntoProcess(): Plugin {
+  return {
+    name: 'env-files-into-process',
+    apply: 'serve',
+    config(_, { mode }) {
+      const files = loadEnv(mode, process.cwd(), '');
+      for (const [key, value] of Object.entries(files)) {
+        process.env[key] ??= value;
+      }
+    },
+  };
+}
+
 export default defineConfig(({ command }) => ({
   plugins: [
+    envFilesIntoProcess(),
     tailwindcss(),
     sveltekit({
       preprocess: vitePreprocess(),
@@ -106,9 +128,6 @@ export default defineConfig(({ command }) => ({
     // SSR cold-start fast — `noExternal` would push lucide's modules through
     // Vite's transform on every restart.
     noExternal: command === 'build' ? ['@lucide/svelte'] : [],
-    // pino + pino-pretty resolve their transport worker via `__dirname`, which
-    // bundling into ESM strips. Keep them external in both dev and build.
-    external: ['pino', 'pino-pretty', 'thread-stream'],
   },
   optimizeDeps: {
     // Pre-bundle the client deps the dashboard pulls *transitively* through the

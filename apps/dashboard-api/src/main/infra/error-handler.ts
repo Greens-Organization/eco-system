@@ -63,7 +63,10 @@ export function handleError(err: Error, c: AppContext): Response {
       schemaError.classification,
       schemaError.statusCode
     );
-    log.warn(fields, schemaError.message);
+    log.warn('{error_message}', {
+      ...fields,
+      error_message: schemaError.message,
+    });
     return c.json<ErrorSchema>(
       body(schemaError.code, schemaError.message),
       schemaError.statusCode as ContentfulStatusCode
@@ -73,8 +76,9 @@ export function handleError(err: Error, c: AppContext): Response {
   // AppError -> classification decides Sentry
   if (err instanceof AppError) {
     const fields = fieldsFor(err.errorCode, err.classification, err.statusCode);
-    if (err.statusCode >= 500) log.error({ ...fields, err }, err.message);
-    else log.warn({ ...fields, err }, err.message);
+    const logged = { ...fields, error_message: err.message, err };
+    if (err.statusCode >= 500) log.error('{error_message}', logged);
+    else log.warn('{error_message}', logged);
     if (shouldReportToSentry(err.classification)) captureError(err, fields);
     // Never leak the internal message on 5xx; business errors keep theirs.
     const message =
@@ -93,8 +97,9 @@ export function handleError(err: Error, c: AppContext): Response {
       err instanceof OpenStatusApiError ? err.code : statusToCode(status);
     const classification = defaultClassification(status);
     const fields = fieldsFor(code, classification, status);
-    if (status >= 500) log.error({ ...fields, err }, err.message);
-    else log.warn({ ...fields, err }, err.message);
+    const logged = { ...fields, error_message: err.message, err };
+    if (status >= 500) log.error('{error_message}', logged);
+    else log.warn('{error_message}', logged);
     if (shouldReportToSentry(classification)) captureError(err, fields);
     // Same rule as AppError: a 5xx message is internal and stays in the log.
     const message = status >= 500 ? 'Internal Server Error' : err.message;
@@ -105,13 +110,10 @@ export function handleError(err: Error, c: AppContext): Response {
   const status = 500;
   const code = statusToCode(status);
   const fields = fieldsFor(code, 'technical_error', status);
-  log.error(
-    {
-      ...fields,
-      err: { name: err.name, message: err.message, stack: err.stack },
-    },
-    'Request error'
-  );
+  log.error('Request error', {
+    ...fields,
+    err: { name: err.name, message: err.message, stack: err.stack },
+  });
   if (shouldReportToSentry('technical_error')) captureError(err, fields);
   return c.json<ErrorSchema>(
     body(code, 'Internal Server Error'),

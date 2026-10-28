@@ -46,10 +46,12 @@ async function verify(event: RequestEvent, method: Method) {
   const dur_ms = Math.round(performance.now() - t0);
 
   if (!result.ok) {
-    locals.log.error(
-      { method, kind: result.kind, reason: reasonFor(result), dur_ms },
-      'auth.2fa.unreachable'
-    );
+    locals.log.error('auth.2fa.unreachable', {
+      method,
+      kind: result.kind,
+      reason: reasonFor(result),
+      dur_ms,
+    });
     return fail(503, {
       method,
       error: userMessageFor(result.kind, errors),
@@ -60,10 +62,12 @@ async function verify(event: RequestEvent, method: Method) {
   const { response: res } = result;
   if (!res.ok) {
     const body = await errorBody(res);
-    locals.log.warn(
-      { method, status: res.status, code: body.code, dur_ms },
-      'auth.2fa.rejected'
-    );
+    locals.log.warn('auth.2fa.rejected', {
+      method,
+      status: res.status,
+      code: body.code,
+      dur_ms,
+    });
     return fail(res.status, {
       method,
       error: localizeAuthError(res.status, body, errors),
@@ -71,7 +75,7 @@ async function verify(event: RequestEvent, method: Method) {
     });
   }
 
-  locals.log.info({ method, dur_ms }, 'auth.2fa.success');
+  locals.log.info('auth.2fa.success', { method, dur_ms });
   forwardSetCookies(cookies, res.headers.getSetCookie());
   redirect(303, `/${locals.locale ?? defaultLocale}`);
 }

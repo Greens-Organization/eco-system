@@ -28,7 +28,7 @@ async function main() {
 
     setup.logInfo();
   } catch (e) {
-    log.error(e, 'Error during startup');
+    log.error('Error during startup', { err: e });
     process.exit(1);
   }
 }
