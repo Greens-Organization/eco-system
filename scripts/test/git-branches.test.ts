@@ -21,8 +21,17 @@ const commit = async (file: string, text: string) => {
   await git('commit', '-m', `edit ${file}`);
 };
 
+const saved = {
+  global: process.env.GIT_CONFIG_GLOBAL,
+  nosystem: process.env.GIT_CONFIG_NOSYSTEM,
+};
+
 // main <- feature-merged (merge), feature-squashed (squash), feature-open.
+// No global or system git config, as on a CI runner: no identity, no
+// signing setup.
 beforeAll(async () => {
+  process.env.GIT_CONFIG_GLOBAL = '/dev/null';
+  process.env.GIT_CONFIG_NOSYSTEM = '1';
   repo = mkdtempSync(join(tmpdir(), 'git-prune-'));
   await git('init', '-q', '-b', 'main');
   await commit('a.txt', 'a');
@@ -44,7 +53,16 @@ beforeAll(async () => {
   await git('switch', '-q', 'main');
 });
 
-afterAll(() => rmSync(repo, { recursive: true, force: true }));
+afterAll(() => {
+  rmSync(repo, { recursive: true, force: true });
+  for (const [key, value] of [
+    ['GIT_CONFIG_GLOBAL', saved.global],
+    ['GIT_CONFIG_NOSYSTEM', saved.nosystem],
+  ] as const) {
+    if (value === undefined) delete process.env[key];
+    else process.env[key] = value;
+  }
+});
 
 describe('isMergedInto', () => {
   test('a merged branch is in main', async () => {

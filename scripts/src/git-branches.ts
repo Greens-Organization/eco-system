@@ -51,10 +51,15 @@ export async function isMergedInto(
   const mergeBase = (await git(cwd, 'merge-base', base, branch)).text().trim();
   if (!mergeBase) return false;
   const tree = (await git(cwd, 'rev-parse', `${branch}^{tree}`)).text().trim();
-  // Unsigned and unreferenced: a dangling object `git gc` drops.
+  // Unsigned and unreferenced: a dangling object `git gc` drops. Its own
+  // identity, so it works where none is configured (a CI runner).
   const squashed = (
     await git(
       cwd,
+      '-c',
+      'user.name=git-prune',
+      '-c',
+      'user.email=git-prune@localhost',
       'commit-tree',
       '--no-gpg-sign',
       tree,
