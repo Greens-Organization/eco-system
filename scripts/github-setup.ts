@@ -2,6 +2,7 @@
 import { resolve } from 'node:path';
 import { $ } from 'bun';
 import {
+  needsPaidPlan,
   REPO_SETTINGS,
   type RepoSettings,
   type Ruleset,
@@ -72,14 +73,27 @@ if (unreported.length > 0) {
   process.exit(1);
 }
 
-const existing = (
-  await gh<{ id: number; name: string }[]>(
-    `repos/${repo.nameWithOwner}/rulesets`
-  )
-).find((r) => r.name === ruleset.name);
-const action = existing ? `update #${existing.id}` : 'create';
-console.log(`ruleset "${ruleset.name}": ${action}`);
-if (!dryRun) {
+const rulesets = await gh<{ id: number; name: string }[]>(
+  `repos/${repo.nameWithOwner}/rulesets`
+).catch((error: unknown) => {
+  // A private repository on GitHub Free cannot have rulesets at all; the
+  // merge settings below still apply, so skip instead of failing.
+  if (error instanceof $.ShellError && needsPaidPlan(error.stdout.toString())) {
+    return null;
+  }
+  throw error;
+});
+const existing = rulesets?.find((r) => r.name === ruleset.name);
+if (rulesets === null) {
+  console.warn(
+    `ruleset "${ruleset.name}": skipped — this plan has no rulesets for ` +
+      'private repositories (upgrade, or make the repository public)'
+  );
+} else {
+  const action = existing ? `update #${existing.id}` : 'create';
+  console.log(`ruleset "${ruleset.name}": ${action}`);
+}
+if (!dryRun && rulesets !== null) {
   if (existing) {
     await gh(
       `repos/${repo.nameWithOwner}/rulesets/${existing.id}`,

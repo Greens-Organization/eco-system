@@ -54,6 +54,23 @@ export function workflowCheckNames(workflowYaml: string): string[] {
 }
 
 /**
+ * Whether a GitHub API error body says the plan lacks the feature: rulesets
+ * on a private repository need GitHub Pro, Team or Enterprise, and the API
+ * answers 403 "Upgrade to GitHub Pro…" even to a read.
+ */
+export function needsPaidPlan(errorBody: string): boolean {
+  try {
+    const { status, message } = JSON.parse(errorBody) as {
+      status?: string;
+      message?: string;
+    };
+    return status === '403' && /upgrade to github pro/i.test(message ?? '');
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Required checks no workflow job reports. A required check that never
  * runs blocks every pull request forever, so a renamed CI job must fail
  * the setup (and the tests) instead.

@@ -265,8 +265,10 @@ bun run github:setup
 
 It creates the ruleset in `.github/rulesets/protected-branches.json` and
 sets squash-only merges with branch deletion on merge
-(`scripts/src/github-policy.ts`). Run it again after changing either. On GitHub Free, rulesets
-apply to public repositories only.
+(`scripts/src/github-policy.ts`). Run it again after changing either. On
+GitHub Free, rulesets exist only for public repositories: on a private one
+the script skips the ruleset (the branches stay unprotected) and still
+applies the merge settings.
 
 ## Conventions
 
