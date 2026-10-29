@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { resolve } from 'node:path';
 import {
+  needsPaidPlan,
   REPO_SETTINGS,
   type Ruleset,
   requiredChecks,
@@ -77,6 +78,27 @@ describe('workflowCheckNames', () => {
   test("a job's name, or its key when it has none", () => {
     const yaml = 'jobs:\n  check:\n    name: Lint\n  e2e:\n    runs-on: x\n';
     expect(workflowCheckNames(yaml)).toEqual(['Lint', 'e2e']);
+  });
+
+  test("GitHub's plan refusal is told apart from other errors", () => {
+    // The body `gh api` printed for a private repository on GitHub Free.
+    const refusal = JSON.stringify({
+      message:
+        'Upgrade to GitHub Pro or make this repository public to enable this feature.',
+      documentation_url:
+        'https://docs.github.com/rest/repos/rules#get-all-repository-rulesets',
+      status: '403',
+    });
+    expect(needsPaidPlan(refusal)).toBe(true);
+    expect(
+      needsPaidPlan(
+        JSON.stringify({ message: 'Resource not accessible', status: '403' })
+      )
+    ).toBe(false);
+    expect(
+      needsPaidPlan(JSON.stringify({ message: 'Not Found', status: '404' }))
+    ).toBe(false);
+    expect(needsPaidPlan('gh: not logged in')).toBe(false);
   });
 
   test('a required check no job reports is caught', () => {
